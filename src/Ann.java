@@ -1,12 +1,14 @@
 import java.io.FileNotFoundException;
-
 import lib.Loss;
 
 public class Ann{
     
 
-	private static DataSet DATA_TRAIN;
-	private static DataSet DATA_VALID;
+	private static			DataSet dataTrain;
+	private static			DataSet dataValid;
+	private static final	double	LEARNING_RATE	= 0.01;
+	private static final	int		BATCH_SIZE		= 32;
+	private static final	int		EPOCHS			= 10;
 
 
 
@@ -21,19 +23,17 @@ public class Ann{
 
 
 
-
+	// running the model
 	public static void runModel() throws FileNotFoundException {
 		try{
-			DATA_TRAIN = new DataSet("cw2DataSet1.csv", ",");
-			DATA_VALID = new DataSet("cw2DataSet2.csv", ",");
+			dataTrain = new DataSet("cw2DataSet1.csv", ",");
+			dataValid = new DataSet("cw2DataSet2.csv", ",");
 		}catch(Exception e){ throw new FileNotFoundException(); }
 
-		final int BATCH_SIZE = 32, EPOCHS = 10;
 
-
-		MODEL.buildStructure(DATA_TRAIN, Loss.CROSS_ENTROPY);
-		MODEL.train(DATA_TRAIN, BATCH_SIZE, EPOCHS);
-		MODEL.validate(DATA_VALID);
+		MODEL.buildStructure(dataTrain, Loss.CROSS_ENTROPY);
+		MODEL.train(dataTrain, BATCH_SIZE, EPOCHS, LEARNING_RATE);
+		MODEL.validate(dataValid);
 		System.out.println("Accuracy: " + MODEL.getAccuracy() + "%");
 	}
 		// Convolutional layer 1

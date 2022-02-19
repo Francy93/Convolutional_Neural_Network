@@ -27,7 +27,7 @@ public class Node {
     }
 	// constructor for convnet first layer
 	public Node(final double[][] INPUT){
-        this(0, 0, 0, INPUT.length, INPUT[0].length);
+        this(1, INPUT.length, INPUT[0].length, INPUT.length, INPUT[0].length);
 		fillOutput(INPUT);
     }
 	// constructor for densenet first layer

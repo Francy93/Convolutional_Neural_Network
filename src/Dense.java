@@ -3,7 +3,7 @@
 
 
     public Dense(final int NODES_AMOUNT, final Activation ACTIVATION){
-        super(NODES_AMOUNT, ACTIVATION, 1, 0);
+        super(NODES_AMOUNT, ACTIVATION, 0, 0);
     }
 
 
@@ -13,14 +13,15 @@
     public void layerInit(final Node ... INPUTS){
         super.inputs	= INPUTS;
 
-        this.sizesInit();				// initialising this layer sizes
-        this.nodesInit();				// initialising this layer nodes
-        super.flatOutInit();            // flattening the output
-        this.kernelRelationsInit();		// initialising this layer kernel relations
-        this.outputInputRelationsInit();// initialising this layer input and output relations
+        this.sizesInit();					// initialising this layer sizes
+        super.nodesInit();					// initialising this layer nodes
+        super.weightsInit();				// initialising all this layer weights
+        super.flatOutInit();				// flattening the output
+        super.kernelRelationsInit();		// initialising this layer kernel relations
+        //super.outputInputRelationsInit();	// initialising this layer input and output relations
     }
     // first layer initialiser
-    public void layerInit(final Sample SAMPLE){
+    public void firstLayerInit(final Sample SAMPLE){
         final Node[] NODE	= {new Node(SAMPLE.getData1D())};
         super.isFirstLayer	= true;
 
@@ -28,20 +29,42 @@
     }
 
 
-    private void sizesInit(){
+    protected void sizesInit(){
         // i need to know the size of this layer input / matrix
         final Node.Relation[][] PREV_LYER_OUTPUT = super.inputs[0].getOutput();
         super.inputSizeY	= PREV_LYER_OUTPUT.length;
         super.inputSizeX	= PREV_LYER_OUTPUT[0].length;
 
         // calculating the kernel size
-        super.KERNEL_X		= super.inputSizeY * super.inputSizeX * super.inputs.length;
+        super.KERNEL_Y		= super.inputSizeY;
+        super.KERNEL_X		= super.inputSizeX;
 
         // i need to calculate how big will be this layer output / matrix
         super.outputSizeY	= 1;
         super.outputSizeX	= 1;
     }
 
+
+	/**
+	 * Samples Loader
+	 * @param SMAPLE
+	 * @throws Exception
+	 */
+	public void sampleLoader(final Sample SMAPLE) throws Exception{
+		if(!this.isFirstLayer) throw new Exception("SampleLoader() can only be used with the first layer");
+
+		for(int node=0; node < this.inputs.length; node++){
+			Node.Relation[][] OUTPUT = this.inputs[node].getOutput();
+			int sample1D_iterator = 0;
+
+			for(int out_y=0; out_y < OUTPUT.length; out_y++){
+				for(int out_x=0; out_x < OUTPUT[0].length; out_x++){
+					OUTPUT[out_y][out_x].setOutput(SMAPLE.getToken1D(sample1D_iterator++));
+				}
+			}
+		}
+	}
+/* 
     private void nodesInit(){
 
         final int CHANNELS = 1;
@@ -85,13 +108,13 @@
 
     private double calculateDerivative(final Node.Relation NODE_SINGLE_OUT){
         
-    }
+    } */
 
-    public void prevLayerPropagate(){
+    /* public void prevLayerPropagate(){
         if(super.isFirstLayer) return;
     }
 
-    public void updateWeights(){}
+    public void updateWeights(){} */
 
     // ------------------- getter methods ---------------------
 
