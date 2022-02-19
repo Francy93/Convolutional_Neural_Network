@@ -218,5 +218,40 @@ public class Node {
 	}
 
 
+	public void weightsUpdate(final int BATCH_SIZE, final double LEARNING_RATE){		
+		
+		// cycling over the all the kernel weights
+		for(int filter=0; filter < this.FILTER_AMOUNT; filter++){
+			for(int kernel_y=0; kernel_y < this.FILTER_Y; kernel_y++){
+				for(int kernel_x=0; kernel_x < this.FILTER_Y; kernel_x++){
+
+					// updating every single weight dividing it by the mini batch to find its average
+					this.KERNEL[filter][kernel_y][kernel_x] -=  LEARNING_RATE * (this.kernelGradients[filter][kernel_y][kernel_x] / BATCH_SIZE);
+
+				}
+			}
+		}
+
+		// resetting the gradinets storage
+		this.kernelGradients = new double[this.FILTER_AMOUNT][this.FILTER_Y][this.FILTER_X];
+	}
+
+	public void biasUpdate(final int BATCH_SIZE, final double LEARNING_RATE){		
+		
+
+		for(int bias_y=0; bias_y < this.BIAS.length; bias_y++){
+			for(int bias_x=0; bias_x <  this.BIAS[0].length; bias_x++){
+
+				// updating every single weight dividing it by the mini batch to find its average
+				this.BIAS[bias_y][bias_x] -=  LEARNING_RATE * (this.biasGradients[bias_y][bias_x] / BATCH_SIZE);
+
+			}
+		}
+
+		// resetting the gradinets storage
+		this.biasGradients = new double[this.BIAS.length][this.BIAS[0].length];
+	}
+
+
 
 }

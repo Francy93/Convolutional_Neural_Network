@@ -9,7 +9,7 @@ public abstract class Layer {
 	protected       	int			inputSizeX;
     protected 	final 	int			NODES_AMOUNT;
     protected 	final 	Activation	ACTIVATION;
-	protected	final	int     	KERNEL_Y;
+	protected			int     	KERNEL_Y;
 	protected			int     	KERNEL_X;
 	protected	Node.Relation[]		falt_output;
 	protected	Node.Relation[][][][] 	kernelRelations;
@@ -107,21 +107,6 @@ public abstract class Layer {
 		
 		public abstract double randomWeight(final Layer LAYER);
 
-
-		// static
-	/* 	private static void function_X(final Layer LAYER){}
-		private static void function_XP(final Layer LAYER, final double PARAM){}
-		private static void function_IND_ARR(final Layer LAYER){}
-
-		private static void derivative_X(final Layer LAYER){}
-		private static void derivative_F(final Layer LAYER){}
-		private static void derivative_XF(final Layer LAYER){}
-		private static void derivative_XP(final Layer LAYER, final double PARAM){}
-		private static void derivative_XPF(final Layer LAYER, final double PARAM){}
-		private static void derivative_IND_ARR(final Layer LAYER){}
-
-		private static double randomWeight_I(final Layer LAYER){}
-		private static double randomWeight_IO(final Layer LAYER){} */
 	}
 
 

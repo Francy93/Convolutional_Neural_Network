@@ -153,7 +153,22 @@ public class Conv2D extends Layer{
         return super.kernelRelations[FILTER][KERNEL_Y][KERNEL_X];
     } */
 
-    // --------------------- weigths init -------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -272,6 +287,30 @@ public class Conv2D extends Layer{
         return NODE_SINGLE_OUT.getDerivativeSum();
     }
 
+
+
+
+
+	 // --------------------- final update -------------------------
+
+	
+    public void updateWeights(final int BATCH_SIZE, final double LEARNING_RATE){
+        //w1 -= LEARNING_RATE * gradientsArray;
+
+		// cycling overall the nodes
+		for(int node=0; node < super.NODES_AMOUNT; node++){
+			final Node				NODE		= super.NODES[node];
+			final Node.Relation[][] NODE_OUTPUT	= NODE.getOutput();
+
+			NODE.weightsUpdate(BATCH_SIZE, LEARNING_RATE);
+			NODE.biasUpdate(BATCH_SIZE, LEARNING_RATE);
+
+		}
+    }
+
+
+}
+
 /*         public void calculateGradients(){
         // cycling overall the nodes
         for(int node=0; node < super.NODES_AMOUNT; node++){
@@ -341,14 +380,11 @@ public class Conv2D extends Layer{
             }
             
         }
-    } */
-
-    public void updateWeights(){ 
-        // feasible!
-    }
+    } 
 
     
 
 
 
 }
+*/
