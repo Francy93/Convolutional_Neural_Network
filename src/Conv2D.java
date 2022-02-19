@@ -343,7 +343,7 @@ public class Conv2D extends Layer{
         }
     } */
 
-    public void updateWeights(){
+    public void updateWeights(){ 
         // feasible!
     }
 
