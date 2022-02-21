@@ -199,11 +199,12 @@ public class Model {
 		//cicling over the dataset samples for "EPOCHS" times
 		for(int e=0; e < EPOCHS; e++){
 			this.trainData.shuffle();	// shuffeling the samples
-			
+			lib.Util.Loading bar = new lib.Util.Loading();
 			System.out.println("Epoch: "+e);
 
 			for(int sampleIndex=0; sampleIndex < DATA_SIZE; sampleIndex++){
 				this.sample = DATA.getSample(sampleIndex);
+				bar.loading(DATA_SIZE, sampleIndex);
 
 				feedForward();
 				backPropagate();

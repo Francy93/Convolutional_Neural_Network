@@ -1,5 +1,4 @@
 import java.io.FileNotFoundException;
-import lib.Loss;
 
 public class Ann{
     

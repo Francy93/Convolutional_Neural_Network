@@ -399,4 +399,65 @@ public class Util{
 			return ARRAY;
 		}
 	}
+
+	// loading bar class
+	public static class Loading {
+        
+        private short counter;
+
+        public Loading(){
+            counter = -1;
+        }
+    	/**
+         * loading bar
+         * @param size 
+         * @param index 
+         * @param barLength (facultative)
+         * @param updates (facultative)
+         * @return string 
+         */
+        public void loading(final long size, long index){ loading(size,index,(short)50,(short)100); }
+        public void loading(final long size, long index , short barLength){ loading(size,index,barLength,(short)100); }
+        public void loading(final long size, long index,  short barLength, short updates){
+
+            if (size > 0 && ++index <= size){
+                //bar standard parameters
+                /* barLength   = barLength > 0? barLength: 50;
+                updates     = updates > 0? updates: 100; */
+
+                //calculating loading bar
+                updates = updates > 99? 100: updates < 1? 0: updates;
+                final short barPercent   = (short)(index * updates / size);
+                final short tokens       = (short)((float)barLength / updates * barPercent);
+                
+                if(tokens != counter){
+                    // "counter" determines when to print the status bar
+                    counter = tokens;
+                    final short percent = (short)(index * 100 / size);
+                    String block = "█", dotted = "░";
+                    /*#if defined(_WIN32)
+                        block   = string(1,(char)219), dotted  = string(1,(char)176);
+                    #else
+                        block  = "█";
+						dotted = "░";
+                    //#endif*/
+                    
+                    if(percent < 100 && size > index){
+                        String statusFull = "", statusVoid = "", colors;
+                        for(long j=0;j<tokens;j++) statusFull += block;
+                        for(long j=0;j<barLength-(long)tokens;j++) statusVoid += dotted;
+                        if      (percent < 33)  colors = "red";
+                        else if (percent < 66)  colors = "yellow";
+                        else                    colors = "green";
+                        
+                        String outcome = color(colors)+statusFull+color("reset")+statusVoid+" "+color(colors)+percent+"%"+color("reset")+"\r";
+                        System.out.print( "\r" + outcome + "\r");
+                    }else {
+                        counter = -1;
+                        System.out.print( "\33[2K" + "\r");
+                    }
+                }
+            }
+        }
+    }
 }
