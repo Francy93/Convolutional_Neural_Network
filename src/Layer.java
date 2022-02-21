@@ -103,9 +103,7 @@ public abstract class Layer {
 
 		// abstract
 		public abstract void function(final Node.Relation REL, final Layer LAYER);
-
 		public abstract void derivative(final Node.Relation REL, final Layer LAYER);
-		
 		public abstract double randomWeight(final Layer LAYER);
 
 	}
@@ -167,8 +165,8 @@ public abstract class Layer {
 			// cycling over each channel / filter
 			for(int filter=0; filter < this.inputs.length; filter++){
 				// cycling over the filter weigths
-				for(int kernel_y=0; kernel_y < this.NODES_AMOUNT; kernel_y++){
-					for(int kernel_x=0; kernel_x < this.NODES_AMOUNT; kernel_x++){
+				for(int kernel_y=0; kernel_y < this.KERNEL_Y; kernel_y++){
+					for(int kernel_x=0; kernel_x < this.KERNEL_X; kernel_x++){
 						// setting the weigth
 						NODE.setWeight(filter, kernel_y, kernel_x, this.ACTIVATION.randomWeight(this));
 					}
@@ -446,6 +444,10 @@ public abstract class Layer {
 	// getting the whole nodes Array
 	public Node[] getNodes(){
 		return this.NODES;
+	}
+
+	public Node.Relation[] getFlatOutput(){
+		return this.falt_output;
 	}
 
 

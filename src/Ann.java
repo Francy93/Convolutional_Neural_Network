@@ -9,6 +9,8 @@ public class Ann{
 	private static final	double	LEARNING_RATE	= 0.01;
 	private static final	int		BATCH_SIZE		= 32;
 	private static final	int		EPOCHS			= 10;
+	private static final	String	TRAINING_FILE	= "cw2DataSet1.csv";
+	private static final	String	VALIDATE_FILE	= "cw2DataSet2.csv";
 
 
 
@@ -26,12 +28,12 @@ public class Ann{
 	// running the model
 	public static void runModel() throws FileNotFoundException {
 		try{
-			dataTrain = new DataSet("cw2DataSet1.csv", ",");
-			dataValid = new DataSet("cw2DataSet2.csv", ",");
+			dataTrain = new DataSet(TRAINING_FILE, ",");
+			dataValid = new DataSet(VALIDATE_FILE, ",");
 		}catch(Exception e){ throw new FileNotFoundException(); }
 
 
-		MODEL.buildStructure(dataTrain, Loss.CROSS_ENTROPY);
+		MODEL.buildStructure(dataTrain, Model.Loss.CROSS_ENTROPY);
 		MODEL.train(dataTrain, BATCH_SIZE, EPOCHS, LEARNING_RATE);
 		MODEL.validate(dataValid);
 		System.out.println("Accuracy: " + MODEL.getAccuracy() + "%");

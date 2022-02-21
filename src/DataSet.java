@@ -1,4 +1,5 @@
 import java.io.BufferedReader;
+//import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -21,6 +22,7 @@ public class DataSet {
 		catch(IOException e) { throw new FileNotFoundException(); }
 
 		CLASSES = labelClasses();
+		classesToSamples();
     }
 
 
@@ -35,13 +37,14 @@ public class DataSet {
 			BufferedReader scann = new BufferedReader(new FileReader(this.FILE_NAME));
 
 			for(String line = ""; (line = scann.readLine()) != null; line.trim()){
-				if(!line.matches("^\\s*([+-]?\\d+([.]\\d+)?\\s+){2}([+-]?\\d+([.]\\d+)?)\\s*$")) continue;
+				if(!line.matches("^(\\d|[,])*$")) continue;
 
 				try{ samples.add(new Sample(line, this.DELIMITER)); }
 				catch(Exception e) { }
 			}
 	
 			scann.close();
+			if(samples.size() < 1) throw new FileNotFoundException();
         }catch(IOException e){ throw new FileNotFoundException(); }
         
 		return samples.toArray(new Sample[0]);
@@ -60,6 +63,20 @@ public class DataSet {
 		for(final int CLASS: CLASSES_SET) classesArray[iterator++] = CLASS;
 
 		return classesArray;
+	}
+
+	private void classesToSamples(){
+		for(final Sample SAMPLE: this.SAMPLES){
+			// creating an array to store the class location
+			final double[] LABEL_LOCATION = new double[this.CLASSES.length];
+
+			for(int label=0; label < this.CLASSES.length; label++){
+				// setting the class location
+				LABEL_LOCATION[label] = SAMPLE.getLabel() == this.CLASSES[label]? 1: 0;
+			}
+			// storing the class location inton the sample
+			SAMPLE.setClassLocation(LABEL_LOCATION);
+		}
 	}
 
 

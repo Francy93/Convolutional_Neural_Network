@@ -11,8 +11,11 @@ public class Conv2D extends Layer{
 
 
 
-    
-    // hidden lyer initialiser
+
+	/**
+	 * Hidden lyer initialiser
+	 * @param INPUTS 
+	 */
     public void layerInit(final Node ... INPUTS){
         super.inputs = INPUTS;
 
@@ -24,7 +27,10 @@ public class Conv2D extends Layer{
         //super.outputInputRelationsInit();	// initialising this layer input and output relations
     }
 
-    // first layer initialiser
+    /**
+	 * First Convolutional layer initialiser
+	 * @param SAMPLE 
+	 */
     public void firstLayerInit(final Sample SAMPLE){
         final Node[] NODE	= {new Node(SAMPLE.getData2D())}; 
         super.isFirstLayer	= true;

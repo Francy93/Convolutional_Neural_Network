@@ -223,7 +223,7 @@ public class Node {
 		// cycling over the all the kernel weights
 		for(int filter=0; filter < this.FILTER_AMOUNT; filter++){
 			for(int kernel_y=0; kernel_y < this.FILTER_Y; kernel_y++){
-				for(int kernel_x=0; kernel_x < this.FILTER_Y; kernel_x++){
+				for(int kernel_x=0; kernel_x < this.FILTER_X; kernel_x++){
 
 					// updating every single weight dividing it by the mini batch to find its average
 					this.KERNEL[filter][kernel_y][kernel_x] -=  LEARNING_RATE * (this.kernelGradients[filter][kernel_y][kernel_x] / BATCH_SIZE);

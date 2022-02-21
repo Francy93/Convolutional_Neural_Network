@@ -1,7 +1,11 @@
 
  public class Dense extends Layer{
 
-
+	/**
+	 * Constructor method
+	 * @param NODES_AMOUNT
+	 * @param ACTIVATION
+	 */
     public Dense(final int NODES_AMOUNT, final Activation ACTIVATION){
         super(NODES_AMOUNT, ACTIVATION, 0, 0);
     }
@@ -9,7 +13,10 @@
 
 
     
-
+	/**
+	 * Hidden lyer initialiser
+	 * @param INPUTS 
+	 */
     public void layerInit(final Node ... INPUTS){
         super.inputs	= INPUTS;
 
@@ -20,7 +27,11 @@
         super.kernelRelationsInit();		// initialising this layer kernel relations
         //super.outputInputRelationsInit();	// initialising this layer input and output relations
     }
-    // first layer initialiser
+
+	/**
+	 * First Densenet layer initialiser
+	 * @param SAMPLE 
+	 */
     public void firstLayerInit(final Sample SAMPLE){
         final Node[] NODE	= {new Node(SAMPLE.getData1D())};
         super.isFirstLayer	= true;
@@ -35,7 +46,7 @@
         super.inputSizeY	= PREV_LYER_OUTPUT.length;
         super.inputSizeX	= PREV_LYER_OUTPUT[0].length;
 
-        // calculating the kernel size
+        // storing the kernel size
         super.KERNEL_Y		= super.inputSizeY;
         super.KERNEL_X		= super.inputSizeX;
 

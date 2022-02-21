@@ -3,9 +3,10 @@ import lib.Util;
 
 public class Sample {
 
-    private final double[]		TOKENS;		// array1D of sample data/input
-	private final double[][]	MATRIX;		// array2D of sample data/input
-    private final int			LABEL;		// class of sample
+    private final 	double[]	TOKENS;			// array1D of sample data/input
+	private final 	double[][]	MATRIX;			// array2D of sample data/input
+    private final 	int			LABEL;			// class of sample
+	private			double[]	labelLocation;	// to store the class location
 
 	/**
 	 * 
@@ -70,6 +71,17 @@ public class Sample {
 	}
 
 
+
+	// ..................setter method .................
+
+
+	public void setClassLocation(final double[] LABEL_LOCATION){
+		labelLocation = LABEL_LOCATION;
+	}
+
+
+
+
 	// ..................getters method .................
 
 	
@@ -91,5 +103,9 @@ public class Sample {
 
 	public double getToken2D(final int X, final int Y){
 		return this.MATRIX[X][Y];
+	}
+
+	public double[] getLabelLocation(){
+		return this.labelLocation;
 	}
 }
