@@ -5,12 +5,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Arrays;
 import lib.Util;
 
 public class DataSet {
 
     private final String	FILE_NAME;	// name of the file to be read
-    private final int[]		CLASSES;	// number of possible classifications
+    private final double[]	CLASSES;	// number of possible classifications
     private final Sample[]	SAMPLES;	// samples collection
 	private final String	DELIMITER;
 
@@ -23,6 +24,12 @@ public class DataSet {
 
 		CLASSES = labelClasses();
 		classesToSamples();
+		/* for(int i=0; i < this.SAMPLES.length; i++){
+			for(int i=0; i < this.SAMPLES.length; i++){
+				System.out.print(d + "digit	");
+			}
+		}
+		System.out.println(); */
     }
 
 
@@ -54,14 +61,15 @@ public class DataSet {
 	 * geting lable classes
 	 * @return label classes
 	 */
-	private int[] labelClasses(){
-		final HashSet<Integer> CLASSES_SET = new HashSet<>();
+	private double[] labelClasses(){
+		final HashSet<Double> CLASSES_SET = new HashSet<>();
 		for(final Sample SAMPLE: this.SAMPLES) CLASSES_SET.add(SAMPLE.getLabel());
 
-		int[] classesArray = new int[CLASSES_SET.size()];
+		double[] classesArray = new double[CLASSES_SET.size()];
 		int iterator = 0;
-		for(final int CLASS: CLASSES_SET) classesArray[iterator++] = CLASS;
+		for(final double CLASS: CLASSES_SET) classesArray[iterator++] = CLASS;
 
+		Arrays.sort(classesArray);
 		return classesArray;
 	}
 
@@ -72,9 +80,9 @@ public class DataSet {
 
 			for(int label=0; label < this.CLASSES.length; label++){
 				// setting the class location
-				LABEL_LOCATION[label] = SAMPLE.getLabel() == this.CLASSES[label]? 1: 0;
+				LABEL_LOCATION[label] = SAMPLE.getLabel() == this.CLASSES[label]? 1.0: 0.0;
 			}
-			// storing the class location inton the sample
+			// storing the class location into the sample
 			SAMPLE.setClassLocation(LABEL_LOCATION);
 		}
 	}
@@ -102,7 +110,7 @@ public class DataSet {
 
 	// ..................getters methods .................
 
-	public int[] getClasses(){
+	public double[] getClasses(){
 		return CLASSES;
 	}
 

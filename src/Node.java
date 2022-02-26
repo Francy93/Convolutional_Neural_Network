@@ -42,11 +42,12 @@ public class Node {
 
 		private final	int		INDEX_Y;
 		private final	int		INDEX_X;
-		private			double	linearOutput	= 0;	// to be resetted
-		private			double	output			= 0;
-		private			double	chainRuleSum	= 0;	// to be resetted
-		private			double	derivative		= 0;
-		private			double	derivativeSum	= 0;	// derivate * chainRuleSum
+		private			double	frontLinearOutput	= 0;	// to be resetted
+		private			double	backLinearOutput	= 0;	// to be resetted
+		private			double	output				= 0;
+		private			double	chainRuleSum		= 0;	// to be resetted
+		private			double	derivative			= 0;
+		private			double	derivativeSum		= 0;	// derivate * chainRuleSum
 
         public Relation(final int Y, final int X){
 			INDEX_Y = Y;
@@ -57,6 +58,8 @@ public class Node {
 
 		public void setOutput(final double ACTIVATED){
 			this.output = ACTIVATED;
+			this.backLinearOutput = this.frontLinearOutput;
+			this.frontLinearOutput = 0;
 		}
 		
 		public void addToChainRuleSum(final double CRS){
@@ -64,12 +67,12 @@ public class Node {
 		}
 
 		public void addToLinearOutput(final double ADD){
-			this.linearOutput += ADD;
+			this.frontLinearOutput += ADD;
 		}
 		
 		public void setDerivative(final double DERIV){
 			this.derivative = DERIV;
-			this.linearOutput = 0; // resetting the linearOutput attribute
+			this.backLinearOutput = 0; // resetting the linearOutput attribute
 		}
 		public void derivAndCRS_sum(){
 			this.derivativeSum = this.derivative * this.chainRuleSum;
@@ -88,8 +91,11 @@ public class Node {
 		public double getOutput(){
 			return this.output;
 		}
-		public double getLinearOutput(){
-			return this.linearOutput;
+		public double getBackLinearOutput(){
+			return this.backLinearOutput;
+		}
+		public double getFrontLinearOutput(){
+			return this.frontLinearOutput;
 		}
 		/* public double getChainRuleSum(){
 			return this.chainRuleSum;
@@ -103,13 +109,6 @@ public class Node {
 
     }
 
-	
-	/* private void biasGradientsInit(){
-		this.biasGradients		= new double[this.BIAS.length][this.BIAS[0].length];
-	} */
-	/* private void kernelGradientsInit(){
-        this.kernelGradients	= new double[FILTER_AMOUNT][FILTER_Y][FILTER_X];
-	} */
 
 	// fills the output with the values in "INPUT"
 	private void fillOutput(final double[] ... INPUT){
@@ -119,15 +118,6 @@ public class Node {
 			}
 		}
 	}
-
-	// fills the bias array with 0
-	/* private void fillBiasGradients(){
-		for(int y = 0; y < this.biasGradients.length; y++){
-			for(int x = 0; x < this.biasGradients[0].length; x++){
-				this.biasGradients[y][x] = 0;
-			}
-		}
-	} */
 
 	// make an output matrix made of relations
 	private Relation[][] outputInit(final int SIZE_Y, final int SIZE_X){
@@ -151,47 +141,14 @@ public class Node {
 	public void setWeight(final int FILTER, final int Y, final int X, final double WEIGHT){
 
 		KERNEL[FILTER][Y][X] = WEIGHT;
-		
-
-		/*for(int fa=0; fa < this.filterAmount; fa++){
-			for(int y=0; y < this.filterY; y++){
-				for(int x=0; x < this.filterX; x++){
-					this.gradients[fa][y][x] = Util.rangeRandom(0, 1);
-				}
-			}
-		} */
 	}
-
-	/* public void setRelation(final int Y, final int X, final Node NODE){
-		this.OUTPUT[Y][X].addRelation(NODE);
-	} */
 
 	public void addBiasGradients(final double GRADIENT, final int Y, final int X){
 		this.biasGradients[Y][X] += GRADIENT;
-
-		/* for(boolean exit = false, error = false; !exit; exit = error){
-			try{
-				this.biasGradients[Y][X] = GRADIENT;
-				exit = true;
-			}
-			catch(Exception e){
-				if(error)	throw new ArrayIndexOutOfBoundsException();
-				else		this.kernelGradientsInit(); 
-				
-				error = true;
-			}
-		} */
 	}
 
 	public void addToKernelGradients(final double GRADIENT, final int FILTER, final int Y, final int X){
 		this.kernelGradients[FILTER][Y][X] += GRADIENT;
-			/* try{
-				this.kernelGradients[FILTER][Y][X] = GRADIENT;
-			} */
-			/* catch(Exception e){
-				this.kernelGradientsInit(); 
-				this.kernelGradients[FILTER][Y][X] = GRADIENT;
-			} */
 	}
 
 
@@ -226,8 +183,8 @@ public class Node {
 				for(int kernel_x=0; kernel_x < this.FILTER_X; kernel_x++){
 
 					// updating every single weight dividing it by the mini batch to find its average
-					this.KERNEL[filter][kernel_y][kernel_x] -=  LEARNING_RATE * (this.kernelGradients[filter][kernel_y][kernel_x] / BATCH_SIZE);
-
+					this.KERNEL[filter][kernel_y][kernel_x] -=  LEARNING_RATE * (this.kernelGradients[filter][kernel_y][kernel_x] / ((double)BATCH_SIZE));
+					
 				}
 			}
 		}
@@ -243,7 +200,7 @@ public class Node {
 			for(int bias_x=0; bias_x <  this.BIAS[0].length; bias_x++){
 
 				// updating every single weight dividing it by the mini batch to find its average
-				this.BIAS[bias_y][bias_x] -=  LEARNING_RATE * (this.biasGradients[bias_y][bias_x] / BATCH_SIZE);
+				this.BIAS[bias_y][bias_x] -=  LEARNING_RATE * (this.biasGradients[bias_y][bias_x] / ((double)BATCH_SIZE));
 
 			}
 		}

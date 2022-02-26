@@ -7,7 +7,7 @@ public class Ann{
 	private static			DataSet dataValid;
 	private static final	double	LEARNING_RATE	= 0.01;
 	private static final	int		BATCH_SIZE		= 32;
-	private static final	int		EPOCHS			= 10;
+	private static final	int		EPOCHS			= 1;
 	private static final	String	TRAINING_FILE	= "cw2DataSet1.csv";
 	private static final	String	VALIDATE_FILE	= "cw2DataSet2.csv";
 
@@ -15,10 +15,12 @@ public class Ann{
 
 	// Model definition
 	private static final Model MODEL = Model.Sequential(
-		Layer.Conv2D(32, 3, 3,	Layer.Activation.RELU),
-		Layer.Conv2D(64, 3, 3,	Layer.Activation.RELU),
-		Layer.Dense(512,		Layer.Activation.RELU),
-		Layer.Dense(10 ,		Layer.Activation.SOFTMAX)
+		//Layer.Conv2D(32, 3, 3,	Layer.Activation.TANH),
+		//Layer.Conv2D(64, 3, 3,	Layer.Activation.TANH),
+		//Layer.Dense(512,		Layer.Activation.TANH),
+		Layer.Dense(256,		Layer.Activation.TANH),
+		Layer.Dense(128,		Layer.Activation.TANH),
+		Layer.Dense(10 ,	Layer.Activation.SOFTMAX)
     );
 
 

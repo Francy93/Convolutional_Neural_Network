@@ -42,13 +42,13 @@ public class Activation{
 		 * @param X intput
 		 * @return function
 		 */
-		public static double function(final double X){ return X < 0? 0: 1; }
+		public static double function(final double X){ return X < 0.0? 0.0: 1.0; }
 		/**
 		 * 
 		 * @param X input
 		 * @return derivative
 		 */
-		public static double derivative(final double X){ return X != 0? 0: 1; }
+		public static double derivative(final double X){ return X != 0.0? 0.0: 1.0; }
 		/**
 		* Xavier Weight initialization
 		* @param N_INPUTS umber of inputs of the current node
@@ -68,13 +68,13 @@ public class Activation{
 		 * @param X input
 		 * @return function
 		 */
-		public static double function(final double X){ return (1/(1 + Math.exp(-X))); }
+		public static double function(final double X){ return (1.0/(1.0 + Math.exp(-X))); }
 		/**
 		 * 
 		 * @param F output
 		 * @return derivative
 		 */
-		public static double derivative(final double F){ return F*(1-F); }
+		public static double derivative(final double F){ return F*(1.0-F); }
 
 		/**
 		 * Xavier Weight initialization
@@ -106,13 +106,14 @@ public class Activation{
 		 * @param X input
 		 * @return function
 		 */
-		public static double function(final double X){ return (2/(1 + Math.exp(-2*X))) -1; }
+		//public static double function(final double X){ return (2/(1 + Math.exp(-2.0*X))) -1.0; }
+		public static double function(final double X){ return Math.tanh(X); }
 		/**
 		 * 
 		 * @param F output
 		 * @return derivative
 		 */
-		public static double derivative(final double F){ return 1- Math.pow(F, 2); }
+		public static double derivative(final double F){ return 1.0 - Math.pow(F, 2.0); }
 
 		/**
 		 * Xavier Weight initialization
@@ -151,14 +152,14 @@ public class Activation{
 		 * @param F output
 		 * @return derivative
 		 */
-		public static double derivative(final double X, final double F){ return F + Sigmoid.function(X) * (1-F); }
+		public static double derivative(final double X, final double F){ return F + Sigmoid.function(X) * (1.0-F); }
 		/**
 		 * He Weight Initialization
 		 * @param N_INPUTS number of inputs of the current node
 		 * @return random double with a Gaussian probability
 		 */
 		public static double randomWeight(final int N_INPUTS){
-			return Math.random() * Math.sqrt(2.0 / N_INPUTS);
+			return Math.random() * Math.sqrt(2.0 / (double)N_INPUTS);
 		}
 	}
 
@@ -169,20 +170,20 @@ public class Activation{
 		 * @param X input
 		 * @return function
 		 */
-		public static double function(final double X){ return X < 0? 0: X; }
+		public static double function(final double X){ return X < 0.0? 0.0: X; }
 		/**
 		 * 
 		 * @param X input
 		 * @return derivative
 		 */
-		public static double derivative(final double X){ return X < 0? 0 : 1; }
+		public static double derivative(final double X){ return X < 0.0? 0.0 : 1.0; }
 		/**
 		 * He Weight Initialization
 		 * @param N_INPUTS number of inputs of the current node
 		 * @return random double with a Gaussian probability
 		 */
 		public static double randomWeight(final int N_INPUTS){
-			return Math.random() * Math.sqrt(2.0 / N_INPUTS);
+			return Math.random() * Math.sqrt(2.0 / (double)N_INPUTS);
 		}
 	}
 
@@ -206,7 +207,7 @@ public class Activation{
 		 * @return random double with a Gaussian probability
 		 */
 		public static double randomWeight(final int N_INPUTS){
-			return Math.random() * Math.sqrt(2.0 / N_INPUTS);
+			return Math.random() * Math.sqrt(2.0 / (double)N_INPUTS);
 		}
 	}
 
@@ -232,7 +233,7 @@ public class Activation{
 		 * @return random double with a Gaussian probability
 		 */
 		public static double randomWeight(final int N_INPUTS){
-			return Math.random() * Math.sqrt(2.0 / N_INPUTS);
+			return Math.random() * Math.sqrt(2.0 / (double)N_INPUTS);
 		}
 	}
 
@@ -245,7 +246,7 @@ public class Activation{
 		 * @return function
 		 */
 		public static double function(final double X){
-			return X < 0? LAMBDA * (ALPHA * (Math.exp(X) - 1)): LAMBDA * X;
+			return X < 0? LAMBDA * (ALPHA * (Math.exp(X) - 1.0)): LAMBDA * X;
 		}
 		/**
 		 * 
@@ -256,12 +257,12 @@ public class Activation{
 			return X < 0? LAMBDA * (ALPHA * Math.exp(X)): LAMBDA;
 		}
 		/**
-		 * He Weight Initialization
+		 * LecunNormal Weight Initialization
 		 * @param N_INPUTS number of inputs of the current node
 		 * @return random double with a Gaussian probability
 		 */
 		public static double randomWeight(final int N_INPUTS){
-			return Math.random() * Math.sqrt(2.0 / N_INPUTS);
+			return Math.random() * Math.sqrt(1.0 / (double)N_INPUTS);
 		}
 	}
 
@@ -273,21 +274,21 @@ public class Activation{
 		 * @param A parameter
 		 * @return function
 		 */
-		public static double function(final double X, final double A){ return X < 0? A*X: X; }
+		public static double function(final double X, final double A){ return X < 0.0? A*X: X; }
 		/**
 		 * 
 		 * @param X input
 		 * @param A parameter
 		 * @return derivative
 		 */
-		public static double derivative(final double X, final double A){ return X < 0? A: 1; }
+		public static double derivative(final double X, final double A){ return X < 0.0? A: 1.0; }
 		/**
 		 * He Weight Initialization
 		 * @param N_INPUTS number of inputs of the current node
 		 * @return random double with a Gaussian probability
 		 */
 		public static double randomWeight(final int N_INPUTS){
-			return Math.random() * Math.sqrt(2.0 / N_INPUTS);
+			return Math.random() * Math.sqrt(2.0 / (double)N_INPUTS);
 		}
 	}
 
@@ -300,7 +301,7 @@ public class Activation{
 		 * @param A parameter
 		 * @return function
 		 */
-		public static double function(final double X, final double A){ return X < 0? A*(Math.exp(X)-1): X; }
+		public static double function(final double X, final double A){ return X < 0.0? A*(Math.exp(X)-1.0): X; }
 		/**
 		 * 
 		 * @param X input
@@ -308,14 +309,14 @@ public class Activation{
 		 * @param F output
 		 * @return derivative
 		 */
-		public static double derivative(final double X, final double A, final double F){ return X < 0? F+A: 1; }
+		public static double derivative(final double X, final double A, final double F){ return X < 0.0? F+A: 1.0; }
 		/**
 		 * He Weight Initialization
 		 * @param N_INPUTS number of inputs of the current node
 		 * @return random double with a Gaussian probability
 		 */
 		public static double randomWeight(final int N_INPUTS){
-			return Math.random() * Math.sqrt(2.0 / N_INPUTS);
+			return Math.random() * Math.sqrt(2.0 / (double)N_INPUTS);
 		}
 	}
 
@@ -326,20 +327,20 @@ public class Activation{
 		 * @param X input
 		 * @return function
 		 */
-		public static double function(final double X){ return Math.log(Math.exp(X) + 1); }
+		public static double function(final double X){ return Math.log(Math.exp(X) + 1.0); }
 		/**
 		 * 
 		 * @param X input
 		 * @return derivative
 		 */
-		public static double derivative(final double X){ return 1 / (1 + Math.exp(-X)); }
+		public static double derivative(final double X){ return 1.0 / (1.0 + Math.exp(-X)); }
 		/**
 		 * He Weight Initialization
 		 * @param N_INPUTS number of inputs of the current node
 		 * @return random double with a Gaussian probability
 		 */
 		public static double randomWeight(final int N_INPUTS){
-			return Math.random() * Math.sqrt(2.0 / N_INPUTS);
+			return Math.random() * Math.sqrt(2.0 / (double)N_INPUTS);
 		}
 	}
 
@@ -372,18 +373,31 @@ public class Activation{
 			final double F = F_CLASSES[I];
 
 			for(int index = 0 ; index < F_CLASSES.length; index++){
-				sum += I == index? F * (1 - F): -F_CLASSES[index] * F;
+				sum += I == index? F * (1.0 - F): -F_CLASSES[index] * F;
 			}
 
 			return sum;
 		}
 		/**
-		 * He Weight Initialization
-		 * @param N_INPUTS number of inputs of the current node
-		 * @return random double with a Gaussian probability
+		 * Xavier Weight initialization
+		 * @param N_INPUTS umber of inputs of the current node
+		 * @return	Random double with a uniform probability distribution
 		 */
 		public static double randomWeight(final int N_INPUTS){
-			return Math.random() * Math.sqrt(2.0 / N_INPUTS);
+			final double LOWER = -  (1.0 / Math.sqrt(N_INPUTS));
+			final double UPPER =    (1.0 / Math.sqrt(N_INPUTS));
+			return LOWER + Math.random() * (UPPER - LOWER);
+		}
+		/**
+		 * Normalized Xavier Weight initialization
+		 * @param N_INPUTS number of inputs of the current node
+		 * @param N_OUPUTS number of output of the current node
+		 * @return Random double with a uniform probability distribution
+		 */
+		public static double randomWeight(final int N_INPUTS, final int N_OUPUTS){
+			final double LOWER = -  (6.0 / Math.sqrt(N_INPUTS + N_OUPUTS));
+			final double UPPER =    (6.0 / Math.sqrt(N_INPUTS + N_OUPUTS));
+			return LOWER + Math.random() * (UPPER - LOWER);
 		}
 	}
   
@@ -406,6 +420,6 @@ public class Activation{
 											t * ( 1.48851587 + 
 											t * (-0.82215223 + 
 											t * ( 0.17087277))))))))));
-		return z >= 0? ans: -ans;
+		return z >= 0.0? ans: -ans;
   }
 }

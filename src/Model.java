@@ -19,8 +19,22 @@ public class Model {
 				final double[] LABEL_LOCATION = SAMPLE.getLabelLocation();
 
 				for(int val=0; val < OUTPUT_VALUES.length; val++){
-					setIntoNode(lib.Loss.MSE.derivative(OUTPUT_VALUES[val], LABEL_LOCATION[val]), FLAT_OUTPUT[val]);
+					/* if(val == 1 || val == 2 || val == 3 || val == 4 || val == 5 || val == 6 || val == 7 || val == 8 || val == 9);
+					else  */setIntoNode(lib.Loss.MSE.derivative(OUTPUT_VALUES[val], LABEL_LOCATION[val]) / FLAT_OUTPUT.length, FLAT_OUTPUT[val]);
 				}
+
+				/* int val = 6;
+				if(SAMPLE.getLabel() == val){
+					
+					for(int classs=0; classs < FLAT_OUTPUT.length; classs++){
+						String str = "";
+						if(val == classs) str = lib.Util.color("yellow");
+						str +="C" + classs + " = " + lib.Util.round(FLAT_OUTPUT[classs].getOutput(), 5) + "	";
+						if(val == classs) str += lib.Util.color("reset");
+						System.out.print(str);
+					}
+					System.out.println();
+				} */
 			}
 		},
 		MAE{
@@ -37,12 +51,35 @@ public class Model {
 		CROSS_ENTROPY{
 			public void derivative(final Layer LAYER, final Sample SAMPLE){
 				Node.Relation[] FLAT_OUTPUT = LAYER.getFlatOutput();
-				final double[] OUTPUT_VALUES = getOutputValues(FLAT_OUTPUT);
+				//final double[] OUTPUT_VALUES = getOutputValues(FLAT_OUTPUT);
 				final double[] LABEL_LOCATION = SAMPLE.getLabelLocation();
 
-				for(int val=0; val < OUTPUT_VALUES.length; val++){
-					setIntoNode(lib.Loss.Cross_Entropy.derivative(OUTPUT_VALUES[val], LABEL_LOCATION[val]), FLAT_OUTPUT[val]);
+				//double meanError = 0;
+				for(int classs=0; classs < FLAT_OUTPUT.length; classs++){
+					setIntoNode(lib.Loss.Cross_Entropy.derivative(FLAT_OUTPUT[classs].getOutput(), LABEL_LOCATION[classs]), FLAT_OUTPUT[classs]);
+					//setIntoNode(lib.Loss.Cross_Entropy.derivative(lib.Loss.Cross_Entropy.function(FLAT_OUTPUT[classs].getOutput(), LABEL_LOCATION[classs]), LABEL_LOCATION[classs]));
+					//meanError += lib.Loss.Cross_Entropy.function(FLAT_OUTPUT[classs].getOutput(), LABEL_LOCATION[classs]);
+					//System.out.print( lib.Util.round(FLAT_OUTPUT[classs].getBackLinearOutput(), 5) + "	" );
 				}
+				//System.out.println(meanError/FLAT_OUTPUT.length);
+				//System.out.println();
+				/* int val = 4;
+				if(SAMPLE.getLabel() == val){
+					
+					for(int classs=0; classs < FLAT_OUTPUT.length; classs++){
+						String str = "";
+						if(val == classs) str = lib.Util.color("yellow");
+						str +="C" + classs + " = " + lib.Util.round(FLAT_OUTPUT[classs].getBackLinearOutput(), 5) + "	";
+						//str +="C" + classs + " = " + lib.Util.round(lib.Loss.Cross_Entropy.function(FLAT_OUTPUT[classs].getOutput(), LABEL_LOCATION[classs]), 5) + "	";
+						if(val == classs) str += lib.Util.color("reset");
+						System.out.print(str);
+					}
+					System.out.println();
+					//System.out.print("C: " + classs + "	" + lib.Util.round(lib.Loss.Cross_Entropy.function(FLAT_OUTPUT[classs].getOutput(), LABEL_LOCATION[classs]), 5) + "	");
+					//System.out.println(lib.Loss.Cross_Entropy.function(FLAT_OUTPUT[val].getOutput(), LABEL_LOCATION[val]));
+					//System.out.println(lib.Loss.Cross_Entropy.derivative(lib.Loss.Cross_Entropy.function(FLAT_OUTPUT[val].getOutput(), LABEL_LOCATION[val]), LABEL_LOCATION[val]) + " <--	predicted | target	--> " + LABEL_LOCATION[val]);
+					//System.out.println(lib.Loss.Cross_Entropy.derivative(FLAT_OUTPUT[5].getOutput(), LABEL_LOCATION[5]));
+				} */
 			}
 		},
 		HUBER{
@@ -133,8 +170,9 @@ public class Model {
 	public void buildStructure(final DataSet DATA, final Loss L){
 		this.loss = L;
 
-		this.LAYERS[0].firstLayerInit(DATA.getSample(0));	// initialising the input layer
-		Layer prevLayer = this.LAYERS[0];					// previous layer
+		Layer prevLayer = this.LAYERS[0];				// previous layer
+		prevLayer.firstLayerInit(DATA.getSample(0));	// initialising the input layer
+							
 
 		for(int i=1; i < this.LAYERS.length; i++){
 			this.LAYERS[i].layerInit(prevLayer.getNodes());
@@ -152,7 +190,7 @@ public class Model {
 	private void feedForward(){
 		// loading the sample
 		try{ this.LAYERS[0].sampleLoader(this.sample); }
-		catch(Exception e){ System.out.println("Sample loaded into the wrong layer"); }
+		catch(Exception e){ System.err.println("Sample loaded into the wrong layer"); }
 
 
 		for(final Layer LAYER: this.LAYERS) LAYER.feedForward();
@@ -162,11 +200,10 @@ public class Model {
 
 
 
-
 	// Performing the back propagation to every layer
 	private void backPropagate(){
 		this.loss.derivative(LAYERS[this.LAYERS.length-1], this.sample);
-		for(int layer = this.LAYERS.length-1; layer > 0; layer--) this.LAYERS[layer].backPropagating();
+		for(int layer = this.LAYERS.length-1; layer >= 0; layer--) this.LAYERS[layer].backPropagating();
 	}
 
 
@@ -176,7 +213,6 @@ public class Model {
 	private void weightsUpdate(){
 		for(final Layer LAYER: this.LAYERS) LAYER.updateWeights(this.miniBatch, this.learningRate);
 	}
-
 
 
 
@@ -193,7 +229,7 @@ public class Model {
 		this.miniBatch		= BATCH;
 		this.learningRate	= LEARNING_RATE;
 
-		int miniBatch = 0;
+		int batch = 0;
 		final int DATA_SIZE = this.trainData.getSize();
 		
 		//cicling over the dataset samples for "EPOCHS" times
@@ -210,9 +246,9 @@ public class Model {
 				backPropagate();
 
 				// updating weights after a certain amount of samples (mini batch)
-				if(++miniBatch == BATCH || sampleIndex == DATA_SIZE-1){
+				if(++batch >= BATCH || sampleIndex >= DATA_SIZE-1){
 					weightsUpdate();
-					miniBatch = 0;
+					batch = 0;
 				}
 			}
 		}
@@ -225,13 +261,14 @@ public class Model {
 	 */
     public double validate(final DataSet DATA){
 		this.validateData = DATA;
+		this.validateData.shuffle();
 		int correct = 0;
 
 		for(int sampleIndex=0; sampleIndex < this.validateData.getSize(); sampleIndex++){
-			this.sample = DATA.getSample(sampleIndex);
+			this.sample = this.validateData.getSample(sampleIndex);
 
 			feedForward();
-			correct += accuracyCheck()? 1: 0;
+			correct += accuracyCheck(this.validateData)? 1: 0;
 		}
 
 		// storing the accuracy percentage
@@ -247,9 +284,11 @@ public class Model {
 
 
 	// checking this sample prediction correctness
-	private boolean accuracyCheck(){
+	private boolean accuracyCheck(final DataSet DATA){
 		
 		Node.Relation[] NODES = this.LAYERS[this.LAYERS.length-1].getFlatOutput();
+
+
 
 		int answerIndex		= 0;
 		double valHolder	= 0; 
@@ -260,8 +299,17 @@ public class Model {
 			}
 		}
 		
+		String str = "";
+		
+		if(DATA.getClasses()[answerIndex] == this.sample.getLabel()) str = lib.Util.color("green");
+		else str = lib.Util.color("red");
+
+		str += "Predicted: " + DATA.getClasses()[answerIndex] + "	Target: " + this.sample.getLabel();
+		System.out.println(str + lib.Util.color("reset"));
 		// checking if the prediction matches the actual label
 		return this.sample.getLabelLocation()[answerIndex] == 1;
+		
+		//return DATA.getClasses()[answerIndex] == 0;
 	}
 
 }

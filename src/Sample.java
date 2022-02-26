@@ -5,7 +5,7 @@ public class Sample {
 
     private final 	double[]	TOKENS;			// array1D of sample data/input
 	private final 	double[][]	MATRIX;			// array2D of sample data/input
-    private final 	int			LABEL;			// class of sample
+    private final 	double		LABEL;			// class of sample
 	private			double[]	labelLocation;	// to store the class location
 
 	/**
@@ -48,13 +48,13 @@ public class Sample {
 		final double[]	TKS			= new double[TK_LENGTH];
 
 		// getting just pixel data except the label data
-		for(int i=0; i < TK_LENGTH; i++) TKS[i] = array[1];
+		for(int i=0; i < TK_LENGTH; i++) TKS[i] = array[i];
 
 		return TKS;
     }
 
-    private int labelFilter(double[] array){
-		return (int)array[array.length - 1];
+    private double labelFilter(double[] array){
+		return array[array.length - 1];
     }
 
 	private double[][] matrixInit(){
@@ -85,7 +85,7 @@ public class Sample {
 	// ..................getters method .................
 
 	
-	public int getLabel(){
+	public double getLabel(){
 		return this.LABEL;
 	}
 
