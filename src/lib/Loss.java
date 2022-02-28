@@ -14,7 +14,7 @@ public class Loss {
 		 * @return double
 		 */
         public static double function(final double[] classes_pred, final double[] classes_act){
-            double sum =0.0;
+            double sum = 0.0;
 
         	for(int index = 0 ; index < classes_pred.length; index++){
 				sum += Math.pow((classes_pred[index] - classes_act[index]), 2.0);
@@ -27,7 +27,7 @@ public class Loss {
          * @param T actual target
 		 * @return
 		 */
-        public static double derivative(final double F, final double T){ return 2.0*(F - T); }
+        public static double derivative(final double F, final double T){ return 2.0 * (F - T); }
     }
     
     public static class MAE{
@@ -64,12 +64,9 @@ public class Loss {
          * @param T the output (target) which should have been predicted
 		 * @return function
 		 */
-        /* public static double function(final double y_hat, final double T){  
-            return - (T * Math.log(y_hat));
-        } */
         public static double function(final double y_hat, final double T){  
-            if(T == 1.0) return -(Math.log(y_hat));
-            else       return -(Math.log(1.0 - y_hat));
+            if(T == 1.0)	return -(Math.log(y_hat));
+            else			return -(Math.log(1.0 - y_hat));
         }
         /**
          * Cross Entropy derivative
@@ -77,7 +74,6 @@ public class Loss {
          * @param T target value
          * @return derivative
          */
-        //public static double derivative(final double PREV_Y, final double T){ return T * (PREV_Y - 1.0); }
         public static double derivative(final double PREV_Y, final double T){ return PREV_Y - T; }
     }
 

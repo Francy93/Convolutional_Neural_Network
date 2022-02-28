@@ -13,8 +13,14 @@ public class DataSet {
     private final String	FILE_NAME;	// name of the file to be read
     private final double[]	CLASSES;	// number of possible classifications
     private final Sample[]	SAMPLES;	// samples collection
-	private final String	DELIMITER;
+	private final String	DELIMITER;	// string file delimiter
 
+	/**
+	 * 
+	 * @param F_N File name
+	 * @param D Data Delimiter
+	 * @throws FileNotFoundException
+	 */
     public DataSet(final String F_N, final String D) throws FileNotFoundException{
         FILE_NAME = F_N;
 		DELIMITER = D;
@@ -24,12 +30,6 @@ public class DataSet {
 
 		CLASSES = labelClasses();
 		classesToSamples();
-		/* for(int i=0; i < this.SAMPLES.length; i++){
-			for(int i=0; i < this.SAMPLES.length; i++){
-				System.out.print(d + "digit	");
-			}
-		}
-		System.out.println(); */
     }
 
 

@@ -14,11 +14,10 @@ public abstract class Layer {
 	protected			int     	KERNEL_X;
 	private	Node.Relation[]			falt_output;
 	private	Node.Relation[][][][] 	kernelRelations;
-	//private	Node.Relation[][][] 	outputInputRelations;
 
 	public static enum Activation{
 		LINEAR{
-			public void function(final Node.Relation REL, final Layer LAYER){ REL.setOutput(lib.Activation.Linear.function(REL.getFrontLinearOutput(), 0)); }
+			public void function(final Node.Relation REL, final Layer LAYER){ REL.setOutput(lib.Activation.Linear.function(REL.getFrontLinearOutput(), 1)); }
 			public void derivative(final Node.Relation REL, final Layer LAYER){ REL.setDerivative(lib.Activation.Linear.derivative(REL.getBackLinearOutput(), REL.getOutput())); }
 			public double randomWeight(final Layer LAYER){ return lib.Activation.Linear.randomWeight(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
 		}, 
@@ -42,6 +41,11 @@ public abstract class Layer {
 			public void derivative(final Node.Relation REL, final Layer LAYER){ REL.setDerivative(lib.Activation.Swish.derivative(REL.getBackLinearOutput(), REL.getOutput())); }
 			public double randomWeight(final Layer LAYER){ return lib.Activation.Swish.randomWeight(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
 		},
+		MISH{
+			public void function(final Node.Relation REL, final Layer LAYER){ REL.setOutput(lib.Activation.Mish.function(REL.getFrontLinearOutput())); }
+			public void derivative(final Node.Relation REL, final Layer LAYER){ REL.setDerivative(lib.Activation.Mish.derivative(REL.getBackLinearOutput())); }
+			public double randomWeight(final Layer LAYER){ return lib.Activation.Mish.randomWeight(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
+		},
 		RELU{
 			public void function(final Node.Relation REL, final Layer LAYER){ REL.setOutput(lib.Activation.Relu.function(REL.getFrontLinearOutput())); }
 			public void derivative(final Node.Relation REL, final Layer LAYER){ REL.setDerivative(lib.Activation.Relu.derivative(REL.getBackLinearOutput())); }
@@ -63,13 +67,13 @@ public abstract class Layer {
 			public double randomWeight(final Layer LAYER){ return lib.Activation.Selu.randomWeight(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
 		},
 		PRELU{
-			public void function(final Node.Relation REL, final Layer LAYER){ REL.setOutput(lib.Activation.Prelu.function(REL.getFrontLinearOutput(), 0)); }
-			public void derivative(final Node.Relation REL, final Layer LAYER){ REL.setDerivative(lib.Activation.Prelu.derivative(REL.getBackLinearOutput(), 0)); }
+			public void function(final Node.Relation REL, final Layer LAYER){ REL.setOutput(lib.Activation.Prelu.function(REL.getFrontLinearOutput(), 1)); }
+			public void derivative(final Node.Relation REL, final Layer LAYER){ REL.setDerivative(lib.Activation.Prelu.derivative(REL.getBackLinearOutput(), 1)); }
 			public double randomWeight(final Layer LAYER){ return lib.Activation.Prelu.randomWeight(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
 		},
 		ELU{
-			public void function(final Node.Relation REL, final Layer LAYER){ REL.setOutput(lib.Activation.Elu.function(REL.getFrontLinearOutput(), 0)); }
-			public void derivative(final Node.Relation REL, final Layer LAYER){ REL.setDerivative(lib.Activation.Elu.derivative(REL.getBackLinearOutput(), 0, REL.getOutput())); }
+			public void function(final Node.Relation REL, final Layer LAYER){ REL.setOutput(lib.Activation.Elu.function(REL.getFrontLinearOutput(), 1)); }
+			public void derivative(final Node.Relation REL, final Layer LAYER){ REL.setDerivative(lib.Activation.Elu.derivative(REL.getBackLinearOutput(), 1, REL.getOutput())); }
 			public double randomWeight(final Layer LAYER){ return lib.Activation.Elu.randomWeight(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
 		},
 		SOFTPLUS{
@@ -83,7 +87,7 @@ public abstract class Layer {
 				double biggestValue = LAYER.falt_output[0].getFrontLinearOutput(); 
 
 				for(int index = 0 ; index < LAYER.falt_output.length; index++){
-					if(biggestValue < LAYER.falt_output[index].getFrontLinearOutput()) biggestValue = LAYER.falt_output[index].getFrontLinearOutput();
+					biggestValue = Math.max(LAYER.falt_output[index].getFrontLinearOutput(), biggestValue);
 				}
 
 				final double L_O = Math.exp(REL.getFrontLinearOutput() - biggestValue); // getting linear output
@@ -94,16 +98,7 @@ public abstract class Layer {
 
 				REL.setOutput(L_O/sum);
 			}
-			public void derivative(final Node.Relation REL, final Layer LAYER){ 
-				/* double sum = 0;
-				final double N_L_O =  REL.getOutput(); // getting non linear output
-
-				for(int index = 0 ; index < LAYER.falt_output.length; index++){
-					sum += REL == LAYER.falt_output[index]? N_L_O * (1.0 - N_L_O): -LAYER.falt_output[index].getOutput() * N_L_O;
-				} */
-
-				REL.setDerivative(1.0);
-			}
+			public void derivative(final Node.Relation REL, final Layer LAYER){ REL.setDerivative(1.0); }
 			public double randomWeight(final Layer LAYER){ return lib.Activation.Softmax.randomWeight(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
 		};
 
@@ -117,7 +112,7 @@ public abstract class Layer {
 
 
 	/**
-	 * Constructor
+	 * General onstructor for both Conv2D and Dense
 	 * @param N NODES_AMOUNT
 	 * @param A ACTIVATION
 	 * @param KY KERNEL_Y
@@ -136,11 +131,23 @@ public abstract class Layer {
 
     // static constructors
 
-
+	/**
+	 * Conv2D constructor
+	 * @param NODES_AMOUNT Quantity of this layer nodes
+	 * @param KY Kernel Y size
+	 * @param KX Kernel X size
+	 * @param ACTIVATION Activation function
+	 * @return Layer object
+	 */
 	public static Conv2D Conv2D(final int NODES_AMOUNT, final int KY, final int KX, final Activation ACTIVATION){
 		return new Conv2D(NODES_AMOUNT, KY, KX, ACTIVATION);
 	}
-
+	/**
+	 * Dense constructor
+	 * @param NODES_AMOUNT Quantity of this layer nodes
+	 * @param ACTIVATION Activation function
+	 * @return Layer object
+	 */
 	public static Dense Dense(final int NODES_AMOUNT, final Activation ACTIVATION){
 		return new Dense(NODES_AMOUNT, ACTIVATION);
 	}
@@ -174,13 +181,13 @@ public abstract class Layer {
 		for(int node=0; node < this.NODES_AMOUNT; node++){
 			final Node NODE = this.NODES[node];
 
-			// cycling over each channel / filter
-			for(int filter=0; filter < this.inputs.length; filter++){
-				// cycling over the filter weigths
+			// cycling over each channel / channel
+			for(int channel=0; channel < this.inputs.length; channel++){
+				// cycling over the channel weigths
 				for(int kernel_y=0; kernel_y < this.KERNEL_Y; kernel_y++){
 					for(int kernel_x=0; kernel_x < this.KERNEL_X; kernel_x++){
 						// setting the weigth
-						NODE.setWeight(filter, kernel_y, kernel_x, this.ACTIVATION.randomWeight(this));
+						NODE.setWeight(channel, kernel_y, kernel_x, this.ACTIVATION.randomWeight(this));
 					}
 				}
 			}
@@ -221,9 +228,9 @@ public abstract class Layer {
         final int RIGHT_IMAGE_X = IMAGE_X>= 0? IMAGE_X + 1: 1;
 
 
-        // cycling over the filters
-        for(int filter=0; filter < this.inputs.length; filter++){
-            final Node.Relation[][] INPUT_NODE = this.inputs[filter].getOutput();
+        // cycling over the channels
+        for(int channel=0; channel < this.inputs.length; channel++){
+            final Node.Relation[][] INPUT_NODE = this.inputs[channel].getOutput();
             int relation = 0;
 
             // cycling over the input image pixels
@@ -235,7 +242,7 @@ public abstract class Layer {
                         for(int kernel_X=0; kernel_X < this.KERNEL_X; kernel_X++){
 
                             try{	// storing the relations between weigths and inputs
-                                this.kernelRelations[filter][kernel_y][kernel_X][relation] = INPUT_NODE[image_y+kernel_y][image_x+kernel_X];
+                                this.kernelRelations[channel][kernel_y][kernel_X][relation] = INPUT_NODE[image_y+kernel_y][image_x+kernel_X];
                             }catch(Exception e){}
                         }
 
@@ -245,35 +252,6 @@ public abstract class Layer {
             }
         }
     }
-
-    /* protected void outputInputRelationsInit(){
-        // getting the relations amount of a each output pixel
-        final int RELATIONS_AMOUNT = this.KERNEL_Y * this.KERNEL_X * this.kernelRelations.length;
-        this.outputInputRelations = new Node.Relation[this.outputSizeY][this.outputSizeX][RELATIONS_AMOUNT];
-
-        int stride = 0;
-        // cycling over the output matrix 
-        for(int y=0; y < this.outputSizeY; y++){
-            for(int x=0; x < this.outputSizeX; x++){
-                int filterIndex = 0;	// counting the filter index
-                
-                // cycling over all the filters
-                for(int filter=0; filter < this.kernelRelations.length; filter++){
-
-                    // cycling over the relation set of each filter weigth
-                    for(int kernel_y=0; kernel_y < this.kernelRelations[filter].length; kernel_y++){
-                        for(int kernel_x=0; kernel_x < this.kernelRelations[filter][0].length; kernel_x++){
-
-                            // storing the relation between input and output (patch) of every weight
-                            this.outputInputRelations[y][x][filterIndex++] = this.kernelRelations[filter][kernel_y][kernel_x][stride];
-                        }
-                    }
-                }
-                stride++;				// Stride counter. Moving by 1 kernel sliding (next filter-inputImage relation)
-            }
-        }
-    } */
-	
 
 
 
@@ -310,18 +288,18 @@ public abstract class Layer {
 			 for(int map_y=0; map_y < this.outputSizeY; map_y++){
                 for(int map_x=0; map_x < this.outputSizeX; map_x++){
 					// getting the output of this activation map index
-					Node.Relation SINGLE_OUTPUT = NODE.getOutput()[map_y][map_x];
+					final Node.Relation SINGLE_OUTPUT = NODE.getOutput()[map_y][map_x];
                    
                     // cycling over the all the kernel weights
-                    for(int filter=0; filter < this.inputs.length; filter++){
+                    for(int channel=0; channel < this.inputs.length; channel++){
 
-						// cycling over this entire filter
+						// cycling over this entire channel
                         for(int kernel_y=0; kernel_y < this.KERNEL_Y; kernel_y++){
                             for(int kernel_x=0; kernel_x < this.KERNEL_X; kernel_x++){
 
 								try{	// summing the input times the weight
 									SINGLE_OUTPUT.addToLinearOutput(
-										NODE.getWeight(filter, kernel_y, kernel_x) * this.kernelRelations[filter][kernel_y][kernel_x][strideCounter].getOutput()
+										NODE.getWeight(channel, kernel_y, kernel_x) * this.kernelRelations[channel][kernel_y][kernel_x][strideCounter].getOutput()
 									);
 								} catch(NullPointerException e){}
                             }
@@ -334,9 +312,7 @@ public abstract class Layer {
                     strideCounter++;
                 }
             }
-			//if(this.NODES.length == 10) System.out.print(NODE.getOutput()[0][0].getBackLinearOutput() + "	");
 		}
-		//if(this.NODES.length == 10) System.out.println();
     }
 
 
@@ -349,9 +325,9 @@ public abstract class Layer {
     public void backPropagating(){
         // cycling overall the nodes
         for(int node=0; node < this.NODES_AMOUNT; node++){
-            final Node				NODE		= this.NODES[node];
-            final Node.Relation[][] NODE_OUTPUT	= NODE.getOutput();
-            int strideCounter = 0;
+            final Node				NODE			= this.NODES[node];
+            final Node.Relation[][] NODE_OUTPUT		= NODE.getOutput();
+            int						strideCounter	= 0;
 
             // cycling over all the "pixels" of the output matrix
             for(int map_y=0; map_y < this.outputSizeY; map_y++){
@@ -363,12 +339,12 @@ public abstract class Layer {
                     NODE.addBiasGradients(DERIV_SUM, map_y, map_x);
 
                     // cycling over the all the kernel weights
-                    for(int filter=0; filter < this.inputs.length; filter++){
+                    for(int channel=0; channel < this.inputs.length; channel++){
                         for(int kernel_y=0; kernel_y < this.KERNEL_Y; kernel_y++){
                             for(int kernel_x=0; kernel_x < this.KERNEL_X; kernel_x++){
 
 								// performing the chain runle operations
-                                this.gradientAndPropagate(NODE, DERIV_SUM, filter, kernel_y, kernel_x, strideCounter);
+                                this.gradientAndPropagate(NODE, DERIV_SUM, channel, kernel_y, kernel_x, strideCounter);
                                                             
                             }
                         }
@@ -381,22 +357,22 @@ public abstract class Layer {
 
 	/**
 	 * main chain runle operations
-	 * @param NODE
-	 * @param DERIV_SUM
-	 * @param FILTER
-	 * @param KERNEL_Y
-	 * @param KERNEL_X
-	 * @param STRIDE
+	 * @param NODE Current node to be processed
+	 * @param DERIV_SUM Sum of current activation map derivative
+	 * @param CHANNEL Current channel to be processed
+	 * @param KERNEL_Y Kenrel y position
+	 * @param KERNEL_X kernel x position
+	 * @param STRIDE Kernel movement
 	 */
-    private void gradientAndPropagate(final Node NODE, final double DERIV_SUM, final int FILTER, final int KERNEL_Y, final int KERNEL_X, final int STRIDE){
+    private void gradientAndPropagate(final Node NODE, final double DERIV_SUM, final int CHANNEL, final int KERNEL_Y, final int KERNEL_X, final int STRIDE){
         try{
             // --------- GRADIENT DISCENT OPERATION
 
             // storing the gradient into this layer node
             NODE.addToKernelGradients(
                 // summing this output pixel derivative times all its inputs (find new weight gradient)
-                DERIV_SUM * this.kernelRelations[FILTER][KERNEL_Y][KERNEL_X][STRIDE].getOutput(), 
-                FILTER,
+                DERIV_SUM * this.kernelRelations[CHANNEL][KERNEL_Y][KERNEL_X][STRIDE].getOutput(), 
+                CHANNEL,
                 KERNEL_Y,
                 KERNEL_X
             );
@@ -405,9 +381,9 @@ public abstract class Layer {
             // --------- BACK PROPAGATION OPERATION
             
             // storing the sum into the next layer node in back propagation way
-            this.kernelRelations[FILTER][KERNEL_Y][KERNEL_X][STRIDE].addToChainRuleSum(
+            this.kernelRelations[CHANNEL][KERNEL_Y][KERNEL_X][STRIDE].addToChainRuleSum(
                 // summing this output pixel derivative times all its weights (find new input gradient)
-                DERIV_SUM * NODE.getWeight(FILTER, KERNEL_Y, KERNEL_X)
+                DERIV_SUM * NODE.getWeight(CHANNEL, KERNEL_Y, KERNEL_X)
             );
 
         }catch(NullPointerException e){}

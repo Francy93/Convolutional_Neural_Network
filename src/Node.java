@@ -1,4 +1,3 @@
-//import lib.Util;
 
 public class Node {
 
@@ -8,22 +7,35 @@ public class Node {
 	private			double[][]		biasGradients;
     private final	double[][][]	KERNEL;
 	private			double[][][]	kernelGradients;
+	private	final	double[][][][]	KERNEL_MOMENTUM;
+	private	final	double[][][]	BIAS_MOMENTUM;
+	private 		double			timeStep = 0;
+		
+	private final double BETA1 = 0.9, BETA2 = 0.999, EPSILON = 1e-07;	
 	
-	private final	int				FILTER_AMOUNT;
-	private	final	int				FILTER_Y;
-	private	final	int				FILTER_X;
+	private final	int				CHANNEL_AMOUNT;
+	private	final	int				KERNEL_Y;
+	private	final	int				KERNEL_X;
 	
-    public Node(final int FA, final int FY, final int FX, final int OUTPUT_Y, final int OUTPUT_X){
-        KERNEL			= new double[FA][FY][FX];
-		FILTER_AMOUNT	= FA;
-		FILTER_Y		= FY;
-		FILTER_X		= FX;
+	/**
+	 * Node Constructor
+	 * @param CA Channels amount
+	 * @param KY Kernel y size
+	 * @param KX Kernel x size
+	 * @param OUTPUT_Y Activation map Y size
+	 * @param OUTPUT_X Activation map X size
+	 */
+    public Node(final int CA, final int KY, final int KX, final int OUTPUT_Y, final int OUTPUT_X){
+        KERNEL			= new double[CA][KY][KX];
+		CHANNEL_AMOUNT	= CA;
+		KERNEL_Y		= KY;
+		KERNEL_X		= KX;
 		OUTPUT			= outputInit(OUTPUT_Y, OUTPUT_X);
 		BIAS			= new double[OUTPUT_Y][OUTPUT_X];
-		kernelGradients	= new double[FA][FY][FX];
+		kernelGradients	= new double[CA][KY][KX];
 		biasGradients	= new double[OUTPUT_Y][OUTPUT_X];
-		//kernelGradientsInit();
-		//fillBiasGradients();
+		KERNEL_MOMENTUM = new double[2][CA][KY][KX];
+		BIAS_MOMENTUM	= new double[2][OUTPUT_Y][OUTPUT_X];
     }
 	// constructor for convnet first layer
 	public Node(final double[][] INPUT){
@@ -81,13 +93,6 @@ public class Node {
 
 		// ---------------- getters ---------------
 
-		/* public int getCoordY(){
-			return this.INDEX_Y;
-		}
-		public int getCoordX(){
-			return this.INDEX_X;
-		} */
-
 		public double getOutput(){
 			return this.output;
 		}
@@ -97,12 +102,6 @@ public class Node {
 		public double getFrontLinearOutput(){
 			return this.frontLinearOutput;
 		}
-		/* public double getChainRuleSum(){
-			return this.chainRuleSum;
-		} */
-		/* public double getDerivative(){
-			return this.derivative;
-		} */
 		public double getDerivativeSum(){
 			return this.derivativeSum;
 		}
@@ -138,17 +137,17 @@ public class Node {
 	// --------------------- setters -------------------
 
 
-	public void setWeight(final int FILTER, final int Y, final int X, final double WEIGHT){
+	public void setWeight(final int CHANNEL, final int Y, final int X, final double WEIGHT){
 
-		KERNEL[FILTER][Y][X] = WEIGHT;
+		KERNEL[CHANNEL][Y][X] = WEIGHT;
 	}
 
 	public void addBiasGradients(final double GRADIENT, final int Y, final int X){
 		this.biasGradients[Y][X] += GRADIENT;
 	}
 
-	public void addToKernelGradients(final double GRADIENT, final int FILTER, final int Y, final int X){
-		this.kernelGradients[FILTER][Y][X] += GRADIENT;
+	public void addToKernelGradients(final double GRADIENT, final int CHANNEL, final int Y, final int X){
+		this.kernelGradients[CHANNEL][Y][X] += GRADIENT;
 	}
 
 
@@ -157,13 +156,86 @@ public class Node {
 	}
 
 
+	// Weights update
+	public void weightsUpdate(final int BATCH_SIZE, final double LEARNING_RATE){
+		double m, v, mk, vk, grad;
+		this.timeStep++;
+
+		// cycling over the all the kernel weights
+		for(int channel=0; channel < this.CHANNEL_AMOUNT; channel++){
+			for(int kernel_y=0; kernel_y < this.KERNEL_Y; kernel_y++){
+				for(int kernel_x=0; kernel_x < this.KERNEL_X; kernel_x++){
+
+					// updating every single weight dividing it by the mini batch to find its average
+					//this.KERNEL[channel][kernel_y][kernel_x] -=  LEARNING_RATE * (this.kernelGradients[channel][kernel_y][kernel_x] / ((double)BATCH_SIZE));
+					grad = (this.kernelGradients[channel][kernel_y][kernel_x] / ((double)BATCH_SIZE));
+
+					this.KERNEL_MOMENTUM[0][channel][kernel_y][kernel_x] *= BETA1; 
+					this.KERNEL_MOMENTUM[0][channel][kernel_y][kernel_x] += (1.0 - BETA1) * grad;
+					m = this.KERNEL_MOMENTUM[0][channel][kernel_y][kernel_x];
+
+					this.KERNEL_MOMENTUM[1][channel][kernel_y][kernel_x] *= BETA2;
+					this.KERNEL_MOMENTUM[1][channel][kernel_y][kernel_x] += (1.0 - BETA2) * grad * grad;
+					v = this.KERNEL_MOMENTUM[1][channel][kernel_y][kernel_x];
+
+					mk = m / (1.0 - Math.pow(BETA1, this.timeStep));
+					vk = v / (1.0 - Math.pow(BETA2, this.timeStep));
+
+					this.KERNEL[channel][kernel_y][kernel_x] -= LEARNING_RATE * mk / (Math.sqrt(vk) + EPSILON);
+
+					
+				}
+			}
+		}
+
+		// resetting the gradinets storage
+		this.kernelGradients = new double[this.CHANNEL_AMOUNT][this.KERNEL_Y][this.KERNEL_X];
+	}
+
+	// biases update
+	public void biasUpdate(final int BATCH_SIZE, final double LEARNING_RATE){
+		double m, v, mk, vk, grad;
+
+		for(int bias_y=0; bias_y < this.BIAS.length; bias_y++){
+			for(int bias_x=0; bias_x <  this.BIAS[0].length; bias_x++){
+
+				// updating every single weight dividing it by the mini batch to find its average
+				//this.BIAS[bias_y][bias_x] -=  LEARNING_RATE * (this.biasGradients[bias_y][bias_x] / ((double)BATCH_SIZE));
+
+
+				grad = this.biasGradients[bias_y][bias_x] / ((double)BATCH_SIZE);
+
+				this.BIAS_MOMENTUM[0][bias_y][bias_x] *= BETA1; 
+				this.BIAS_MOMENTUM[0][bias_y][bias_x] += (1.0 - BETA1) * grad;
+				m = this.BIAS_MOMENTUM[0][bias_y][bias_x];
+
+				this.BIAS_MOMENTUM[1][bias_y][bias_x] *= BETA2;
+				this.BIAS_MOMENTUM[1][bias_y][bias_x] += (1.0 - BETA2) * grad * grad;
+				v = this.BIAS_MOMENTUM[1][bias_y][bias_x];
+
+				mk = m / (1.0 - Math.pow(BETA1, this.timeStep));
+				vk = v / (1.0 - Math.pow(BETA2, this.timeStep));
+
+				this.BIAS[bias_y][bias_x] -= LEARNING_RATE * mk / (Math.sqrt(vk) + EPSILON);
+
+			}
+		}
+		
+
+		// resetting the gradinets storage
+		this.biasGradients = new double[this.BIAS.length][this.BIAS[0].length];
+	}
+
+
+
+
 
 
 	// -------------------- getters ----------------
 
 
-	public double getWeight(final int FILTER, final int Y, final int X){
-		return KERNEL[FILTER][Y][X];
+	public double getWeight(final int CHANNEL, final int Y, final int X){
+		return KERNEL[CHANNEL][Y][X];
 	}
 
 	public Relation[][] getOutput(){
@@ -173,42 +245,5 @@ public class Node {
 	public double getBias(final int ACT_MAP_Y, final int ACT_MAP_X){
 		return this.BIAS[ACT_MAP_Y][ACT_MAP_X];
 	}
-
-
-	public void weightsUpdate(final int BATCH_SIZE, final double LEARNING_RATE){		
-		
-		// cycling over the all the kernel weights
-		for(int filter=0; filter < this.FILTER_AMOUNT; filter++){
-			for(int kernel_y=0; kernel_y < this.FILTER_Y; kernel_y++){
-				for(int kernel_x=0; kernel_x < this.FILTER_X; kernel_x++){
-
-					// updating every single weight dividing it by the mini batch to find its average
-					this.KERNEL[filter][kernel_y][kernel_x] -=  LEARNING_RATE * (this.kernelGradients[filter][kernel_y][kernel_x] / ((double)BATCH_SIZE));
-					
-				}
-			}
-		}
-
-		// resetting the gradinets storage
-		this.kernelGradients = new double[this.FILTER_AMOUNT][this.FILTER_Y][this.FILTER_X];
-	}
-
-	public void biasUpdate(final int BATCH_SIZE, final double LEARNING_RATE){		
-		
-
-		for(int bias_y=0; bias_y < this.BIAS.length; bias_y++){
-			for(int bias_x=0; bias_x <  this.BIAS[0].length; bias_x++){
-
-				// updating every single weight dividing it by the mini batch to find its average
-				this.BIAS[bias_y][bias_x] -=  LEARNING_RATE * (this.biasGradients[bias_y][bias_x] / ((double)BATCH_SIZE));
-
-			}
-		}
-
-		// resetting the gradinets storage
-		this.biasGradients = new double[this.BIAS.length][this.BIAS[0].length];
-	}
-
-
 
 }

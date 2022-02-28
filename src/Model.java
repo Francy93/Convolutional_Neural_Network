@@ -1,5 +1,4 @@
 
-
 public class Model {
 
 	private			double		accuracy = 0;	// to store the accuracy result
@@ -19,22 +18,8 @@ public class Model {
 				final double[] LABEL_LOCATION = SAMPLE.getLabelLocation();
 
 				for(int val=0; val < OUTPUT_VALUES.length; val++){
-					/* if(val == 1 || val == 2 || val == 3 || val == 4 || val == 5 || val == 6 || val == 7 || val == 8 || val == 9);
-					else  */setIntoNode(lib.Loss.MSE.derivative(OUTPUT_VALUES[val], LABEL_LOCATION[val]) / FLAT_OUTPUT.length, FLAT_OUTPUT[val]);
+					setIntoNode(lib.Loss.MSE.derivative(OUTPUT_VALUES[val], LABEL_LOCATION[val]) / FLAT_OUTPUT.length, FLAT_OUTPUT[val]);
 				}
-
-				/* int val = 6;
-				if(SAMPLE.getLabel() == val){
-					
-					for(int classs=0; classs < FLAT_OUTPUT.length; classs++){
-						String str = "";
-						if(val == classs) str = lib.Util.color("yellow");
-						str +="C" + classs + " = " + lib.Util.round(FLAT_OUTPUT[classs].getOutput(), 5) + "	";
-						if(val == classs) str += lib.Util.color("reset");
-						System.out.print(str);
-					}
-					System.out.println();
-				} */
 			}
 		},
 		MAE{
@@ -229,16 +214,15 @@ public class Model {
 		this.miniBatch		= BATCH;
 		this.learningRate	= LEARNING_RATE;
 
-		int batch = 0;
-		final int DATA_SIZE = this.trainData.getSize();
+		final int DATA_SIZE = this.trainData.getSize()-1;
 		
 		//cicling over the dataset samples for "EPOCHS" times
 		for(int e=0; e < EPOCHS; e++){
 			this.trainData.shuffle();	// shuffeling the samples
 			lib.Util.Loading bar = new lib.Util.Loading();
-			System.out.println("Epoch: "+e);
+			System.out.println("Epoch: "+ (e+1));
 
-			for(int sampleIndex=0; sampleIndex < DATA_SIZE; sampleIndex++){
+			for(int sampleIndex=0, batch=0; sampleIndex <= DATA_SIZE; sampleIndex++, batch++){
 				this.sample = DATA.getSample(sampleIndex);
 				bar.loading(DATA_SIZE, sampleIndex);
 
@@ -246,7 +230,7 @@ public class Model {
 				backPropagate();
 
 				// updating weights after a certain amount of samples (mini batch)
-				if(++batch >= BATCH || sampleIndex >= DATA_SIZE-1){
+				if(batch >= BATCH || sampleIndex >= DATA_SIZE){
 					weightsUpdate();
 					batch = 0;
 				}
@@ -272,13 +256,7 @@ public class Model {
 		}
 
 		// storing the accuracy percentage
-		this.accuracy = correct * 100 / validateData.getSize();
-		return this.accuracy;
-	}
-
-
-	// getting the model accuracy
-	public double getAccuracy(){
+		this.accuracy = (double)correct * 100.00 / (double)validateData.getSize();
 		return this.accuracy;
 	}
 
@@ -299,17 +277,26 @@ public class Model {
 			}
 		}
 		
-		String str = "";
+		/* String str = "";
 		
 		if(DATA.getClasses()[answerIndex] == this.sample.getLabel()) str = lib.Util.color("green");
 		else str = lib.Util.color("red");
 
 		str += "Predicted: " + DATA.getClasses()[answerIndex] + "	Target: " + this.sample.getLabel();
-		System.out.println(str + lib.Util.color("reset"));
+		System.out.println(str + lib.Util.color("reset")); */
 		// checking if the prediction matches the actual label
-		return this.sample.getLabelLocation()[answerIndex] == 1;
-		
-		//return DATA.getClasses()[answerIndex] == 0;
+		return this.sample.getLabel() == DATA.getClasses()[answerIndex];
 	}
+
+
+
+
+
+
+	// ------------------ getter methods ------------------------
+	// getting the model accuracy
+	public double getAccuracy(){
+		return lib.Util.round(this.accuracy, 2);
+		}
 
 }

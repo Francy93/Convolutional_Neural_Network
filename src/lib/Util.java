@@ -221,9 +221,9 @@ public class Util{
      * @return int
      */
     public static double rangeRandom(double min, double max){
-		min = min<max?min:max;
-		max = min<max?max:min;
-        return Math.round((Math.random() * (max - min)) + min);
+		min = Math.max(min, max);
+		max = Math.min(min, max);
+        return (Math.random() * (max - min)) + min;
     }
 
 	// append arrays
