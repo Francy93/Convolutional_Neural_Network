@@ -4,9 +4,9 @@ public class Ann{
     
 	private static			DataSet dataTrain;								//	dataset used to perform the training		
 	private static			DataSet dataValid;								//	detaset used to perform the validation
-	private static final	double	LEARNING_RATE	= 0.001;					//	learning rate suggested is about 0.01
+	private static final	double	LEARNING_RATE	= 0.001;				//	learning rate suggested is about 0.01
 	private static final	int		BATCH_SIZE		= 8;					//	number of samples processed before updating the weights
-	private static final	int		EPOCHS			= 12;					//	number of dataset cycles
+	private static final	int		EPOCHS			= 5;					//	number of dataset cycles
 	private static final	String	TRAINING_FILE	= "cw2DataSet1.csv";	//	file name of the training dataset
 	private static final	String	VALIDATE_FILE	= "cw2DataSet2.csv";	//	file name of the validation dataset
 
@@ -26,18 +26,22 @@ public class Ann{
 
 
 	// running the model
-	public static void runModel() throws FileNotFoundException {
+	public static void setModel() throws FileNotFoundException {
 		try{
 			dataTrain = new DataSet(TRAINING_FILE, ",");
 			dataValid = new DataSet(VALIDATE_FILE, ",");
 		}catch(Exception e){ throw new FileNotFoundException(); }
 
-
+		// initialising the model
 		MODEL.buildStructure(dataTrain, dataValid, Model.Loss.CROSS_ENTROPY);
+		
+	}
+
+	public static void testModel(){
 		MODEL.train(BATCH_SIZE, EPOCHS, LEARNING_RATE);
 		System.out.println("\r\nValidating...");
 		MODEL.validate();
-		System.out.println("Accuracy: " + MODEL.getAccuracy() + "%");
+		System.out.println("Accuracy: " + MODEL.getAccuracy() + "%\r\n");
 	}
 		// Convolutional layer 1
 		/* layer.Conv2D(64, 3, 3, activation.relu, input_shape=(28, 28, 1)),
