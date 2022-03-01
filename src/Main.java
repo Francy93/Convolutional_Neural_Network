@@ -49,8 +49,10 @@ public class Main {
 		System.out.println(Util.colorText("\r\n\r\nWelcome to Digit recognition challenge\r\n","cyan"));
 
 		// initialising the model
+		System.out.println(Util.colorText("Loading Dataset and model...\r\n", "cyan"));
 		try{ Ann.setModel(); }
 		catch(FileNotFoundException e){ System.out.println("Error. File not found"); }
+
 
 		// main loop
 		for(int nav = envSet();	nav!=EXIT;	nav = nav!=BACK? nav: envSet()){
@@ -58,7 +60,6 @@ public class Main {
 
 			// Perform the training and validation
 			if(nav == AHEAD)	Ann.testModel();
-
 		}
 
 		// exiting the main loop

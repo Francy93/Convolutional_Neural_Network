@@ -45,7 +45,7 @@ public class DataSet {
 
 			// cycling over the file rows
 			for(String line = ""; (line = SCANN.readLine()) != null; line.trim()){
-				if(!line.matches("^(\\d|[,])*$")) continue;
+				if(!line.matches("^(\\d|["+this.DELIMITER+"])*$")) continue;
 
 				// generating the sample obgect
 				try{ SAMPLES.add(new Sample(line, this.DELIMITER)); }

@@ -33,7 +33,7 @@
 	 * @param SAMPLE 
 	 */
     public void firstLayerInit(final Sample SAMPLE){
-        final Node[] NODE	= {new Node(SAMPLE.getData1D())};
+        final Node[] NODE	= {new Node(SAMPLE.getData1D(), super.NODES_PARAM)};
         super.isFirstLayer	= true;
 
         layerInit(NODE);

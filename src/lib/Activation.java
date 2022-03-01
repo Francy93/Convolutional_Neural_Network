@@ -9,15 +9,15 @@ public class Activation{
 
 		/**
 		 * 
-		 * @param X input
+		 * @param X linear input
 		 * @param A parameter
 		 * @return function
 		 */
 		public static double function(final double X, final double A){ return A*X; }
 		/**
 		 * 
-		 * @param X input
-		 * @param F output
+		 * @param X linear input
+		 * @param F non linear output
 		 * @return derivative
 		 */
 		public static double derivative(final double X, final double F){ return F/X; }
@@ -48,13 +48,13 @@ public class Activation{
 
 		/**
 		 * 
-		 * @param X intput
+		 * @param X linear input
 		 * @return function
 		 */
 		public static double function(final double X){ return X < 0.0? 0.0: 1.0; }
 		/**
 		 * 
-		 * @param X input
+		 * @param X linear input
 		 * @return derivative
 		 */
 		public static double derivative(final double X){ return X != 0.0? 0.0: 1.0; }
@@ -85,13 +85,13 @@ public class Activation{
 
 		/**
 		 * 
-		 * @param X input
+		 * @param X linear input
 		 * @return function
 		 */
 		public static double function(final double X){ return (1.0/(1.0 + Math.exp(-X))); }
 		/**
 		 * 
-		 * @param F output
+		 * @param F non linear output
 		 * @return derivative
 		 */
 		public static double derivative(final double F){ return F*(1.0-F); }
@@ -123,14 +123,14 @@ public class Activation{
 
 		/**
 		 * 
-		 * @param X input
+		 * @param X linear input
 		 * @return function
 		 */
 		//public static double function(final double X){ return (2/(1 + Math.exp(-2.0*X))) -1.0; }
 		public static double function(final double X){ return Math.tanh(X); }
 		/**
 		 * 
-		 * @param F output
+		 * @param F non linear output
 		 * @return derivative
 		 */
 		public static double derivative(final double F){ return 1.0 - Math.pow(F, 2.0); }
@@ -162,14 +162,14 @@ public class Activation{
 
 		/**
 		 * 
-		 * @param X input
+		 * @param X linear input
 		 * @return function
 		 */
 		public static double function(final double X){ return X * Sigmoid.function(X); }
 		/**
 		 * 
-		 * @param X input
-		 * @param F output
+		 * @param X linear input
+		 * @param F non linear output
 		 * @return derivative
 		 */
 		public static double derivative(final double X, final double F){ return F + Sigmoid.function(X) * (1.0-F); }
@@ -199,19 +199,20 @@ public class Activation{
 	public static class Mish {
 		/**
 		 * 
-		 * @param X input
+		 * @param X linear input
 		 * @return function
 		 */
 		public static double function(final double X){ return X * Tanh.function(Softplus.function(X)); }
 
 		/**
 		 * 
-		 * @param X
-		 * @return
+		 * @param X linear input
+		 * @return derivative
 		 */
 		public static double derivative(final double X){
-			final double OMEGA = Math.exp(3.0 * X) + 4.0 * Math.exp(2.0 * X) + (6.0 + 4.0 * X) * Math.exp(X) + 4.0 * (1.0 + X);
-			final double DELTA = 1.0 + Math.pow(Math.exp(X) + 1.0, 2);
+			final double OMEGA = 4.0 * (1.0 + X) + 4.0 * Math.exp(2.0 * X) + Math.exp(3.0 * X) +  Math.exp(X) * (4.0 * X + 6.0);
+			//final double DELTA = 1.0 + Math.pow(Math.exp(X) + 1.0, 2); // Light version
+			final double DELTA = 2.0 * Math.exp(X) + Math.exp(2.0 * X) + 2.0;
 
 			return  Math.exp(X) * OMEGA / Math.pow(DELTA, 2);
 		}
@@ -243,13 +244,13 @@ public class Activation{
 
 		/**
 		 * 
-		 * @param X input
+		 * @param X linear input
 		 * @return function
 		 */
 		public static double function(final double X){ return X < 0.0? 0.0: X; }
 		/**
 		 * 
-		 * @param X input
+		 * @param X linear input
 		 * @return derivative
 		 */
 		public static double derivative(final double X){ return X > 0.0? 1.0 : 0.0; }
@@ -280,13 +281,13 @@ public class Activation{
 
 		/**
 		 * 
-		 * @param X input
+		 * @param X linear input
 		 * @return function
 		 */
 		public static double function(final double X){ return Prelu.function(X, 0.01); }
 		/**
 		 * 
-		 * @param X input
+		 * @param X linear input
 		 * @return derivative
 		 */
 		public static double derivative(final double X){ return Prelu.derivative(X, 0.01); }
@@ -317,15 +318,14 @@ public class Activation{
 
 		/**
 		 * 
-		 * @param X input
+		 * @param X linear input
 		 * @return function
 		 */
-		public static double function(final double X){ 
-			double cdf = 0.5 * (1.0 + erf(X / Math.sqrt(2.0)));
-			return X * cdf;
+		public static double function(final double X){
+			return X * (0.5 * (1.0 + erf(X / Math.sqrt(2.0))));
 		}
 		/**
-		 * @param X input
+		 * @param X linear input
 		 * @return derivative
 		 */
 		public static double derivative(final double X){
@@ -359,7 +359,7 @@ public class Activation{
 
 		/**
 		 * 
-		 * @param X input
+		 * @param X linear input
 		 * @return function
 		 */
 		public static double function(final double X){
@@ -367,7 +367,7 @@ public class Activation{
 		}
 		/**
 		 * 
-		 * @param X input
+		 * @param X linear input
 		 * @return derivative
 		 */
 		public static double derivative(final double X){
@@ -400,14 +400,14 @@ public class Activation{
 
 		/**
 		 * 
-		 * @param X input
+		 * @param X linear input
 		 * @param A parameter
 		 * @return function
 		 */
 		public static double function(final double X, final double A){ return X < 0.0? A*X: X; }
 		/**
 		 * 
-		 * @param X input
+		 * @param X linear input
 		 * @param A parameter
 		 * @return derivative
 		 */
@@ -440,16 +440,16 @@ public class Activation{
 
 		/**
 		 * 
-		 * @param X input
+		 * @param X linear input
 		 * @param A parameter
 		 * @return function
 		 */
 		public static double function(final double X, final double A){ return X < 0.0? A*(Math.exp(X)-1.0): X; }
 		/**
 		 * 
-		 * @param X input
+		 * @param X linear input
 		 * @param A parameter
-		 * @param F output
+		 * @param F non linear output
 		 * @return derivative
 		 */
 		public static double derivative(final double X, final double A, final double F){ return X < 0.0? F+A: 1.0; }
@@ -480,13 +480,13 @@ public class Activation{
 
 		/**
 		 * 
-		 * @param X input
+		 * @param X linear input
 		 * @return function
 		 */
 		public static double function(final double X){ return Math.log(Math.exp(X) + 1.0); }
 		/**
 		 * 
-		 * @param X input
+		 * @param X linear input
 		 * @return derivative
 		 */
 		public static double derivative(final double X){ return 1.0 / (1.0 + Math.exp(-X)); }

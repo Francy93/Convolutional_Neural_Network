@@ -429,12 +429,13 @@ public class Util{
          * @param updates (facultative)
          * @return string 
          */
-		public void loading(){ if (this.CICLES_AMOUNT > 0 && ++this.index <= this.CICLES_AMOUNT)	barGen(this.CICLES_AMOUNT, this.index, this.BAR_LENGTH, this.UPDATES); }
-        public void loading(final long size, long index){ if (size > 0 && ++index <= size)	barGen(size, index, this.BAR_LENGTH, this.UPDATES); }
-        public void loading(final long size, long index , final short barLength){ if (size > 0 && ++index <= size)	barGen(size, index, barLength, this.UPDATES); }
-        public void loading(final long size, long index,  final short barLength, final short updates){ if (size > 0 && ++index <= size)	barGen(size, index, barLength, updates); }
+		public void loading(){ if (this.CICLES_AMOUNT > 0 && ++this.index <= this.CICLES_AMOUNT)	barGen(this.CICLES_AMOUNT, this.index, this.BAR_LENGTH, this.UPDATES, ""); }
+       	public void loading(final String MESSAGE){ if (this.CICLES_AMOUNT > 0 && ++this.index <= this.CICLES_AMOUNT)	barGen(this.CICLES_AMOUNT, this.index, this.BAR_LENGTH, this.UPDATES, MESSAGE); }
+        public void loading(final long size, long index){ if (size > 0 && ++index <= size)	barGen(size, index, this.BAR_LENGTH, this.UPDATES, ""); }
+        public void loading(final long size, long index , final short barLength){ if (size > 0 && ++index <= size)	barGen(size, index, barLength, this.UPDATES, ""); }
+        public void loading(final long size, long index,  final short barLength, final short updates){ if (size > 0 && ++index <= size)	barGen(size, index, barLength, updates, ""); }
 		
-		private void barGen(final long size, long index,  final short barLength, short updates){
+		private void barGen(final long size, long index,  final short barLength, short updates, final String MESSAGE){
 
 			//calculating loading bar
 			updates = updates > 99? 100: updates < 1? 0: updates;
@@ -460,8 +461,8 @@ public class Util{
 					else if (PERCENT < 66)  colors = "yellow";
 					else                    colors = "green";
 					
-					String outcome = color(colors)+statusFull+color("reset")+statusVoid+" "+color(colors)+PERCENT+"%"+color("reset")+"\r";
-					System.out.print( "\r" + outcome + "\r");
+					final String OUTCOME = colorText(statusFull, colors)+statusVoid+" "+colorText(PERCENT+"%", colors)+"	"+colorText(MESSAGE, "blue")+"\r";
+					System.out.print( "\r" + OUTCOME + "\r");
 				}else {
 					this.counter--;
 					System.out.print( "\33[2K" + "\r");

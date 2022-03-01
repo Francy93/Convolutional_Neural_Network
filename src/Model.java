@@ -10,7 +10,7 @@ public class Model {
 	private 		Loss		loss;			// loss operations
 	private 		Sample		sample;			// index of the current iterated sample
 
-	
+
 	// collection of loss functions
 	public static enum Loss {
 		MSE{
@@ -204,14 +204,12 @@ public class Model {
 		//cicling over the dataset samples for "EPOCHS" times
 		for(int e=0; e < EPOCHS; e++){
 			lib.Util.Loading bar = new lib.Util.Loading(DATA_SIZE);
-
 			DATA.shuffle();	// shuffeling the samples
-			System.out.println("Epoch: "+ (e+1) + " / " + EPOCHS);
 
 			// cycling over the samples
 			for(int sampleIndex=0, batch=0; sampleIndex <= DATA_SIZE; sampleIndex++, batch++){
 				this.sample = DATA.getSample(sampleIndex);
-				bar.loading();
+				bar.loading("Epoch: "+ (e+1) + " / " + EPOCHS);
 
 				feedForward();		// performing forward propagation for all the layers
 				backPropagate();	// performing back propagation for all the layers
@@ -253,8 +251,6 @@ public class Model {
 	private boolean accuracyCheck(final DataSet DATA){
 		
 		Node.Relation[] NODES = this.LAYERS[this.LAYERS.length-1].getFlatOutput();
-
-
 
 		int answerIndex		= 0;
 		double valHolder	= 0; 

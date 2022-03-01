@@ -1,7 +1,7 @@
 
 public class Node {
 
-    
+    // Node's attributes
 	private	final	Relation[][]	OUTPUT;				// Matrix output also known as activation map in CNNs
 	private	final	double[][]		BIAS;				// Storage of biases assigned to avery index of the activation map matrix
 	private			double[][]		biasGradients;		// Gradient accumulation for the biases
@@ -11,9 +11,11 @@ public class Node {
 	private	final	double[][][]	BIAS_MOMENTUM;		// Histoy of biases gradients (momentum) for the Adam optimizer
 	private 		double			timeStep = 0;		// Adam TimeStep counter
 	
-	// Adam parameters
-	private final double BETA1 = 0.9, BETA2 = 0.999, EPSILON = 1e-08;	
+	// Adam optimizer parameters
+	private final double BETA1 = 0.9, BETA2 = 0.999, EPSILON = 1e-08;
+	private final 	double[]		LEARNING_RATE_BATCH_SIZE;
 	
+	// Kernel sizes
 	private final	int				CHANNEL_AMOUNT;		// Number of kernel channel
 	private	final	int				KERNEL_Y;			// Kernel Y size
 	private	final	int				KERNEL_X;			// Kernel X size
@@ -25,27 +27,31 @@ public class Node {
 	 * @param KX Kernel x size
 	 * @param OUTPUT_Y Activation map Y size
 	 * @param OUTPUT_X Activation map X size
+	 * @param LR_BS Learning rate and batch size container
 	 */
-    public Node(final int CA, final int KY, final int KX, final int OUTPUT_Y, final int OUTPUT_X){
-        KERNEL			= new double[CA][KY][KX];
+    public Node(final int CA, final int KY, final int KX, final int OUTPUT_Y, final int OUTPUT_X, final double[] LR_BS){
+		final int MOMENTUM_AMOUNT	= 2;
+		LEARNING_RATE_BATCH_SIZE	= LR_BS;
+
 		CHANNEL_AMOUNT	= CA;
 		KERNEL_Y		= KY;
 		KERNEL_X		= KX;
+        KERNEL			= new double[CA][KY][KX];
 		OUTPUT			= outputInit(OUTPUT_Y, OUTPUT_X);
 		BIAS			= new double[OUTPUT_Y][OUTPUT_X];
 		kernelGradients	= new double[CA][KY][KX];
 		biasGradients	= new double[OUTPUT_Y][OUTPUT_X];
-		KERNEL_MOMENTUM = new double[CA][KY][KX][2];
-		BIAS_MOMENTUM	= new double[OUTPUT_Y][OUTPUT_X][2];
+		KERNEL_MOMENTUM = new double[CA][KY][KX][MOMENTUM_AMOUNT];
+		BIAS_MOMENTUM	= new double[OUTPUT_Y][OUTPUT_X][MOMENTUM_AMOUNT];
     }
 	// constructor for convnet first layer
-	public Node(final double[][] INPUT){
-        this(1, INPUT.length, INPUT[0].length, INPUT.length, INPUT[0].length);
+	public Node(final double[][] INPUT, final double[] LR_BS){
+        this(1, INPUT.length, INPUT[0].length, INPUT.length, INPUT[0].length, LR_BS);
 		fillOutput(INPUT);
     }
 	// constructor for densenet first layer
-	public Node(final double[] INPUT){
-        this(1, 1, INPUT.length, 1, INPUT.length);
+	public Node(final double[] INPUT, final double[] LR_BS){
+        this(1, 1, INPUT.length, 1, INPUT.length, LR_BS);
 		fillOutput(INPUT);
     }
     
@@ -53,6 +59,7 @@ public class Node {
 	// activation map "pixels"
     public class Relation{
 
+		// Relation attributes
 		private final	int		INDEX_Y;					// Index Y of this node into the Activation map
 		private final	int		INDEX_X;					// Index X of this node into the Activation map
 		private			double	frontLinearOutput	= 0;	// Linear output of the forward propagation
@@ -116,6 +123,15 @@ public class Node {
 		}
 		public double getDerivativeSum(){
 			return this.derivativeSum;
+		}
+
+		// getting the index Y of this output 
+		public double getIndexY(){
+			return this.INDEX_Y;
+		}
+		// getting the index X of this output 
+		public double getIndexX(){
+			return this.INDEX_X;
 		}
 
     }
@@ -191,19 +207,15 @@ public class Node {
 		this.OUTPUT[Y][X].setOutput(ACTIVATED);
 	}
 
-	/**
-	 * Updating weights and biases
-	 * @param BATCH_SIZE
-	 * @param LEARNING_RATE
-	 */
-	public void update(final int BATCH_SIZE, final double LEARNING_RATE){
+	//Updating weights and biases
+	public void update(){
 		this.timeStep++;
-		weightsUpdate(BATCH_SIZE, LEARNING_RATE);
-		biasUpdate(BATCH_SIZE, LEARNING_RATE);
+		weightsUpdate();
+		biasUpdate();
 	}
 
-	// Weights update
-	private void weightsUpdate(final int BATCH_SIZE, final double LEARNING_RATE){
+	//Weights update
+	private void weightsUpdate(){
 
 		// cycling over the all the kernel weights
 		for(int channel=0; channel < this.CHANNEL_AMOUNT; channel++){
@@ -212,7 +224,10 @@ public class Node {
 
 					// updating every single weight dividing it by the mini batch to find its average
 					//this.KERNEL[channel][kernel_y][kernel_x] -=  LEARNING_RATE * (this.kernelGradients[channel][kernel_y][kernel_x] / ((double)BATCH_SIZE));
-					this.KERNEL[channel][kernel_y][kernel_x] -= LEARNING_RATE * adamOpt(this.KERNEL_MOMENTUM[channel][kernel_y][kernel_x], this.kernelGradients[channel][kernel_y][kernel_x] / ((double)BATCH_SIZE));
+					this.KERNEL[channel][kernel_y][kernel_x] -= 
+						this.LEARNING_RATE_BATCH_SIZE[0] *
+						adamOpt(this.KERNEL_MOMENTUM[channel][kernel_y][kernel_x], this.kernelGradients[channel][kernel_y][kernel_x] / (this.LEARNING_RATE_BATCH_SIZE[1]))
+					;
 				}
 			}
 		}
@@ -221,18 +236,21 @@ public class Node {
 		this.kernelGradients = new double[this.CHANNEL_AMOUNT][this.KERNEL_Y][this.KERNEL_X];
 	}
 
-	// biases update
-	private void biasUpdate(final int BATCH_SIZE, final double LEARNING_RATE){
+	// Biases update
+	private void biasUpdate(){
 
+		// cycling over the all the bias weights
 		for(int bias_y=0; bias_y < this.BIAS.length; bias_y++){
 			for(int bias_x=0; bias_x <  this.BIAS[0].length; bias_x++){
 
 				// updating every single weight dividing it by the mini batch to find its average
 				//this.BIAS[bias_y][bias_x] -=  LEARNING_RATE * (this.biasGradients[bias_y][bias_x] / ((double)BATCH_SIZE));
-				this.BIAS[bias_y][bias_x] -= LEARNING_RATE * adamOpt(this.BIAS_MOMENTUM[bias_y][bias_x], this.biasGradients[bias_y][bias_x] / ((double)BATCH_SIZE));
+				this.BIAS[bias_y][bias_x] -= 
+					this.LEARNING_RATE_BATCH_SIZE[0] * 
+					adamOpt(this.BIAS_MOMENTUM[bias_y][bias_x], this.biasGradients[bias_y][bias_x] / (this.LEARNING_RATE_BATCH_SIZE[1]))
+				;
 			}
 		}
-		
 
 		// resetting the gradinets storage
 		this.biasGradients = new double[this.BIAS.length][this.BIAS[0].length];

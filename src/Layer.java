@@ -14,6 +14,7 @@ public abstract class Layer {
 	protected			int     	KERNEL_X;				//	Size X of this layer kernel
 	private	Node.Relation[]			flat_output;			//	array of nodes outputs
 	private	Node.Relation[][][][] 	kernelRelations;		//	array of relations between this layer weigths and inputs
+	protected final		double[]	NODES_PARAM;			//	Learning rate and batch size
 
 	public static enum Activation{
 		LINEAR{
@@ -126,6 +127,7 @@ public abstract class Layer {
 		KERNEL_Y		= KY < 1? 1: KY;
         KERNEL_X		= KX < 1? 1: KX;
 		NODES			= new Node[NODES_AMOUNT];
+		NODES_PARAM		= new double[2];
     }
 
     
@@ -174,14 +176,13 @@ public abstract class Layer {
 	// initialising this layer nodes
 	protected void nodesInit(){
         for(int i=0; i< this.NODES_AMOUNT; i++){
-            this.NODES[i] = new Node(this.inputs.length, this.KERNEL_Y, this.KERNEL_X, this.outputSizeY, this.outputSizeX);
+            this.NODES[i] = new Node(this.inputs.length, this.KERNEL_Y, this.KERNEL_X, this.outputSizeY, this.outputSizeX, this.NODES_PARAM);
         }
     }
 
 	// initialising all the weights of this layer
 	protected void weightsInit(){
-		for(int node=0; node < this.NODES_AMOUNT; node++){
-			final Node NODE = this.NODES[node];
+		for(final Node NODE: this.NODES){
 
 			// cycling over each channel / channel
 			for(int channel=0; channel < this.inputs.length; channel++){
@@ -202,8 +203,8 @@ public abstract class Layer {
 		int flt_out_iter = 0;
 
 		// cycling over all this layer node
-		for(int node=0; node < this.NODES_AMOUNT; node++){
-			final Node.Relation[][] OUTPUT_MATRIX = this.NODES[node].getOutput();
+		for(final Node NODE: this.NODES){
+			final Node.Relation[][] OUTPUT_MATRIX = NODE.getOutput();
 
 			// cycling over all the node output values
 			for(int outY=0; outY < this.outputSizeY; outY++){
@@ -283,8 +284,7 @@ public abstract class Layer {
 
     public void feedForward(){
 		// cycling over all this layer nodes
-		for(int node=0; node < this.NODES_AMOUNT; node++){
-			final Node NODE = this.NODES[node];
+		for(final Node NODE: this.NODES){
 			int strideCounter = 0;
 			
 			 // cycling over all the "pixels" of the output matrix
@@ -327,8 +327,7 @@ public abstract class Layer {
     // the back propagation method
     public void backPropagating(){
         // cycling overall the nodes
-        for(int node=0; node < this.NODES_AMOUNT; node++){
-            final Node				NODE			= this.NODES[node];
+        for(final Node NODE: this.NODES){
             final Node.Relation[][] NODE_OUTPUT		= NODE.getOutput();
             int						strideCounter	= 0;
 
@@ -412,15 +411,11 @@ public abstract class Layer {
 	 * @param LEARNING_RATE
 	 */
     public void updateWeights(final int BATCH_SIZE, final double LEARNING_RATE){
+		this.NODES_PARAM[0] = LEARNING_RATE;
+		this.NODES_PARAM[1] = BATCH_SIZE;
 
 		// cycling overall the nodes
-		for(int node=0; node < this.NODES_AMOUNT; node++){
-			final Node NODE = this.NODES[node];
-
-			// updating both weights and biases 
-			NODE.update(BATCH_SIZE, LEARNING_RATE);
-
-		}
+		for(final Node NODE: this.NODES)	NODE.update(); // updating both weights and biases 	
     }
 
 
