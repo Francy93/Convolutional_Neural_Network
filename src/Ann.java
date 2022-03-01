@@ -2,23 +2,23 @@ import java.io.FileNotFoundException;
 
 public class Ann{
     
-
-	private static			DataSet dataTrain;
-	private static			DataSet dataValid;
-	private static final	double	LEARNING_RATE	= 0.03;
-	private static final	int		BATCH_SIZE		= 1;
-	private static final	int		EPOCHS			= 5;
-	private static final	String	TRAINING_FILE	= "cw2DataSet1.csv";
-	private static final	String	VALIDATE_FILE	= "cw2DataSet2.csv";
+	private static			DataSet dataTrain;								//	dataset used to perform the training		
+	private static			DataSet dataValid;								//	detaset used to perform the validation
+	private static final	double	LEARNING_RATE	= 0.001;					//	learning rate suggested is about 0.01
+	private static final	int		BATCH_SIZE		= 8;					//	number of samples processed before updating the weights
+	private static final	int		EPOCHS			= 12;					//	number of dataset cycles
+	private static final	String	TRAINING_FILE	= "cw2DataSet1.csv";	//	file name of the training dataset
+	private static final	String	VALIDATE_FILE	= "cw2DataSet2.csv";	//	file name of the validation dataset
 
 
 
 	// Model definition
 	private static final Model MODEL = Model.Sequential(
 		Layer.Conv2D(16, 2, 2,	Layer.Activation.SWISH),
-		Layer.Conv2D(16, 2, 2,	Layer.Activation.SWISH),
-		Layer.Dense(128,		Layer.Activation.SWISH),
-		Layer.Dense(128,		Layer.Activation.SWISH),
+		Layer.Conv2D(32, 3, 3,	Layer.Activation.SWISH),
+		//Layer.Dense(256,		Layer.Activation.MISH),
+		//Layer.Dense(128,		Layer.Activation.MISH),
+		Layer.Dense(64 ,		Layer.Activation.SWISH),
 		Layer.Dense(10 ,		Layer.Activation.SOFTMAX)
     );
 
@@ -33,9 +33,10 @@ public class Ann{
 		}catch(Exception e){ throw new FileNotFoundException(); }
 
 
-		MODEL.buildStructure(dataTrain, Model.Loss.CROSS_ENTROPY);
-		MODEL.train(dataTrain, BATCH_SIZE, EPOCHS, LEARNING_RATE);
-		MODEL.validate(dataValid);
+		MODEL.buildStructure(dataTrain, dataValid, Model.Loss.CROSS_ENTROPY);
+		MODEL.train(BATCH_SIZE, EPOCHS, LEARNING_RATE);
+		System.out.println("\r\nValidating...");
+		MODEL.validate();
 		System.out.println("Accuracy: " + MODEL.getAccuracy() + "%");
 	}
 		// Convolutional layer 1

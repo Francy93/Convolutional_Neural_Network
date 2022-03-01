@@ -10,33 +10,32 @@ public class Model {
 	private 		Loss		loss;			// loss operations
 	private 		Sample		sample;			// index of the current iterated sample
 
+	
+	// collection of loss functions
 	public static enum Loss {
 		MSE{
 			public void derivative(final Layer LAYER, final Sample SAMPLE){
 				Node.Relation[] FLAT_OUTPUT = LAYER.getFlatOutput();
-				final double[] OUTPUT_VALUES = getOutputValues(FLAT_OUTPUT);
 				final double[] LABEL_LOCATION = SAMPLE.getLabelLocation();
 
-				for(int val=0; val < OUTPUT_VALUES.length; val++){
-					setIntoNode(lib.Loss.MSE.derivative(OUTPUT_VALUES[val], LABEL_LOCATION[val]) / FLAT_OUTPUT.length, FLAT_OUTPUT[val]);
+				for(int classs=0; classs < FLAT_OUTPUT.length; classs++){
+					setIntoNode(lib.Loss.MSE.derivative(FLAT_OUTPUT[classs].getOutput(), LABEL_LOCATION[classs]) / FLAT_OUTPUT.length, FLAT_OUTPUT[classs]);
 				}
 			}
 		},
 		MAE{
 			public void derivative(final Layer LAYER, final Sample SAMPLE){
 				Node.Relation[] FLAT_OUTPUT = LAYER.getFlatOutput();
-				final double[] OUTPUT_VALUES = getOutputValues(FLAT_OUTPUT);
 				final double[] LABEL_LOCATION = SAMPLE.getLabelLocation();
 
-				for(int val=0; val < OUTPUT_VALUES.length; val++){
-					setIntoNode(lib.Loss.MAE.derivative(OUTPUT_VALUES[val], LABEL_LOCATION[val]), FLAT_OUTPUT[val]);
+				for(int classs=0; classs < FLAT_OUTPUT.length; classs++){
+					setIntoNode(lib.Loss.MAE.derivative(FLAT_OUTPUT[classs].getOutput(), LABEL_LOCATION[classs]), FLAT_OUTPUT[classs]);
 				}
 			}
 		},
 		CROSS_ENTROPY{
 			public void derivative(final Layer LAYER, final Sample SAMPLE){
 				Node.Relation[] FLAT_OUTPUT = LAYER.getFlatOutput();
-				//final double[] OUTPUT_VALUES = getOutputValues(FLAT_OUTPUT);
 				final double[] LABEL_LOCATION = SAMPLE.getLabelLocation();
 
 				//double meanError = 0;
@@ -70,22 +69,20 @@ public class Model {
 		HUBER{
 			public void derivative(final Layer LAYER, final Sample SAMPLE){
 				Node.Relation[] FLAT_OUTPUT = LAYER.getFlatOutput();
-				final double[] OUTPUT_VALUES = getOutputValues(FLAT_OUTPUT);
 				final double[] LABEL_LOCATION = SAMPLE.getLabelLocation();
 
-				for(int val=0; val < OUTPUT_VALUES.length; val++){
-					setIntoNode(lib.Loss.Huber.derivative(OUTPUT_VALUES[val], LABEL_LOCATION[val]), FLAT_OUTPUT[val]);
+				for(int classs=0; classs < FLAT_OUTPUT.length; classs++){
+					setIntoNode(lib.Loss.Huber.derivative(FLAT_OUTPUT[classs].getOutput(), LABEL_LOCATION[classs]), FLAT_OUTPUT[classs]);
 				}
 			}
 		},
 		KULLBACK{
 			public void derivative(final Layer LAYER, final Sample SAMPLE){
 				Node.Relation[] FLAT_OUTPUT = LAYER.getFlatOutput();
-				final double[] OUTPUT_VALUES = getOutputValues(FLAT_OUTPUT);
 				final double[] LABEL_LOCATION = SAMPLE.getLabelLocation();
 
-				for(int val=0; val < OUTPUT_VALUES.length; val++){
-					setIntoNode(lib.Loss.Kullback.derivative(OUTPUT_VALUES[val], LABEL_LOCATION[val]), FLAT_OUTPUT[val]);
+				for(int classs=0; classs < FLAT_OUTPUT.length; classs++){
+					setIntoNode(lib.Loss.Kullback.derivative(FLAT_OUTPUT[classs].getOutput(), LABEL_LOCATION[classs]), FLAT_OUTPUT[classs]);
 				}
 			}
 		};
@@ -98,33 +95,14 @@ public class Model {
 		 */
 		public abstract void derivative(final Layer LAYER, final Sample SAMPLE);
 		
-		// getters 
-
-		/**
-		 * getting an array of nodes output
-		 * @param FLAT_OUTPUT
-		 * @return values of the outputs
-		 */
-		private static double[] getOutputValues(final Node.Relation[] FLAT_OUTPUT){
-				final double[] OUTPUT_VALUES = new double[FLAT_OUTPUT.length];
-
-				for(int output=0; output < FLAT_OUTPUT.length; output++){
-					OUTPUT_VALUES[output] = FLAT_OUTPUT[output].getOutput();
-				}
-			return OUTPUT_VALUES;
-		}
-
 		// setters
-
 		/**
 		 * Setting the result into the nodes
 		 * @param RESULT
 		 * @param RELATION
 		 */
 		private static void setIntoNode(final double RESULT, final Node.Relation ... RELATION){
-			for(final Node.Relation REL: RELATION){
-				REL.addToChainRuleSum(RESULT);
-			}
+			for(final Node.Relation REL: RELATION)	REL.addToChainRuleSum(RESULT);
 		}
 
 	}
@@ -139,6 +117,11 @@ public class Model {
 		LAYERS = L;
 	}
 
+	/**
+	 * Getting the model object
+	 * @param L array of layers
+	 * @return model object
+	 */
 	public static Model Sequential(final Layer ... L){
 		return new Model(L);
 	}
@@ -152,13 +135,15 @@ public class Model {
 	 * @param DATA Dataset
 	 * @param L loss function
 	 */
-	public void buildStructure(final DataSet DATA, final Loss L){
+	public void buildStructure(final DataSet DATA_TRAIN, final DataSet DATA_VALID, final Loss L){
+		this.trainData = DATA_TRAIN;
+		this.validateData = DATA_VALID;
 		this.loss = L;
 
-		Layer prevLayer = this.LAYERS[0];				// previous layer
-		prevLayer.firstLayerInit(DATA.getSample(0));	// initialising the input layer
+		Layer prevLayer = this.LAYERS[0];					// previous layer
+		prevLayer.firstLayerInit(DATA_TRAIN.getSample(0));	// initialising the input layer
 							
-
+		// cycling overt the rest of the layers initialising them
 		for(int i=1; i < this.LAYERS.length; i++){
 			this.LAYERS[i].layerInit(prevLayer.getNodes());
 			prevLayer = this.LAYERS[i];
@@ -209,25 +194,27 @@ public class Model {
 	 * @param EPOCHS cicles of entire dataset
 	 * @param LEARNING_RATE learning rate
 	 */
-	public void train(final DataSet DATA,final int BATCH, final int EPOCHS, final double LEARNING_RATE){
-		this.trainData		= DATA;
+	public void train(final int BATCH, final int EPOCHS, final double LEARNING_RATE){ train( this.trainData, BATCH, EPOCHS, LEARNING_RATE); }
+	public void train(final DataSet DATA, final int BATCH, final int EPOCHS, final double LEARNING_RATE){
 		this.miniBatch		= BATCH;
 		this.learningRate	= LEARNING_RATE;
 
-		final int DATA_SIZE = this.trainData.getSize()-1;
+		final int DATA_SIZE = DATA.getSize()-1;
 		
 		//cicling over the dataset samples for "EPOCHS" times
 		for(int e=0; e < EPOCHS; e++){
-			this.trainData.shuffle();	// shuffeling the samples
-			lib.Util.Loading bar = new lib.Util.Loading();
-			System.out.println("Epoch: "+ (e+1));
+			lib.Util.Loading bar = new lib.Util.Loading(DATA_SIZE);
 
+			DATA.shuffle();	// shuffeling the samples
+			System.out.println("Epoch: "+ (e+1) + " / " + EPOCHS);
+
+			// cycling over the samples
 			for(int sampleIndex=0, batch=0; sampleIndex <= DATA_SIZE; sampleIndex++, batch++){
 				this.sample = DATA.getSample(sampleIndex);
-				bar.loading(DATA_SIZE, sampleIndex);
+				bar.loading();
 
-				feedForward();
-				backPropagate();
+				feedForward();		// performing forward propagation for all the layers
+				backPropagate();	// performing back propagation for all the layers
 
 				// updating weights after a certain amount of samples (mini batch)
 				if(batch >= BATCH || sampleIndex >= DATA_SIZE){
@@ -243,20 +230,21 @@ public class Model {
 	 * Validating / testing the model
 	 * @param DATA dataset
 	 */
+	public double validate(){ return validate(this.validateData); }
     public double validate(final DataSet DATA){
-		this.validateData = DATA;
-		this.validateData.shuffle();
+
+		DATA.shuffle();
 		int correct = 0;
 
-		for(int sampleIndex=0; sampleIndex < this.validateData.getSize(); sampleIndex++){
-			this.sample = this.validateData.getSample(sampleIndex);
+		for(int sampleIndex=0; sampleIndex < DATA.getSize(); sampleIndex++){
+			this.sample = DATA.getSample(sampleIndex);
 
 			feedForward();
-			correct += accuracyCheck(this.validateData)? 1: 0;
+			correct += accuracyCheck(DATA)? 1: 0;
 		}
 
 		// storing the accuracy percentage
-		this.accuracy = (double)correct * 100.00 / (double)validateData.getSize();
+		this.accuracy = (double)correct * 100.00 / (double)DATA.getSize();
 		return this.accuracy;
 	}
 

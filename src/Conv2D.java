@@ -1,7 +1,13 @@
 
 public class Conv2D extends Layer{
 
-        
+    /**
+     * Layer constructos
+     * @param NODES_AMOUNT Number of nodes
+     * @param KY Kernel Y size
+     * @param KX Kernel X size
+     * @param ACTIVATION Activation function
+     */
     public Conv2D(final int NODES_AMOUNT, final int KY, final int KX, final Activation ACTIVATION){
         super(NODES_AMOUNT, ACTIVATION, KY, KX);
     }
@@ -24,7 +30,6 @@ public class Conv2D extends Layer{
         super.weightsInit();				// initialising all this layer weights
         super.flatOutInit();				// flattening the output
         super.kernelRelationsInit();		// initialising this layer kernel relations
-        //super.outputInputRelationsInit();	// initialising this layer input and output relations
     }
 
     /**
@@ -39,7 +44,7 @@ public class Conv2D extends Layer{
     }
 
 
-
+	// initialising this layer sizes
     protected void sizesInit(){
         // i need to know the size of this layer input / matrix
         final Node.Relation[][] PREV_LYER_OUTPUT = super.inputs[0].getOutput();
@@ -61,11 +66,14 @@ public class Conv2D extends Layer{
 	public void sampleLoader(final Sample SMAPLE) throws Exception{
 		if(!this.isFirstLayer) throw new Exception("SampleLoader() can only be used with the first layer");
 
+		// cycling over this layer inputs array
 		for(int node=0; node < this.inputs.length; node++){
 			Node.Relation[][] OUTPUT = this.inputs[node].getOutput();
 
+			// cycling over the activation map of this layer nodes
 			for(int out_y=0; out_y < this.outputSizeY; out_y++){
 				for(int out_x=0; out_x < this.outputSizeX; out_x++){
+					// loading the sample pixel as it were an output of an ipothtical previous layer
 					OUTPUT[out_y][out_x].setOutput(SMAPLE.getToken2D(out_y, out_x));
 				}
 			}

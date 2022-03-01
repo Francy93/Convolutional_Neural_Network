@@ -2,20 +2,21 @@
 public class Node {
 
     
-	private	final	Relation[][]	OUTPUT;
-	private	final	double[][]		BIAS;
-	private			double[][]		biasGradients;
-    private final	double[][][]	KERNEL;
-	private			double[][][]	kernelGradients;
-	private	final	double[][][][]	KERNEL_MOMENTUM;
-	private	final	double[][][]	BIAS_MOMENTUM;
-	private 		double			timeStep = 0;
-		
-	private final double BETA1 = 0.9, BETA2 = 0.999, EPSILON = 1e-07;	
+	private	final	Relation[][]	OUTPUT;				// Matrix output also known as activation map in CNNs
+	private	final	double[][]		BIAS;				// Storage of biases assigned to avery index of the activation map matrix
+	private			double[][]		biasGradients;		// Gradient accumulation for the biases
+    private final	double[][][]	KERNEL;				// Kernel matrix
+	private			double[][][]	kernelGradients;	// Gradient accumulation for the Kernel
+	private	final	double[][][][]	KERNEL_MOMENTUM;	// Histoy of kernel gradients (momentum) for the Adam optimizer
+	private	final	double[][][]	BIAS_MOMENTUM;		// Histoy of biases gradients (momentum) for the Adam optimizer
+	private 		double			timeStep = 0;		// Adam TimeStep counter
 	
-	private final	int				CHANNEL_AMOUNT;
-	private	final	int				KERNEL_Y;
-	private	final	int				KERNEL_X;
+	// Adam parameters
+	private final double BETA1 = 0.9, BETA2 = 0.999, EPSILON = 1e-08;	
+	
+	private final	int				CHANNEL_AMOUNT;		// Number of kernel channel
+	private	final	int				KERNEL_Y;			// Kernel Y size
+	private	final	int				KERNEL_X;			// Kernel X size
 	
 	/**
 	 * Node Constructor
@@ -34,8 +35,8 @@ public class Node {
 		BIAS			= new double[OUTPUT_Y][OUTPUT_X];
 		kernelGradients	= new double[CA][KY][KX];
 		biasGradients	= new double[OUTPUT_Y][OUTPUT_X];
-		KERNEL_MOMENTUM = new double[2][CA][KY][KX];
-		BIAS_MOMENTUM	= new double[2][OUTPUT_Y][OUTPUT_X];
+		KERNEL_MOMENTUM = new double[CA][KY][KX][2];
+		BIAS_MOMENTUM	= new double[OUTPUT_Y][OUTPUT_X][2];
     }
 	// constructor for convnet first layer
 	public Node(final double[][] INPUT){
@@ -49,18 +50,23 @@ public class Node {
     }
     
 
-
+	// activation map "pixels"
     public class Relation{
 
-		private final	int		INDEX_Y;
-		private final	int		INDEX_X;
-		private			double	frontLinearOutput	= 0;	// to be resetted
-		private			double	backLinearOutput	= 0;	// to be resetted
-		private			double	output				= 0;
-		private			double	chainRuleSum		= 0;	// to be resetted
-		private			double	derivative			= 0;
-		private			double	derivativeSum		= 0;	// derivate * chainRuleSum
+		private final	int		INDEX_Y;					// Index Y of this node into the Activation map
+		private final	int		INDEX_X;					// Index X of this node into the Activation map
+		private			double	frontLinearOutput	= 0;	// Linear output of the forward propagation
+		private			double	backLinearOutput	= 0;	// Linear output kept after the forward propagation
+		private			double	output				= 0;	// Actual value output
+		private			double	chainRuleSum		= 0;	// Accumulation of chain rule derivatives
+		private			double	derivative			= 0;	// This node Partial derivative
+		private			double	derivativeSum		= 0;	// This node Partial derivative times chainRuleSum
 
+		/**
+		 * Activation map node ("pixel")
+		 * @param Y Index Y of this node into the Activation map
+		 * @param X Index X of this node into the Activation map
+		 */
         public Relation(final int Y, final int X){
 			INDEX_Y = Y;
 			INDEX_X = X;
@@ -68,24 +74,30 @@ public class Node {
 
 		// ------------ setters ------------------
 
+		// setting output and deleting the forward pripagation linear output
 		public void setOutput(final double ACTIVATED){
 			this.output = ACTIVATED;
 			this.backLinearOutput = this.frontLinearOutput;
 			this.frontLinearOutput = 0;
 		}
 		
+		// summing the derivatives accumulation
 		public void addToChainRuleSum(final double CRS){
 			this.chainRuleSum += CRS;
 		}
 
+		// summing all weigths and inputs moltiplications
 		public void addToLinearOutput(final double ADD){
 			this.frontLinearOutput += ADD;
 		}
 		
+		// setting this node partial derivative
 		public void setDerivative(final double DERIV){
 			this.derivative = DERIV;
 			this.backLinearOutput = 0; // resetting the linearOutput attribute
 		}
+
+		// summing this node partial derivative times the error propagation 
 		public void derivAndCRS_sum(){
 			this.derivativeSum = this.derivative * this.chainRuleSum;
 			this.chainRuleSum = 0; // resetting the chainRuleSum attribute
@@ -136,30 +148,62 @@ public class Node {
 	
 	// --------------------- setters -------------------
 
-
+	/**
+	 * Setting the weight of a specific index of the kernel
+	 * @param CHANNEL
+	 * @param Y
+	 * @param X
+	 * @param WEIGHT
+	 */
 	public void setWeight(final int CHANNEL, final int Y, final int X, final double WEIGHT){
 
 		KERNEL[CHANNEL][Y][X] = WEIGHT;
 	}
 
+	/**
+	 * Aggregate gradients of the bias weights
+	 * @param GRADIENT
+	 * @param Y
+	 * @param X
+	 */
 	public void addBiasGradients(final double GRADIENT, final int Y, final int X){
 		this.biasGradients[Y][X] += GRADIENT;
 	}
 
+	/**
+	 * Aggregate gradients of the kernel weights
+	 * @param GRADIENT
+	 * @param CHANNEL
+	 * @param Y
+	 * @param X
+	 */
 	public void addToKernelGradients(final double GRADIENT, final int CHANNEL, final int Y, final int X){
 		this.kernelGradients[CHANNEL][Y][X] += GRADIENT;
 	}
 
-
+	/**
+	 * Setting the output of a specific activation map index
+	 * @param Y
+	 * @param X
+	 * @param ACTIVATED	value from activation function
+	 */
 	public void setOutput(final int Y, final int X, final double ACTIVATED){
 		this.OUTPUT[Y][X].setOutput(ACTIVATED);
 	}
 
+	/**
+	 * Updating weights and biases
+	 * @param BATCH_SIZE
+	 * @param LEARNING_RATE
+	 */
+	public void update(final int BATCH_SIZE, final double LEARNING_RATE){
+		this.timeStep++;
+		weightsUpdate(BATCH_SIZE, LEARNING_RATE);
+		biasUpdate(BATCH_SIZE, LEARNING_RATE);
+	}
 
 	// Weights update
-	public void weightsUpdate(final int BATCH_SIZE, final double LEARNING_RATE){
-		double m, v, mk, vk, grad;
-		this.timeStep++;
+	private void weightsUpdate(final int BATCH_SIZE, final double LEARNING_RATE){
 
 		// cycling over the all the kernel weights
 		for(int channel=0; channel < this.CHANNEL_AMOUNT; channel++){
@@ -168,22 +212,7 @@ public class Node {
 
 					// updating every single weight dividing it by the mini batch to find its average
 					//this.KERNEL[channel][kernel_y][kernel_x] -=  LEARNING_RATE * (this.kernelGradients[channel][kernel_y][kernel_x] / ((double)BATCH_SIZE));
-					grad = (this.kernelGradients[channel][kernel_y][kernel_x] / ((double)BATCH_SIZE));
-
-					this.KERNEL_MOMENTUM[0][channel][kernel_y][kernel_x] *= BETA1; 
-					this.KERNEL_MOMENTUM[0][channel][kernel_y][kernel_x] += (1.0 - BETA1) * grad;
-					m = this.KERNEL_MOMENTUM[0][channel][kernel_y][kernel_x];
-
-					this.KERNEL_MOMENTUM[1][channel][kernel_y][kernel_x] *= BETA2;
-					this.KERNEL_MOMENTUM[1][channel][kernel_y][kernel_x] += (1.0 - BETA2) * grad * grad;
-					v = this.KERNEL_MOMENTUM[1][channel][kernel_y][kernel_x];
-
-					mk = m / (1.0 - Math.pow(BETA1, this.timeStep));
-					vk = v / (1.0 - Math.pow(BETA2, this.timeStep));
-
-					this.KERNEL[channel][kernel_y][kernel_x] -= LEARNING_RATE * mk / (Math.sqrt(vk) + EPSILON);
-
-					
+					this.KERNEL[channel][kernel_y][kernel_x] -= LEARNING_RATE * adamOpt(this.KERNEL_MOMENTUM[channel][kernel_y][kernel_x], this.kernelGradients[channel][kernel_y][kernel_x] / ((double)BATCH_SIZE));
 				}
 			}
 		}
@@ -193,37 +222,42 @@ public class Node {
 	}
 
 	// biases update
-	public void biasUpdate(final int BATCH_SIZE, final double LEARNING_RATE){
-		double m, v, mk, vk, grad;
+	private void biasUpdate(final int BATCH_SIZE, final double LEARNING_RATE){
 
 		for(int bias_y=0; bias_y < this.BIAS.length; bias_y++){
 			for(int bias_x=0; bias_x <  this.BIAS[0].length; bias_x++){
 
 				// updating every single weight dividing it by the mini batch to find its average
 				//this.BIAS[bias_y][bias_x] -=  LEARNING_RATE * (this.biasGradients[bias_y][bias_x] / ((double)BATCH_SIZE));
-
-
-				grad = this.biasGradients[bias_y][bias_x] / ((double)BATCH_SIZE);
-
-				this.BIAS_MOMENTUM[0][bias_y][bias_x] *= BETA1; 
-				this.BIAS_MOMENTUM[0][bias_y][bias_x] += (1.0 - BETA1) * grad;
-				m = this.BIAS_MOMENTUM[0][bias_y][bias_x];
-
-				this.BIAS_MOMENTUM[1][bias_y][bias_x] *= BETA2;
-				this.BIAS_MOMENTUM[1][bias_y][bias_x] += (1.0 - BETA2) * grad * grad;
-				v = this.BIAS_MOMENTUM[1][bias_y][bias_x];
-
-				mk = m / (1.0 - Math.pow(BETA1, this.timeStep));
-				vk = v / (1.0 - Math.pow(BETA2, this.timeStep));
-
-				this.BIAS[bias_y][bias_x] -= LEARNING_RATE * mk / (Math.sqrt(vk) + EPSILON);
-
+				this.BIAS[bias_y][bias_x] -= LEARNING_RATE * adamOpt(this.BIAS_MOMENTUM[bias_y][bias_x], this.biasGradients[bias_y][bias_x] / ((double)BATCH_SIZE));
 			}
 		}
 		
 
 		// resetting the gradinets storage
 		this.biasGradients = new double[this.BIAS.length][this.BIAS[0].length];
+	}
+
+	/**
+	 * Adam optimizer
+	 * @param MOMENTUM
+	 * @param GRAD non optimized gradient
+	 * @return optimized gradient
+	 */
+	private double adamOpt(final double[] MOMENTUM, final double GRAD){
+		double NORM1, NORM2;
+
+		// compute the first moment
+		MOMENTUM[0] = (MOMENTUM[0] * this.BETA1) + ((1.0 - this.BETA1) * GRAD); 
+
+		// compute the second moment
+		MOMENTUM[1] = (MOMENTUM[1] * this.BETA2) + ((1.0 - this.BETA2) * GRAD * GRAD); 
+
+		// normalisation
+		NORM1 = MOMENTUM[0] / (1.0 - Math.pow(this.BETA1, this.timeStep));
+		NORM2 = MOMENTUM[1] / (1.0 - Math.pow(this.BETA2, this.timeStep));
+
+		return NORM1 / ((Math.sqrt(NORM2) + this.EPSILON));
 	}
 
 
@@ -233,15 +267,28 @@ public class Node {
 
 	// -------------------- getters ----------------
 
-
+	/**
+	 * Getting a specific weight of the kernel given its index
+	 * @param CHANNEL
+	 * @param Y
+	 * @param X
+	 * @return weight
+	 */
 	public double getWeight(final int CHANNEL, final int Y, final int X){
 		return KERNEL[CHANNEL][Y][X];
 	}
 
+	// get node relation
 	public Relation[][] getOutput(){
 		return this.OUTPUT;
 	}
 
+	/**
+	 * Getting a specific weight of the bias given its index
+	 * @param ACT_MAP_Y
+	 * @param ACT_MAP_X
+	 * @return bias of a specific index
+	 */
 	public double getBias(final int ACT_MAP_Y, final int ACT_MAP_X){
 		return this.BIAS[ACT_MAP_Y][ACT_MAP_X];
 	}

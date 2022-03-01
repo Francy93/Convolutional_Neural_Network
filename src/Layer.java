@@ -1,19 +1,19 @@
 
 public abstract class Layer {
 
-	protected			boolean 	isFirstLayer = false;
-    private 	final	Node[]		NODES;
-    protected       	Node[]		inputs;
-	protected       	int			outputSizeY;
-	protected       	int			outputSizeX;
-	protected       	int			inputSizeY;
-	protected       	int			inputSizeX;
-    private 	final 	int			NODES_AMOUNT;
-    private 	final 	Activation	ACTIVATION;
-	protected			int     	KERNEL_Y;
-	protected			int     	KERNEL_X;
-	private	Node.Relation[]			falt_output;
-	private	Node.Relation[][][][] 	kernelRelations;
+	protected			boolean 	isFirstLayer = false;	//  marking this layer as first layer or hidden one
+    private 	final	Node[]		NODES;					//	this layer nodes container
+    protected       	Node[]		inputs;					//	this layer inputs container
+	protected       	int			outputSizeY;			//	this layer activation map Y size
+	protected       	int			outputSizeX;			//	this layer activation map X size
+	protected       	int			inputSizeY;				//	this layer input y size
+	protected       	int			inputSizeX;				//	this layer input X size
+    private 	final 	int			NODES_AMOUNT;			//	this layer nodes total
+    private 	final 	Activation	ACTIVATION;				//	container of activation function and related differentiation
+	protected			int     	KERNEL_Y;				//	Size Y of this layer kernel
+	protected			int     	KERNEL_X;				//	Size X of this layer kernel
+	private	Node.Relation[]			flat_output;			//	array of nodes outputs
+	private	Node.Relation[][][][] 	kernelRelations;		//	array of relations between this layer weigths and inputs
 
 	public static enum Activation{
 		LINEAR{
@@ -84,16 +84,18 @@ public abstract class Layer {
 		SOFTMAX{
 			public void function(final Node.Relation REL, final Layer LAYER){ 
 				double sum = 0;
-				double biggestValue = LAYER.falt_output[0].getFrontLinearOutput(); 
+				double biggestValue = LAYER.flat_output[0].getFrontLinearOutput(); 
 
-				for(int index = 0 ; index < LAYER.falt_output.length; index++){
-					biggestValue = Math.max(LAYER.falt_output[index].getFrontLinearOutput(), biggestValue);
+				// performing the normalization
+				for(int index = 0 ; index < LAYER.flat_output.length; index++){
+					biggestValue = Math.max(LAYER.flat_output[index].getFrontLinearOutput(), biggestValue);
 				}
 
-				final double L_O = Math.exp(REL.getFrontLinearOutput() - biggestValue); // getting linear output
+				// getting the normalizer current linear output
+				final double L_O = Math.exp(REL.getFrontLinearOutput() - biggestValue);
 		
-				for(int index = 0 ; index < LAYER.falt_output.length; index++){
-					sum += Math.exp(LAYER.falt_output[index].getFrontLinearOutput() - biggestValue);
+				for(int index = 0 ; index < LAYER.flat_output.length; index++){
+					sum += Math.exp(LAYER.flat_output[index].getFrontLinearOutput() - biggestValue);
 				}
 
 				REL.setOutput(L_O/sum);
@@ -169,7 +171,7 @@ public abstract class Layer {
 	//////////////////////////////////////////////////////////// INITIALISERS //////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
+	// initialising this layer nodes
 	protected void nodesInit(){
         for(int i=0; i< this.NODES_AMOUNT; i++){
             this.NODES[i] = new Node(this.inputs.length, this.KERNEL_Y, this.KERNEL_X, this.outputSizeY, this.outputSizeX);
@@ -196,7 +198,7 @@ public abstract class Layer {
 
 	// flattening this layer output
 	protected void flatOutInit(){
-		this.falt_output = new Node.Relation[this.outputSizeY * this.outputSizeX * this.NODES_AMOUNT];
+		this.flat_output = new Node.Relation[this.outputSizeY * this.outputSizeX * this.NODES_AMOUNT];
 		int flt_out_iter = 0;
 
 		// cycling over all this layer node
@@ -208,12 +210,13 @@ public abstract class Layer {
 				for(int outX=0; outX < this.outputSizeX; outX++){
 
 					// flattening the node values
-					this.falt_output[flt_out_iter++] = OUTPUT_MATRIX[outY][outX];
+					this.flat_output[flt_out_iter++] = OUTPUT_MATRIX[outY][outX];
 				}
 			}
 		}
 	}
 
+	// initilising the array of relations between weights and inputs
     protected void kernelRelationsInit(){
         // getting the size of an entire feature map output
         final int PATCH_SIZE	= this.outputSizeY * this.outputSizeX;
@@ -243,7 +246,7 @@ public abstract class Layer {
 
                             try{	// storing the relations between weigths and inputs
                                 this.kernelRelations[channel][kernel_y][kernel_X][relation] = INPUT_NODE[image_y+kernel_y][image_x+kernel_X];
-                            }catch(Exception e){}
+                            }catch(ArrayIndexOutOfBoundsException e){}
                         }
 
                     }
@@ -366,7 +369,7 @@ public abstract class Layer {
 	 */
     private void gradientAndPropagate(final Node NODE, final double DERIV_SUM, final int CHANNEL, final int KERNEL_Y, final int KERNEL_X, final int STRIDE){
         try{
-            // --------- GRADIENT DISCENT OPERATION
+            // --------- GRADIENT DESCENT OPERATION
 
             // storing the gradient into this layer node
             NODE.addToKernelGradients(
@@ -415,8 +418,7 @@ public abstract class Layer {
 			final Node NODE = this.NODES[node];
 
 			// updating both weights and biases 
-			NODE.weightsUpdate(BATCH_SIZE, LEARNING_RATE);
-			NODE.biasUpdate(BATCH_SIZE, LEARNING_RATE);
+			NODE.update(BATCH_SIZE, LEARNING_RATE);
 
 		}
     }
@@ -436,12 +438,16 @@ public abstract class Layer {
 	}
 
 	public Node.Relation[] getFlatOutput(){
-		return this.falt_output;
+		return this.flat_output;
 	}
 
 
 
+
+
+
 	// ------------------------ abstracts ---------------------------
+
 
 	// initialising sizes
 	protected abstract void sizesInit();

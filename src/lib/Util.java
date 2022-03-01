@@ -402,62 +402,72 @@ public class Util{
 
 	// loading bar class
 	public static class Loading {
-        
-        private short counter;
 
-        public Loading(){
-            counter = -1;
+        private			long	index;
+        private			short	counter;
+		private final	short	BAR_LENGTH;
+		private final	short	UPDATES;
+		private final	long	CICLES_AMOUNT;
+
+        
+		public Loading(final long CA, final short BL, final short U){
+            counter			= -1;
+			index			= 0;
+			BAR_LENGTH		= BL;
+			UPDATES			= U;
+			CICLES_AMOUNT	= CA;
         }
+		public Loading(final long CA){ this(CA, (short)50, (short)100); }
+		public Loading(){ this(0, (short)50, (short)100); }
+
+
     	/**
          * loading bar
-         * @param size 
-         * @param index 
+         * @param size CICLES AMOUNT
+         * @param index Current index
          * @param barLength (facultative)
          * @param updates (facultative)
          * @return string 
          */
-        public void loading(final long size, long index){ loading(size,index,(short)50,(short)100); }
-        public void loading(final long size, long index , short barLength){ loading(size,index,barLength,(short)100); }
-        public void loading(final long size, long index,  short barLength, short updates){
+		public void loading(){ if (this.CICLES_AMOUNT > 0 && ++this.index <= this.CICLES_AMOUNT)	barGen(this.CICLES_AMOUNT, this.index, this.BAR_LENGTH, this.UPDATES); }
+        public void loading(final long size, long index){ if (size > 0 && ++index <= size)	barGen(size, index, this.BAR_LENGTH, this.UPDATES); }
+        public void loading(final long size, long index , final short barLength){ if (size > 0 && ++index <= size)	barGen(size, index, barLength, this.UPDATES); }
+        public void loading(final long size, long index,  final short barLength, final short updates){ if (size > 0 && ++index <= size)	barGen(size, index, barLength, updates); }
+		
+		private void barGen(final long size, long index,  final short barLength, short updates){
 
-            if (size > 0 && ++index <= size){
-                //bar standard parameters
-                /* barLength   = barLength > 0? barLength: 50;
-                updates     = updates > 0? updates: 100; */
-
-                //calculating loading bar
-                updates = updates > 99? 100: updates < 1? 0: updates;
-                final short barPercent   = (short)(index * updates / size);
-                final short tokens       = (short)((float)barLength / updates * barPercent);
-                
-                if(tokens != counter){
-                    // "counter" determines when to print the status bar
-                    counter = tokens;
-                    final short percent = (short)(index * 100 / size);
-                    String block = "█", dotted = "░";
-                    /*#if defined(_WIN32)
-                        block   = string(1,(char)219), dotted  = string(1,(char)176);
-                    #else
-                        block  = "█";
-						dotted = "░";
-                    //#endif*/
-                    
-                    if(percent < 100 && size > index){
-                        String statusFull = "", statusVoid = "", colors;
-                        for(long j=0;j<tokens;j++) statusFull += block;
-                        for(long j=0;j<barLength-(long)tokens;j++) statusVoid += dotted;
-                        if      (percent < 33)  colors = "red";
-                        else if (percent < 66)  colors = "yellow";
-                        else                    colors = "green";
-                        
-                        String outcome = color(colors)+statusFull+color("reset")+statusVoid+" "+color(colors)+percent+"%"+color("reset")+"\r";
-                        System.out.print( "\r" + outcome + "\r");
-                    }else {
-                        counter = -1;
-                        System.out.print( "\33[2K" + "\r");
-                    }
-                }
-            }
+			//calculating loading bar
+			updates = updates > 99? 100: updates < 1? 0: updates;
+			final short BAR_PERCENT		= (short)(index * updates / size);
+			final short TOKENS			= (short)((float)barLength / updates * BAR_PERCENT);
+			
+			if(TOKENS != this.counter){
+				// "counter" determines when to print the status bar
+				this.counter = TOKENS;
+				final short PERCENT = (short)(index * 100 / size);
+				String block = "█", dotted = "░";
+				/*#if defined(_WIN32)
+					block   = string(1,(char)219), dotted  = string(1,(char)176);
+				#else
+					block  = "█", dotted = "░";
+				//#endif*/
+				
+				if(PERCENT < 100 && size > index){
+					String statusFull = "", statusVoid = "", colors;
+					for(long j=0;j<TOKENS;j++) statusFull += block;
+					for(long j=0;j<barLength-(long)TOKENS;j++) statusVoid += dotted;
+					if      (PERCENT < 33)  colors = "red";
+					else if (PERCENT < 66)  colors = "yellow";
+					else                    colors = "green";
+					
+					String outcome = color(colors)+statusFull+color("reset")+statusVoid+" "+color(colors)+PERCENT+"%"+color("reset")+"\r";
+					System.out.print( "\r" + outcome + "\r");
+				}else {
+					this.counter--;
+					System.out.print( "\33[2K" + "\r");
+				}
+			}
+		
         }
     }
 }
