@@ -6,7 +6,7 @@ public class Ann{
 	private static			DataSet dataValid;								//	detaset used to perform the validation
 	private static final	double	LEARNING_RATE	= 0.001;				//	learning rate suggested is about 0.001
 	private static final	int		BATCH_SIZE		= 2;//4	 , 2				//	number of samples processed before updating the weights
-	private static final	int		EPOCHS			= 30;//50 , 30					//	number of dataset cycles
+	private static final	int		EPOCHS			= 40;//50 , 30					//	number of dataset cycles
 	private static final	String	TRAINING_FILE	= "cw2DataSet1.csv";	//	file name of the training dataset
 	private static final	String	VALIDATE_FILE	= "cw2DataSet2.csv";	//	file name of the validation dataset
 
@@ -14,8 +14,8 @@ public class Ann{
 
 	// Model definition
 	private static final Model MODEL = Model.Sequential(
-		Layer.Conv2D(32, 2, 2,	Layer.Activation.MISH),		// convolutional layer of 16 filters with a kernal of 2X2
-		Layer.Conv2D(64, 2, 2,	Layer.Activation.MISH),		// convolutional layer of 32 filters with a kernal of 3X3
+		Layer.Conv2D(32, 2, 2,	Layer.Activation.MISH),		// convolutional layer of 32 filters with a kernal of 2X2
+		Layer.Conv2D(64, 2, 2,	Layer.Activation.MISH),		// convolutional layer of 64 filters with a kernal of 2X2
 		// starting the fully connected layers
 		Layer.Dense(128,		Layer.Activation.MISH),		// dense layer of 128 nodes
 		Layer.Dense(10 ,		Layer.Activation.SOFTMAX)	// output layer of 10 classifications
@@ -27,8 +27,8 @@ public class Ann{
 	// building the model
 	public static void setModel() throws FileNotFoundException {
 		try{
-			dataTrain = new DataSet(TRAINING_FILE, ",");
-			dataValid = new DataSet(VALIDATE_FILE, ",");
+			dataTrain = new DataSet(TRAINING_FILE, ",");	// loading the dataset 1
+			dataValid = new DataSet(VALIDATE_FILE, ",");	// loading the dataset 2
 		}catch(Exception e){ throw new FileNotFoundException(); }
 
 		// initialising the model

@@ -15,7 +15,7 @@ public class DataSet {
 	private final String	DELIMITER;	// string file delimiter
 
 	/**
-	 * 
+	 * Dataset constructor
 	 * @param F_N File name
 	 * @param D Data Delimiter
 	 * @throws FileNotFoundException
