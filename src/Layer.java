@@ -15,6 +15,7 @@ public abstract class Layer {
 	private	Node.Relation[]			flat_output;			//	array of nodes outputs
 	private	Node.Relation[][][][] 	kernelRelations;		//	array of relations between this layer weigths and inputs
 	protected final		double[]	NODES_PARAM;			//	Learning rate and batch size
+	protected			lib.Optimizer	optimizer;			//	learning optimizer
 
 	public static enum Activation{
 		LINEAR{
@@ -176,7 +177,7 @@ public abstract class Layer {
 	// initialising this layer nodes
 	protected void nodesInit(){
         for(int i=0; i< this.NODES_AMOUNT; i++){
-            this.NODES[i] = new Node(this.inputs.length, this.KERNEL_Y, this.KERNEL_X, this.outputSizeY, this.outputSizeX, this.NODES_PARAM);
+            this.NODES[i] = new Node(this.inputs.length, this.KERNEL_Y, this.KERNEL_X, this.outputSizeY, this.outputSizeX, this.optimizer);
         }
     }
 
@@ -410,9 +411,9 @@ public abstract class Layer {
 	 * @param BATCH_SIZE
 	 * @param LEARNING_RATE
 	 */
-    public void updateWeights(final int BATCH_SIZE, final double LEARNING_RATE){
-		this.NODES_PARAM[0] = LEARNING_RATE;
-		this.NODES_PARAM[1] = BATCH_SIZE;
+    public void updateWeights(){
+		/* this.NODES_PARAM[0] = LEARNING_RATE;
+		this.NODES_PARAM[1] = BATCH_SIZE; */
 
 		// cycling overall the nodes
 		for(final Node NODE: this.NODES)	NODE.update(); // updating both weights and biases 	
@@ -451,12 +452,12 @@ public abstract class Layer {
 	 * Initialising this layer
 	 * @param INPUTS
 	 */
-	public abstract void layerInit(final Node ... INPUTS);
+	public abstract void layerInit(final lib.Optimizer OPT, final Node ... INPUTS);
 	/**
 	 * Initialising the first layer
 	 * @param SMAPLE
 	 */
-    public abstract void firstLayerInit(final Sample SMAPLE);
+    public abstract void firstLayerInit(final lib.Optimizer OPT, final Sample SMAPLE);
 
 	/**
 	 * Samples Loader

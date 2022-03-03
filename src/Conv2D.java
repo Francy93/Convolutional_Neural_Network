@@ -22,8 +22,9 @@ public class Conv2D extends Layer{
 	 * Hidden lyer initialiser
 	 * @param INPUTS 
 	 */
-    public void layerInit(final Node ... INPUTS){
-        super.inputs = INPUTS;
+    public void layerInit(final lib.Optimizer OPT, final Node ... INPUTS){
+        super.inputs    = INPUTS;
+        super.optimizer = OPT;
 
         this.sizesInit();					// initialising this layer sizes
         super.nodesInit();					// initialising this layer nodes
@@ -36,11 +37,11 @@ public class Conv2D extends Layer{
 	 * First Convolutional layer initialiser
 	 * @param SAMPLE 
 	 */
-    public void firstLayerInit(final Sample SAMPLE){
-        final Node[] NODE	= {new Node(SAMPLE.getData2D(), super.NODES_PARAM)}; 
+    public void firstLayerInit(final lib.Optimizer OPT, final Sample SAMPLE){
+        final Node[] NODE	= {new Node(SAMPLE.getData2D(), OPT)}; 
         super.isFirstLayer	= true;
 
-        this.layerInit(NODE);
+        this.layerInit(OPT, NODE);
     }
 
 

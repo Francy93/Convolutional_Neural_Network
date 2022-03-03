@@ -32,9 +32,6 @@ public class Main {
 		switch(Util.navChoice(5,"Perform a training")){
 			case EXIT: return EXIT;
 			case BACK: return BACK;
-			case	1: Util.setColor(true);
-				break;
-			case  	2: Util.setColor(false);
 		}
 		return AHEAD;
 	}

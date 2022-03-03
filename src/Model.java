@@ -5,10 +5,9 @@ public class Model {
 	private			DataSet 	trainData;		// datastructure of training samples
 	private			DataSet 	validateData;	// datastructure of validation samples
 	private final	Layer[]		LAYERS;			// array containing all the layers
-	private 		int			miniBatch;		// size of mini batch
-	private 		double		learningRate;	// learning rate value
 	private 		Loss		loss;			// loss operations
 	private 		Sample		sample;			// index of the current iterated sample
+	private			lib.Optimizer optimizer;
 
 
 	// collection of loss functions
@@ -135,17 +134,18 @@ public class Model {
 	 * @param DATA Dataset
 	 * @param L loss function
 	 */
-	public void buildStructure(final DataSet DATA_TRAIN, final DataSet DATA_VALID, final Loss L){
-		this.trainData = DATA_TRAIN;
-		this.validateData = DATA_VALID;
-		this.loss = L;
+	public void buildStructure(final DataSet DATA_TRAIN, final DataSet DATA_VALID, final lib.Optimizer OPT, final Loss L){
+		this.trainData		= DATA_TRAIN;
+		this.validateData	= DATA_VALID;
+		this.loss			= L;
+		this.optimizer		= OPT;
 
 		Layer prevLayer = this.LAYERS[0];					// previous layer
-		prevLayer.firstLayerInit(DATA_TRAIN.getSample(0));	// initialising the input layer
+		prevLayer.firstLayerInit(OPT, DATA_TRAIN.getSample(0));	// initialising the input layer
 							
 		// cycling overt the rest of the layers initialising them
 		for(int i=1; i < this.LAYERS.length; i++){
-			this.LAYERS[i].layerInit(prevLayer.getNodes());
+			this.LAYERS[i].layerInit(OPT, prevLayer.getNodes());
 			prevLayer = this.LAYERS[i];
 		}
 	}
@@ -181,7 +181,7 @@ public class Model {
 
 	// Updating the weights upon the Batch-size end
 	private void weightsUpdate(){
-		for(final Layer LAYER: this.LAYERS) LAYER.updateWeights(this.miniBatch, this.learningRate);
+		for(final Layer LAYER: this.LAYERS) LAYER.updateWeights();
 	}
 
 
@@ -196,8 +196,7 @@ public class Model {
 	 */
 	public void train(final int BATCH, final int EPOCHS, final double LEARNING_RATE){ train( this.trainData, BATCH, EPOCHS, LEARNING_RATE); }
 	public void train(final DataSet DATA, final int BATCH, final int EPOCHS, final double LEARNING_RATE){
-		this.miniBatch		= BATCH;
-		this.learningRate	= LEARNING_RATE;
+		this.optimizer.setParam(LEARNING_RATE, BATCH);
 
 		final int DATA_SIZE = DATA.getSize()-1;
 		

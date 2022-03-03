@@ -17,26 +17,26 @@
 	 * Hidden lyer initialiser
 	 * @param INPUTS 
 	 */
-    public void layerInit(final Node ... INPUTS){
+    public void layerInit(final lib.Optimizer OPT, final Node ... INPUTS){
         super.inputs	= INPUTS;
+		super.optimizer = OPT;
 
         this.sizesInit();					// initialising this layer sizes
         super.nodesInit();					// initialising this layer nodes
         super.weightsInit();				// initialising all this layer weights
         super.flatOutInit();				// flattening the output
         super.kernelRelationsInit();		// initialising this layer kernel relations
-        //super.outputInputRelationsInit();	// initialising this layer input and output relations
     }
 
 	/**
 	 * First Densenet layer initialiser
 	 * @param SAMPLE 
 	 */
-    public void firstLayerInit(final Sample SAMPLE){
-        final Node[] NODE	= {new Node(SAMPLE.getData1D(), super.NODES_PARAM)};
+    public void firstLayerInit(final lib.Optimizer OPT, final Sample SAMPLE){
+        final Node[] NODE	= {new Node(SAMPLE.getData1D(), OPT)};
         super.isFirstLayer	= true;
 
-        layerInit(NODE);
+        layerInit(OPT, NODE);
     }
 
 

@@ -9,6 +9,9 @@ import java.util.ArrayList;
  */
 public class Util{
 	public static final Scanner CIN = new Scanner(System.in);
+	//determining whether the text get colored or not
+	private static boolean colorState = true, timerOnOff;
+	private static ArrayList<Long> compTime = new ArrayList<>();
 
 	/**
 	 * Lambda function with just a parameter
@@ -20,9 +23,7 @@ public class Util{
         public V op(V a, T b);
     }
 
-	//determining whether the text get colored or not
-	private static boolean colorState = true, timerOnOff;
-	private static ArrayList<Long> compTime = new ArrayList<>();
+
 
 	public static void setColor(final boolean B){ colorState = B; }
 	public static boolean colorState(){ return colorState;  }
@@ -408,6 +409,7 @@ public class Util{
 		private final	short	BAR_LENGTH;
 		private final	short	UPDATES;
 		private final	long	CICLES_AMOUNT;
+		private final	String	BLOCK = "█", DOTTED = "░";
 
         
 		public Loading(final long CA, final short BL, final short U){
@@ -446,7 +448,8 @@ public class Util{
 				// "counter" determines when to print the status bar
 				this.counter = TOKENS;
 				final short PERCENT = (short)(index * 100 / size);
-				String block = "█", dotted = "░";
+				//String block = "█", dotted = "░";
+				//char block = 0x2588, dotted = 0x2591;
 				/*#if defined(_WIN32)
 					block   = string(1,(char)219), dotted  = string(1,(char)176);
 				#else
@@ -455,8 +458,8 @@ public class Util{
 				
 				if(PERCENT < 100 && size > index){
 					String statusFull = "", statusVoid = "", colors;
-					for(long j=0;j<TOKENS;j++) statusFull += block;
-					for(long j=0;j<barLength-(long)TOKENS;j++) statusVoid += dotted;
+					for(long j=0;j<TOKENS;j++) statusFull += this.BLOCK;
+					for(long j=0;j<barLength-(long)TOKENS;j++) statusVoid += this.DOTTED;
 					if      (PERCENT < 33)  colors = "red";
 					else if (PERCENT < 66)  colors = "yellow";
 					else                    colors = "green";
