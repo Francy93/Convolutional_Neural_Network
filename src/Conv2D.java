@@ -20,7 +20,8 @@ public class Conv2D extends Layer{
 
 	/**
 	 * Hidden lyer initialiser
-	 * @param INPUTS 
+	 * @param OPT   optimizer 
+     * @param INPUTS previous layer output
 	 */
     public void layerInit(final lib.Optimizer OPT, final Node ... INPUTS){
         super.inputs    = INPUTS;
@@ -35,6 +36,7 @@ public class Conv2D extends Layer{
 
     /**
 	 * First Convolutional layer initialiser
+     * @param OPT   optimizer 
 	 * @param SAMPLE 
 	 */
     public void firstLayerInit(final lib.Optimizer OPT, final Sample SAMPLE){

@@ -7,7 +7,7 @@ public class Model {
 	private final	Layer[]		LAYERS;			// array containing all the layers
 	private 		Loss		loss;			// loss operations
 	private 		Sample		sample;			// index of the current iterated sample
-	private			lib.Optimizer optimizer;
+	private			lib.Optimizer optimizer;	// Learning (gradient descent) optimizer
 
 
 	// collection of loss functions
@@ -40,29 +40,7 @@ public class Model {
 				//double meanError = 0;
 				for(int classs=0; classs < FLAT_OUTPUT.length; classs++){
 					setIntoNode(lib.Loss.Cross_Entropy.derivative(FLAT_OUTPUT[classs].getOutput(), LABEL_LOCATION[classs]), FLAT_OUTPUT[classs]);
-					//setIntoNode(lib.Loss.Cross_Entropy.derivative(lib.Loss.Cross_Entropy.function(FLAT_OUTPUT[classs].getOutput(), LABEL_LOCATION[classs]), LABEL_LOCATION[classs]));
-					//meanError += lib.Loss.Cross_Entropy.function(FLAT_OUTPUT[classs].getOutput(), LABEL_LOCATION[classs]);
-					//System.out.print( lib.Util.round(FLAT_OUTPUT[classs].getBackLinearOutput(), 5) + "	" );
 				}
-				//System.out.println(meanError/FLAT_OUTPUT.length);
-				//System.out.println();
-				/* int val = 4;
-				if(SAMPLE.getLabel() == val){
-					
-					for(int classs=0; classs < FLAT_OUTPUT.length; classs++){
-						String str = "";
-						if(val == classs) str = lib.Util.color("yellow");
-						str +="C" + classs + " = " + lib.Util.round(FLAT_OUTPUT[classs].getBackLinearOutput(), 5) + "	";
-						//str +="C" + classs + " = " + lib.Util.round(lib.Loss.Cross_Entropy.function(FLAT_OUTPUT[classs].getOutput(), LABEL_LOCATION[classs]), 5) + "	";
-						if(val == classs) str += lib.Util.color("reset");
-						System.out.print(str);
-					}
-					System.out.println();
-					//System.out.print("C: " + classs + "	" + lib.Util.round(lib.Loss.Cross_Entropy.function(FLAT_OUTPUT[classs].getOutput(), LABEL_LOCATION[classs]), 5) + "	");
-					//System.out.println(lib.Loss.Cross_Entropy.function(FLAT_OUTPUT[val].getOutput(), LABEL_LOCATION[val]));
-					//System.out.println(lib.Loss.Cross_Entropy.derivative(lib.Loss.Cross_Entropy.function(FLAT_OUTPUT[val].getOutput(), LABEL_LOCATION[val]), LABEL_LOCATION[val]) + " <--	predicted | target	--> " + LABEL_LOCATION[val]);
-					//System.out.println(lib.Loss.Cross_Entropy.derivative(FLAT_OUTPUT[5].getOutput(), LABEL_LOCATION[5]));
-				} */
 			}
 		},
 		HUBER{
@@ -131,8 +109,10 @@ public class Model {
 
 	/**
 	 * Building the Neural Network structure
-	 * @param DATA Dataset
-	 * @param L loss function
+	 * @param DATA_TRAIN
+	 * @param DATA_VALID
+	 * @param OPT
+	 * @param L
 	 */
 	public void buildStructure(final DataSet DATA_TRAIN, final DataSet DATA_VALID, final lib.Optimizer OPT, final Loss L){
 		this.trainData		= DATA_TRAIN;
@@ -140,7 +120,7 @@ public class Model {
 		this.loss			= L;
 		this.optimizer		= OPT;
 
-		Layer prevLayer = this.LAYERS[0];					// previous layer
+		Layer prevLayer = this.LAYERS[0];						// previous layer
 		prevLayer.firstLayerInit(OPT, DATA_TRAIN.getSample(0));	// initialising the input layer
 							
 		// cycling overt the rest of the layers initialising them
@@ -259,15 +239,7 @@ public class Model {
 				valHolder	= NODES[node].getOutput();
 			}
 		}
-		
-		/* String str = "";
-		
-		if(DATA.getClasses()[answerIndex] == this.sample.getLabel()) str = lib.Util.color("green");
-		else str = lib.Util.color("red");
 
-		str += "Predicted: " + DATA.getClasses()[answerIndex] + "	Target: " + this.sample.getLabel();
-		System.out.println(str + lib.Util.color("reset")); */
-		// checking if the prediction matches the actual label
 		return this.sample.getLabel() == DATA.getClasses()[answerIndex];
 	}
 

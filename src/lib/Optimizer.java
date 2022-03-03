@@ -53,7 +53,7 @@ public enum Optimizer {
     protected double    batchSize;      // batch size
 
     /**
-     * abstract method
+     * Optimizer method
      * @param MOMENTUM array of momentums
      * @param grad  gradient
      * @return optimized gradient

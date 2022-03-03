@@ -14,9 +14,9 @@ public abstract class Layer {
 	protected			int     	KERNEL_X;				//	Size X of this layer kernel
 	private	Node.Relation[]			flat_output;			//	array of nodes outputs
 	private	Node.Relation[][][][] 	kernelRelations;		//	array of relations between this layer weigths and inputs
-	protected final		double[]	NODES_PARAM;			//	Learning rate and batch size
 	protected			lib.Optimizer	optimizer;			//	learning optimizer
 
+	// activation functions
 	public static enum Activation{
 		LINEAR{
 			public void function(final Node.Relation REL, final Layer LAYER){ REL.setOutput(lib.Activation.Linear.function(REL.getFrontLinearOutput(), 1)); }
@@ -128,7 +128,6 @@ public abstract class Layer {
 		KERNEL_Y		= KY < 1? 1: KY;
         KERNEL_X		= KX < 1? 1: KX;
 		NODES			= new Node[NODES_AMOUNT];
-		NODES_PARAM		= new double[2];
     }
 
     
@@ -406,14 +405,8 @@ public abstract class Layer {
 
 	// --------------------- final update -------------------------
 
-	/**
-	 * Weights Update
-	 * @param BATCH_SIZE
-	 * @param LEARNING_RATE
-	 */
+	//Weights Update
     public void updateWeights(){
-		/* this.NODES_PARAM[0] = LEARNING_RATE;
-		this.NODES_PARAM[1] = BATCH_SIZE; */
 
 		// cycling overall the nodes
 		for(final Node NODE: this.NODES)	NODE.update(); // updating both weights and biases 	

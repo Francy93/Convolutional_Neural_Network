@@ -15,6 +15,7 @@
     
 	/**
 	 * Hidden lyer initialiser
+	 * @param OPT   optimizer 
 	 * @param INPUTS 
 	 */
     public void layerInit(final lib.Optimizer OPT, final Node ... INPUTS){
@@ -30,6 +31,7 @@
 
 	/**
 	 * First Densenet layer initialiser
+	 * @param OPT   optimizer 
 	 * @param SAMPLE 
 	 */
     public void firstLayerInit(final lib.Optimizer OPT, final Sample SAMPLE){

@@ -27,11 +27,12 @@ public class Node {
 	 * @param OPT optimizer
 	 */
     public Node(final int CA, final int KY, final int KX, final int OUTPUT_Y, final int OUTPUT_X, final lib.Optimizer OPT){
-		final int MOMENTUM_AMOUNT	= 2;
+		final int MOMENTUM_AMOUNT	= 2;	// numbers of momentums for the optimizators
 
 		CHANNEL_AMOUNT	= CA;
 		KERNEL_Y		= KY;
 		KERNEL_X		= KX;
+		OPTIMIZER		= OPT;
         KERNEL			= new double[CA][KY][KX];
 		OUTPUT			= outputInit(OUTPUT_Y, OUTPUT_X);
 		BIAS			= new double[OUTPUT_Y][OUTPUT_X];
@@ -39,7 +40,6 @@ public class Node {
 		biasGradients	= new double[OUTPUT_Y][OUTPUT_X];
 		KERNEL_MOMENTUM = new double[CA][KY][KX][MOMENTUM_AMOUNT];
 		BIAS_MOMENTUM	= new double[OUTPUT_Y][OUTPUT_X][MOMENTUM_AMOUNT];
-		OPTIMIZER		= OPT;
     }
 	// constructor for convnet first layer
 	public Node(final double[][] INPUT, final lib.Optimizer OPT){
@@ -220,16 +220,6 @@ public class Node {
 				for(int kernel_x=0; kernel_x < this.KERNEL_X; kernel_x++){
 
 					// updating every single weight dividing it by the mini batch to find its average
-					//this.KERNEL[channel][kernel_y][kernel_x] -=  SGD(this.kernelGradients[channel][kernel_y][kernel_x] / this.LEARNING_RATE_BATCH_SIZE[1]);
-
-					/* this.KERNEL[channel][kernel_y][kernel_x] -=
-						momentum(this.KERNEL_MOMENTUM[channel][kernel_y][kernel_x], this.kernelGradients[channel][kernel_y][kernel_x] / this.LEARNING_RATE_BATCH_SIZE[1])
-					; */
-
-					/* this.KERNEL[channel][kernel_y][kernel_x] -= 
-						adamOpt(this.KERNEL_MOMENTUM[channel][kernel_y][kernel_x], this.kernelGradients[channel][kernel_y][kernel_x] / this.LEARNING_RATE_BATCH_SIZE[1])
-					; */
-
 					this.KERNEL[channel][kernel_y][kernel_x] -= this.OPTIMIZER.optimize(this.KERNEL_MOMENTUM[channel][kernel_y][kernel_x], this.kernelGradients[channel][kernel_y][kernel_x]);
 				}
 			}
@@ -247,16 +237,6 @@ public class Node {
 			for(int bias_x=0; bias_x <  this.BIAS[0].length; bias_x++){
 
 				// updating every single weight dividing it by the mini batch to find its average
-				//this.BIAS[bias_y][bias_x] -=  SGD(this.biasGradients[bias_y][bias_x] / this.LEARNING_RATE_BATCH_SIZE[1]);
-
-				/* this.BIAS[bias_y][bias_x] -=
-					momentum(this.BIAS_MOMENTUM[bias_y][bias_x], this.biasGradients[bias_y][bias_x] / this.LEARNING_RATE_BATCH_SIZE[1])
-				; */
-
-				/* v
-					adamOpt(this.BIAS_MOMENTUM[bias_y][bias_x], this.biasGradients[bias_y][bias_x] / this.LEARNING_RATE_BATCH_SIZE[1])
-				; */
-
 				this.BIAS[bias_y][bias_x] -= this.OPTIMIZER.optimize(this.BIAS_MOMENTUM[bias_y][bias_x], this.biasGradients[bias_y][bias_x]);
 			}
 		}
@@ -265,51 +245,7 @@ public class Node {
 		this.biasGradients = new double[this.BIAS.length][this.BIAS[0].length];
 	}
 
-	/**
-	 * Adam optimizer
-	 * @param MOMENTUM
-	 * @param GRAD non optimized gradient
-	 * @return optimized gradient
-	 */
-	/* private double adamOpt(final double[] MOMENTUM, final double GRAD){
-		double NORM1, NORM2;
 
-		// compute the first moment
-		MOMENTUM[0] = (MOMENTUM[0] * this.BETA1) + ((1.0 - this.BETA1) * GRAD); 
-
-		// compute the second moment
-		MOMENTUM[1] = (MOMENTUM[1] * this.BETA2) + ((1.0 - this.BETA2) * GRAD * GRAD); 
-
-		// normalisation
-		NORM1 = MOMENTUM[0] / (1.0 - Math.pow(this.BETA1, this.timeStep));
-		NORM2 = MOMENTUM[1] / (1.0 - Math.pow(this.BETA2, this.timeStep));
-
-		return this.LEARNING_RATE_BATCH_SIZE[0] * NORM1 / (Math.sqrt(NORM2) + this.EPSILON);
-	} */
-
-
-	/**
-	 * Momentum optimizer
-	 * @param MOMENTUM
-	 * @param GRAD
-	 * @return
-	 */
-	/* private double momentum(final double[] MOMENTUM, final double GRAD){
-		// colculating the momentum
-		MOMENTUM[0] = (MOMENTUM[0] * this.BETA1) + (this.LEARNING_RATE_BATCH_SIZE[0] * GRAD); 
-		return MOMENTUM[0];
-	} */
-
-	/**
-	 * Stocastic gradient descent
-	 * @param MOMENTUM
-	 * @param GRAD
-	 * @return
-	 */
-	/* private double SGD(final double GRAD){
-		// colculating the momentum
-		return this.LEARNING_RATE_BATCH_SIZE[0] * GRAD;
-	} */
 
 
 
