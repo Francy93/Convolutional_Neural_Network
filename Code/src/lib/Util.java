@@ -448,13 +448,6 @@ public class Util{
 				// "counter" determines when to print the status bar
 				this.counter = TOKENS;
 				final short PERCENT = (short)(index * 100 / size);
-				//String block = "█", dotted = "░";
-				//char block = 0x2588, dotted = 0x2591;
-				/*#if defined(_WIN32)
-					block   = string(1,(char)219), dotted  = string(1,(char)176);
-				#else
-					block  = "█", dotted = "░";
-				//#endif*/
 				
 				if(PERCENT < 100 && size > index){
 					String statusFull = "", statusVoid = "", colors;

@@ -48,7 +48,10 @@ public class Main {
 		// initialising the model
 		System.out.println(Util.colorText("Loading Dataset and model...\r\n", "cyan"));
 		try{ Ann.setModel(); }
-		catch(FileNotFoundException e){ System.out.println("Error. File not found"); }
+		catch(FileNotFoundException e){
+			System.out.println("Error. File not found");
+			System.exit(1);
+		}
 
 
 		// main loop
