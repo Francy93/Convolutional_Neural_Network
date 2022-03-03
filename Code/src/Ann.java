@@ -16,11 +16,11 @@ public class Ann{
 
 	// Model definition
 	private static final Model MODEL = Model.Sequential(
-		Layer.Conv2D(32, 2, 2,	Layer.Activation.LRELU),		// convolutional layer of 32 filters with a kernal of 2X2
-		Layer.Conv2D(64, 2, 2,	Layer.Activation.LRELU),		// convolutional layer of 64 filters with a kernal of 2X2
+		Layer.Conv2D(32, 2, 2,	Layer.Activation.MISH),		// convolutional layer of 32 filters with a kernal of 2X2
+		Layer.Conv2D(64, 2, 2,	Layer.Activation.MISH),		// convolutional layer of 64 filters with a kernal of 2X2
 		// starting the fully connected layers
-		Layer.Dense(128,		Layer.Activation.LRELU),		// dense layer of 128 nodes
-		Layer.Dense(10 ,		Layer.Activation.SOFTMAX)		// output layer of 10 classifications
+		Layer.Dense(128,		Layer.Activation.MISH),		// dense layer of 128 nodes
+		Layer.Dense(10 ,		Layer.Activation.SOFTMAX)	// output layer of 10 classifications
     );
 
 

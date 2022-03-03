@@ -4,7 +4,7 @@ public enum Optimizer {
   
     SGD{
         public double optimize(final double[] MOMENTUM, final double GRAD){
-            // colculating the momentum
+            // colculating the gradient descent
             return this.learningRate * (GRAD / this.batchSize);
         }
     },
@@ -17,18 +17,33 @@ public enum Optimizer {
     },
     ADAGRAD{
         public double optimize(final double[] MOMENTUM, double grad){
-            return 0;
+            grad /= this.batchSize; // batch size average
+
+            MOMENTUM[0] += grad * grad;
+
+            return (this.learningRate / Math.sqrt(MOMENTUM[0] + this.EPSILON)) * grad;
         }
     },
     ADADELTA{
         public double optimize(final double[] MOMENTUM, double grad){
-            return 0;
+            grad /= this.batchSize; // batch size average
+
+            // compute the first moment
+            MOMENTUM[0] = (MOMENTUM[0] * this.BETA1) + ((1.0 - this.BETA1) * grad * grad); 
+
+            // compute the first moment
+            optGrad = ( Math.sqrt(MOMENTUM[1] + this.EPSILON) / Math.sqrt(MOMENTUM[0] + this.EPSILON)) * grad;
+
+            // storing the updated second moment value
+            MOMENTUM[1] = (MOMENTUM[1] * this.BETA1) + ((1.0 - this.BETA1) * optGrad * optGrad);
+
+            return optGrad;
         }
     },
     ADAM{
         public double optimize(final double[] MOMENTUM, double grad){
+            grad /= this.batchSize; // batch size average
 
-            grad /= this.batchSize;
             // compute the first moment
             MOMENTUM[0] = (MOMENTUM[0] * this.BETA1) + ((1.0 - this.BETA1) * grad); 
 
@@ -45,7 +60,7 @@ public enum Optimizer {
 
     // Adam optimizer parameters
     protected final double BETA1 = 0.9, BETA2 = 0.999, EPSILON = 1e-08;
-    protected double norm1, norm2; // normalizers
+    protected double norm1, norm2, optGrad; // normalizers
     protected double timeStep = 0; // updates counter
     
     // custom paramenters
