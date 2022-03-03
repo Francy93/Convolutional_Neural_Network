@@ -17,8 +17,9 @@ public enum Optimizer {
     },
     ADAGRAD{
         public double optimize(final double[] MOMENTUM, double grad){
-            grad /= this.batchSize; // batch size average
+            grad		/= this.batchSize; // batch size average
 
+            // compute the first moment
             MOMENTUM[0] += grad * grad;
 
             return (this.learningRate / Math.sqrt(MOMENTUM[0] + this.EPSILON)) * grad;
@@ -26,13 +27,13 @@ public enum Optimizer {
     },
     ADADELTA{
         public double optimize(final double[] MOMENTUM, double grad){
-            grad /= this.batchSize; // batch size average
+            grad		/= this.batchSize; // batch size average
 
             // compute the first moment
             MOMENTUM[0] = (MOMENTUM[0] * this.BETA1) + ((1.0 - this.BETA1) * grad * grad); 
 
             // compute the first moment
-            optGrad = ( Math.sqrt(MOMENTUM[1] + this.EPSILON) / Math.sqrt(MOMENTUM[0] + this.EPSILON)) * grad;
+            optGrad 	= (Math.sqrt(MOMENTUM[1] + this.EPSILON) / Math.sqrt(MOMENTUM[0] + this.EPSILON)) * grad;
 
             // storing the updated second moment value
             MOMENTUM[1] = (MOMENTUM[1] * this.BETA1) + ((1.0 - this.BETA1) * optGrad * optGrad);
@@ -42,7 +43,7 @@ public enum Optimizer {
     },
     ADAM{
         public double optimize(final double[] MOMENTUM, double grad){
-            grad /= this.batchSize; // batch size average
+            grad		/= this.batchSize; // batch size average
 
             // compute the first moment
             MOMENTUM[0] = (MOMENTUM[0] * this.BETA1) + ((1.0 - this.BETA1) * grad); 
@@ -51,8 +52,8 @@ public enum Optimizer {
             MOMENTUM[1] = (MOMENTUM[1] * this.BETA2) + ((1.0 - this.BETA2) * grad * grad); 
 
             // normalisation
-            this.norm1 = MOMENTUM[0] / (1.0 - Math.pow(this.BETA1, this.timeStep));
-            this.norm2 = MOMENTUM[1] / (1.0 - Math.pow(this.BETA2, this.timeStep));
+            this.norm1	= MOMENTUM[0] / (1.0 - Math.pow(this.BETA1, this.timeStep));
+            this.norm2	= MOMENTUM[1] / (1.0 - Math.pow(this.BETA2, this.timeStep));
 
             return this.learningRate * this.norm1 / (Math.sqrt(this.norm2) + this.EPSILON);
         }
@@ -60,12 +61,12 @@ public enum Optimizer {
 
     // Adam optimizer parameters
     protected final double BETA1 = 0.9, BETA2 = 0.999, EPSILON = 1e-08;
-    protected double norm1, norm2, optGrad; // normalizers
-    protected double timeStep = 0; // updates counter
+    protected double norm1, norm2, optGrad;	// normalizers
+    protected double timeStep = 0;			// updates counter
     
     // custom paramenters
-    protected double    learningRate;   // learning rate
-    protected double    batchSize;      // batch size
+    protected double    learningRate;		// learning rate
+    protected double    batchSize;			// batch size
 
     /**
      * Optimizer method

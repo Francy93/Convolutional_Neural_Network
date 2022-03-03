@@ -34,7 +34,7 @@ public class Ann{
 		}catch(Exception e){ throw new FileNotFoundException(); }
 
 		// initialising the model
-		MODEL.buildStructure(dataTrain, dataValid, Optimizer.ADAM, Model.Loss.CROSS_ENTROPY);
+		MODEL.buildStructure(dataTrain, dataValid, Optimizer.ADADELTA, Model.Loss.CROSS_ENTROPY);
 	}
 
 	// running tests and validations
