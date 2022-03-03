@@ -411,7 +411,12 @@ public class Util{
 		private final	long	CICLES_AMOUNT;
 		private final	String	BLOCK = "█", DOTTED = "░";
 
-        
+        /**
+		 * Constructor Method
+		 * @param CA CICLES_AMOUNT
+		 * @param BL BAR_LENGTH
+		 * @param U UPDATES
+		 */
 		public Loading(final long CA, final short BL, final short U){
             counter			= -1;
 			index			= 0;

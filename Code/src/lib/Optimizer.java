@@ -59,9 +59,9 @@ public enum Optimizer {
         }
     };
 
-    // Adam optimizer parameters
+    // optimizers parameters
     protected final double BETA1 = 0.9, BETA2 = 0.999, EPSILON = 1e-08;
-    protected double norm1, norm2, optGrad;	// normalizers
+    protected double norm1, norm2, optGrad;	// temporary normalizers
     protected double timeStep = 0;			// updates counter
     
     // custom paramenters
@@ -82,8 +82,8 @@ public enum Optimizer {
      * @param BS Batch site
      */
     public void setParam(final double LR, final double BS){
-        learningRate   = LR;
-        batchSize      = BS;
+        this.learningRate   = LR;
+        this.batchSize      = BS;
     }
 
     // increase the time step
