@@ -3,6 +3,7 @@ package lib;
 public enum Optimizer {
   
     SGD{
+        public void timeStepIncrease(){}
         public int momentNumber(){ return 0; }
         public double optimize(final double[] MOMENTUM, final double GRAD){
             // colculating the gradient descent
@@ -10,6 +11,7 @@ public enum Optimizer {
         }
     },
     MOMENTUM{
+        public void timeStepIncrease(){}
         public int momentNumber(){ return 1; }
         public double optimize(final double[] MOMENTUM, final double GRAD){
             // colculating the momentum
@@ -18,6 +20,7 @@ public enum Optimizer {
         }
     },
     ADAGRAD{
+        public void timeStepIncrease(){}
         public int momentNumber(){ return 1; }
         public double optimize(final double[] MOMENTUM, double grad){
             grad		/= this.batchSize; // batch size average
@@ -29,6 +32,7 @@ public enum Optimizer {
         }
     },
     ADADELTA{
+        public void timeStepIncrease(){}
         public int momentNumber(){ return 2; }
         public double optimize(final double[] MOMENTUM, double grad){
             grad		/= this.batchSize; // batch size average
@@ -36,7 +40,7 @@ public enum Optimizer {
             // compute the first moment
             MOMENTUM[0] = (MOMENTUM[0] * this.BETA1) + ((1.0 - this.BETA1) * grad * grad); 
 
-            // compute the first moment
+            // compute the second moment
             optGrad 	= (Math.sqrt(MOMENTUM[1] + this.EPSILON) / Math.sqrt(MOMENTUM[0] + this.EPSILON)) * grad;
 
             // storing the updated second moment value
@@ -46,6 +50,7 @@ public enum Optimizer {
         }
     },
     ADAM{
+        public void timeStepIncrease(){ this.timeStep++; }
         public int momentNumber(){ return 2; }
         public double optimize(final double[] MOMENTUM, double grad){
             grad		/= this.batchSize; // batch size average
@@ -66,12 +71,12 @@ public enum Optimizer {
 
     // optimizers parameters
     protected final double BETA1 = 0.9, BETA2 = 0.999, EPSILON = 1e-08;
-    protected double norm1, norm2, optGrad;	// temporary normalizers
-    protected double timeStep = 0;			// updates counter
+    protected double norm1, norm2, optGrad;	    // temporary normalizers
+    protected double timeStep = 0;			    // updates counter
     
     // custom paramenters
-    protected double    learningRate;		// learning rate
-    protected double    batchSize;			// batch size
+    protected double    learningRate;		    // learning rate
+    protected double    batchSize;			    // batch size
 
     /**
      * Optimizer method
@@ -80,8 +85,8 @@ public enum Optimizer {
      * @return optimized gradient
      */
     public abstract double optimize(final double[] MOMENTUM, double grad);
-    public abstract int momentNumber();
-
+    public abstract int momentNumber();         // get the momentums amount
+    public abstract void timeStepIncrease();    // increase the time step
     /**
      * setting the optimizer parameters
      * @param LR Learning rate
@@ -90,11 +95,6 @@ public enum Optimizer {
     public void setParam(final double LR, final double BS){
         this.learningRate   = LR;
         this.batchSize      = BS;
-    }
-
-    // increase the time step
-    public void timeStepIncrease(){
-        this.timeStep++;
     }
 
 }
