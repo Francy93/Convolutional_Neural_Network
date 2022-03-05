@@ -9,7 +9,7 @@ public class Node {
 	private			double[][][]	kernelGradients;	// Gradient accumulation for the Kernel
 	private	final	double[][][][]	KERNEL_MOMENTUM;	// Histoy of kernel gradients (momentum) for the Adam optimizer
 	private	final	double[][][]	BIAS_MOMENTUM;		// Histoy of biases gradients (momentum) for the Adam optimizer
-	private			lib.Optimizer	OPTIMIZER;
+	private			lib.Optimizer	OPTIMIZER;			// gradients optimizer
 	
 	
 	// Kernel sizes
@@ -27,7 +27,7 @@ public class Node {
 	 * @param OPT optimizer
 	 */
     public Node(final int CA, final int KY, final int KX, final int OUTPUT_Y, final int OUTPUT_X, final lib.Optimizer OPT){
-		final int MOMENTUM_AMOUNT	= 2;	// numbers of momentums for the optimizators
+		final int MOMENTUM_AMOUNT	= OPT.momentNumber();	// numbers of momentums for the optimizators
 
 		CHANNEL_AMOUNT	= CA;
 		KERNEL_Y		= KY;
@@ -80,31 +80,31 @@ public class Node {
 
 		// setting output and deleting the forward pripagation linear output
 		public void setOutput(final double ACTIVATED){
-			this.output = ACTIVATED;
-			this.backLinearOutput = this.frontLinearOutput;
-			this.frontLinearOutput = 0;
+			this.output				= ACTIVATED;
+			this.backLinearOutput	= this.frontLinearOutput;
+			this.frontLinearOutput	= 0;
 		}
 		
 		// summing the derivatives accumulation
 		public void addToChainRuleSum(final double CRS){
-			this.chainRuleSum += CRS;
+			this.chainRuleSum 		+= CRS;
 		}
 
 		// summing all weigths and inputs moltiplications
 		public void addToLinearOutput(final double ADD){
-			this.frontLinearOutput += ADD;
+			this.frontLinearOutput	+= ADD;
 		}
 		
 		// setting this node partial derivative
 		public void setDerivative(final double DERIV){
-			this.derivative = DERIV;
-			this.backLinearOutput = 0; // resetting the linearOutput attribute
+			this.derivative			= DERIV;
+			this.backLinearOutput	= 0; // resetting the linearOutput attribute
 		}
 
 		// summing this node partial derivative times the error propagation 
 		public void derivAndCRS_sum(){
-			this.derivativeSum = this.derivative * this.chainRuleSum;
-			this.chainRuleSum = 0; // resetting the chainRuleSum attribute
+			this.derivativeSum		= this.derivative * this.chainRuleSum;
+			this.chainRuleSum		= 0; // resetting the chainRuleSum attribute
 		}
 
 		// ---------------- getters ---------------

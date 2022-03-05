@@ -3,12 +3,14 @@ package lib;
 public enum Optimizer {
   
     SGD{
+        public int momentNumber(){ return 0; }
         public double optimize(final double[] MOMENTUM, final double GRAD){
             // colculating the gradient descent
             return this.learningRate * (GRAD / this.batchSize);
         }
     },
     MOMENTUM{
+        public int momentNumber(){ return 1; }
         public double optimize(final double[] MOMENTUM, final double GRAD){
             // colculating the momentum
             MOMENTUM[0] = (MOMENTUM[0] * this.BETA1) + (this.learningRate * (GRAD / this.batchSize)); 
@@ -16,6 +18,7 @@ public enum Optimizer {
         }
     },
     ADAGRAD{
+        public int momentNumber(){ return 1; }
         public double optimize(final double[] MOMENTUM, double grad){
             grad		/= this.batchSize; // batch size average
 
@@ -26,6 +29,7 @@ public enum Optimizer {
         }
     },
     ADADELTA{
+        public int momentNumber(){ return 2; }
         public double optimize(final double[] MOMENTUM, double grad){
             grad		/= this.batchSize; // batch size average
 
@@ -42,6 +46,7 @@ public enum Optimizer {
         }
     },
     ADAM{
+        public int momentNumber(){ return 2; }
         public double optimize(final double[] MOMENTUM, double grad){
             grad		/= this.batchSize; // batch size average
 
@@ -75,6 +80,7 @@ public enum Optimizer {
      * @return optimized gradient
      */
     public abstract double optimize(final double[] MOMENTUM, double grad);
+    public abstract int momentNumber();
 
     /**
      * setting the optimizer parameters
