@@ -19,13 +19,25 @@ public enum Optimizer {
             return MOMENTUM[0];
         }
     },
+    RMSPROP{
+        public void timeStepIncrease(){}
+        public int momentNumber(){ return 1; }
+        public double optimize(final double[] MOMENTUM, double grad){
+            grad		/= this.batchSize; // batch size average
+
+            // colculating the momentum
+            MOMENTUM[0] = (MOMENTUM[0] * this.BETA1) + ((1.0 - this.BETA1) * grad * grad);
+
+            return (this.learningRate / Math.sqrt(MOMENTUM[0] + this.EPSILON)) * grad;
+        }
+    },
     ADAGRAD{
         public void timeStepIncrease(){}
         public int momentNumber(){ return 1; }
         public double optimize(final double[] MOMENTUM, double grad){
             grad		/= this.batchSize; // batch size average
 
-            // compute the first moment
+            // colculating the momentum
             MOMENTUM[0] += grad * grad;
 
             return (this.learningRate / Math.sqrt(MOMENTUM[0] + this.EPSILON)) * grad;
