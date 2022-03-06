@@ -1,5 +1,8 @@
 package lib;
 
+/**
+ * @see inspired by https://github.com/pritishmishra703/Deep-Learning-From-Neurons-to-GANs/blob/master/Chapter4_Optimization.ipynb
+ */
 public enum Optimizer {
   
     SGD{
