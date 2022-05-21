@@ -102,8 +102,8 @@ public class DataSet {
 		for (int old_index=0; old_index<=RANGE; old_index++) {
 			final int NEW_INDEX		= (int) Util.rangeRandom(0, RANGE);
 
-			Sample temp				= this.SAMPLES[NEW_INDEX];
-			this.SAMPLES[old_index]	= this.SAMPLES[old_index];
+			Sample temp				= this.SAMPLES[old_index];
+			this.SAMPLES[old_index]	= this.SAMPLES[NEW_INDEX];
 			this.SAMPLES[NEW_INDEX]	= temp;
 		}
 	}
