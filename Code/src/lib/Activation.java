@@ -2,8 +2,7 @@ package lib;
 
 public class Activation{
 
-	/* LINEAR, BINARY, SIGMOID, TANH, SWISH, RELU, LRELU, GELU, SELU, PRELU, ELU, SOFTPLUS, SOFTMAX; */
-
+	/* LINEAR, BINARY, SIGMOID, TANH, SWISH, MISH, RELU, LRELU, GELU, SELU, PRELU, ELU, SOFTPLUS, SOFTMAX; */
 
 	public static class Linear {
 
@@ -27,9 +26,7 @@ public class Activation{
 		 * @return	Random double with a uniform probability distribution
 		 */
 		public static double randomWeight(final int N_INPUTS){
-			final double LOWER = -  (1.0 / Math.sqrt(N_INPUTS));
-			final double UPPER =    (1.0 / Math.sqrt(N_INPUTS));
-			return LOWER + Math.random() * (UPPER - LOWER);
+			return weightCalc( 1.0 / Math.sqrt(N_INPUTS) );
 		}
 		/**
 		 * Normalized Xavier Weight initialization
@@ -38,9 +35,7 @@ public class Activation{
 		 * @return Random double with a uniform probability distribution
 		 */
 		public static double randomWeight(final int N_INPUTS, final int N_OUPUTS){
-			final double LOWER = -  (6.0 / Math.sqrt(N_INPUTS + N_OUPUTS));
-			final double UPPER =    (6.0 / Math.sqrt(N_INPUTS + N_OUPUTS));
-			return LOWER + Math.random() * (UPPER - LOWER);
+			return weightCalc( 6.0 / Math.sqrt(N_INPUTS + N_OUPUTS) );
 		}
 	}
 
@@ -63,10 +58,8 @@ public class Activation{
 		* @param N_INPUTS umber of inputs of the current node
 		* @return	Random double with a uniform probability distribution
 		*/
-	   public static double randomWeight(final int N_INPUTS){
-		   final double LOWER = -  (1.0 / Math.sqrt(N_INPUTS));
-		   final double UPPER =    (1.0 / Math.sqrt(N_INPUTS));
-		   return LOWER + Math.random() * (UPPER - LOWER);
+		public static double randomWeight(final int N_INPUTS){
+			return weightCalc( 1.0 / Math.sqrt(N_INPUTS) );
 	   }
 	   /**
 		 * Normalized Xavier Weight initialization
@@ -75,9 +68,7 @@ public class Activation{
 		 * @return Random double with a uniform probability distribution
 		 */
 		public static double randomWeight(final int N_INPUTS, final int N_OUPUTS){
-			final double LOWER = -  (6.0 / Math.sqrt(N_INPUTS + N_OUPUTS));
-			final double UPPER =    (6.0 / Math.sqrt(N_INPUTS + N_OUPUTS));
-			return LOWER + Math.random() * (UPPER - LOWER);
+			return weightCalc( 6.0 / Math.sqrt(N_INPUTS + N_OUPUTS) );
 		}
 	}
 
@@ -102,9 +93,7 @@ public class Activation{
 		 * @return	Random double with a uniform probability distribution
 		 */
 		public static double randomWeight(final int N_INPUTS){
-			final double LOWER = -  (1.0 / Math.sqrt(N_INPUTS));
-			final double UPPER =    (1.0 / Math.sqrt(N_INPUTS));
-			return LOWER + Math.random() * (UPPER - LOWER);
+			return weightCalc( 1.0 / Math.sqrt(N_INPUTS) );
 		}
 		/**
 		 * Normalized Xavier Weight initialization
@@ -113,9 +102,7 @@ public class Activation{
 		 * @return Random double with a uniform probability distribution
 		 */
 		public static double randomWeight(final int N_INPUTS, final int N_OUPUTS){
-			final double LOWER = -  (6.0 / Math.sqrt(N_INPUTS + N_OUPUTS));
-			final double UPPER =    (6.0 / Math.sqrt(N_INPUTS + N_OUPUTS));
-			return LOWER + Math.random() * (UPPER - LOWER);
+			return weightCalc( 6.0 / Math.sqrt(N_INPUTS + N_OUPUTS) );
 		}
 	}
 
@@ -141,9 +128,7 @@ public class Activation{
 		 * @return	Random double with a uniform probability distribution
 		 */
 		public static double randomWeight(final int N_INPUTS){
-			final double LOWER = -  (1.0 / Math.sqrt(N_INPUTS));
-			final double UPPER =    (1.0 / Math.sqrt(N_INPUTS));
-			return LOWER + Math.random() * (UPPER - LOWER);
+			return weightCalc( 1.0 / Math.sqrt(N_INPUTS) );
 		}
 		/**
 		 * Normalized Xavier Weight initialization
@@ -152,9 +137,7 @@ public class Activation{
 		 * @return Random double with a uniform probability distribution
 		 */
 		public static double randomWeight(final int N_INPUTS, final int N_OUPUTS){
-			final double LOWER = -  (6.0 / Math.sqrt(N_INPUTS + N_OUPUTS));
-			final double UPPER =    (6.0 / Math.sqrt(N_INPUTS + N_OUPUTS));
-			return LOWER + Math.random() * (UPPER - LOWER);
+			return weightCalc( 6.0 / Math.sqrt(N_INPUTS + N_OUPUTS) );
 		}
 	}
 
@@ -179,9 +162,7 @@ public class Activation{
 		 * @return random double with a Gaussian probability
 		 */
 		public static double randomWeight(final int N_INPUTS){
-			final double LOWER = -  Math.sqrt(2.0 / ((double)N_INPUTS));
-			final double UPPER =    Math.sqrt(2.0 / ((double)N_INPUTS));
-			return LOWER + Math.random() * (UPPER - LOWER);
+			return weightCalc( Math.sqrt(2.0 / ((double)N_INPUTS)) );
 		}
 		/**
 		 * Normalized He Weight Initialization
@@ -190,9 +171,7 @@ public class Activation{
 		 * @return Random double with a uniform probability distribution
 		 */
 		public static double randomWeight(final int N_INPUTS, final int N_OUPUTS){
-			final double LOWER = -  Math.sqrt(2.0 / ((double)N_INPUTS * N_OUPUTS));
-			final double UPPER =    Math.sqrt(2.0 /  ((double)N_INPUTS * N_OUPUTS));
-			return LOWER + Math.random() * (UPPER - LOWER);
+			return weightCalc( Math.sqrt(2.0 / ((double)N_INPUTS * (double)N_OUPUTS)) );
 		}
 	}
 
@@ -222,9 +201,7 @@ public class Activation{
 		 * @return random double with a Gaussian probability
 		 */
 		public static double randomWeight(final int N_INPUTS){
-			final double LOWER = -  Math.sqrt(2.0 / ((double)N_INPUTS));
-			final double UPPER =    Math.sqrt(2.0 / ((double)N_INPUTS));
-			return LOWER + Math.random() * (UPPER - LOWER);
+			return weightCalc( Math.sqrt(2.0 / ((double)N_INPUTS)) );
 		}
 		/**
 		 * Normalized He Weight Initialization
@@ -233,9 +210,7 @@ public class Activation{
 		 * @return Random double with a uniform probability distribution
 		 */
 		public static double randomWeight(final int N_INPUTS, final int N_OUPUTS){
-			final double LOWER = -  Math.sqrt(2.0 / ((double)N_INPUTS * N_OUPUTS));
-			final double UPPER =    Math.sqrt(2.0 /  ((double)N_INPUTS * N_OUPUTS));
-			return LOWER + Math.random() * (UPPER - LOWER);
+			return weightCalc( Math.sqrt(2.0 / ((double)N_INPUTS * (double)N_OUPUTS)) );
 		}
 
 	}
@@ -260,9 +235,7 @@ public class Activation{
 		 * @return random double with a Gaussian probability
 		 */
 		public static double randomWeight(final int N_INPUTS){
-			final double LOWER = -  Math.sqrt(2.0 / ((double)N_INPUTS));
-			final double UPPER =    Math.sqrt(2.0 / ((double)N_INPUTS));
-			return LOWER + Math.random() * (UPPER - LOWER);
+			return weightCalc( Math.sqrt(2.0 / ((double)N_INPUTS)) );
 		}
 		/**
 		 * Normalized He Weight Initialization
@@ -271,9 +244,7 @@ public class Activation{
 		 * @return Random double with a uniform probability distribution
 		 */
 		public static double randomWeight(final int N_INPUTS, final int N_OUPUTS){
-			final double LOWER = -  Math.sqrt(2.0 / ((double)N_INPUTS * N_OUPUTS));
-			final double UPPER =    Math.sqrt(2.0 /  ((double)N_INPUTS * N_OUPUTS));
-			return LOWER + Math.random() * (UPPER - LOWER);
+			return weightCalc( Math.sqrt(2.0 / ((double)N_INPUTS * (double)N_OUPUTS)) );
 		}
 	}
 
@@ -297,9 +268,7 @@ public class Activation{
 		 * @return random double with a Gaussian probability
 		 */
 		public static double randomWeight(final int N_INPUTS){
-			final double LOWER = -  Math.sqrt(2.0 / ((double)N_INPUTS));
-			final double UPPER =    Math.sqrt(2.0 / ((double)N_INPUTS));
-			return LOWER + Math.random() * (UPPER - LOWER);
+			return weightCalc( Math.sqrt(2.0 / ((double)N_INPUTS)) );
 		}
 		/**
 		 * Normalized He Weight Initialization
@@ -308,9 +277,7 @@ public class Activation{
 		 * @return Random double with a uniform probability distribution
 		 */
 		public static double randomWeight(final int N_INPUTS, final int N_OUPUTS){
-			final double LOWER = -  Math.sqrt(2.0 / ((double)N_INPUTS * N_OUPUTS));
-			final double UPPER =    Math.sqrt(2.0 /  ((double)N_INPUTS * N_OUPUTS));
-			return LOWER + Math.random() * (UPPER - LOWER);
+			return weightCalc( Math.sqrt(2.0 / ((double)N_INPUTS * (double)N_OUPUTS)) );
 		}
 	}
 
@@ -337,9 +304,7 @@ public class Activation{
 		 * @return random double with a Gaussian probability
 		 */
 		public static double randomWeight(final int N_INPUTS){
-			final double LOWER = -  Math.sqrt(2.0 / ((double)N_INPUTS));
-			final double UPPER =    Math.sqrt(2.0 / ((double)N_INPUTS));
-			return LOWER + Math.random() * (UPPER - LOWER);
+			return weightCalc( Math.sqrt(2.0 / ((double)N_INPUTS)) );
 		}
 		/**
 		 * Normalized He Weight Initialization
@@ -348,9 +313,7 @@ public class Activation{
 		 * @return Random double with a uniform probability distribution
 		 */
 		public static double randomWeight(final int N_INPUTS, final int N_OUPUTS){
-			final double LOWER = -  Math.sqrt(2.0 / ((double)N_INPUTS * N_OUPUTS));
-			final double UPPER =    Math.sqrt(2.0 /  ((double)N_INPUTS * N_OUPUTS));
-			return LOWER + Math.random() * (UPPER - LOWER);
+			return weightCalc( Math.sqrt(2.0 / ((double)N_INPUTS * (double)N_OUPUTS)) );
 		}
 	}
 
@@ -379,9 +342,7 @@ public class Activation{
 		 * @return random double with a Gaussian probability
 		 */
 		public static double randomWeight(final int N_INPUTS){
-			final double LOWER = -  Math.sqrt(2.0 / ((double)N_INPUTS));
-			final double UPPER =    Math.sqrt(2.0 / ((double)N_INPUTS));
-			return LOWER + Math.random() * (UPPER - LOWER);
+			return weightCalc( Math.sqrt(2.0 / ((double)N_INPUTS)) );
 		}
 		/**
 		 * Normalized He Weight Initialization
@@ -390,9 +351,7 @@ public class Activation{
 		 * @return Random double with a uniform probability distribution
 		 */
 		public static double randomWeight(final int N_INPUTS, final int N_OUPUTS){
-			final double LOWER = -  Math.sqrt(2.0 / ((double)N_INPUTS * N_OUPUTS));
-			final double UPPER =    Math.sqrt(2.0 /  ((double)N_INPUTS * N_OUPUTS));
-			return LOWER + Math.random() * (UPPER - LOWER);
+			return weightCalc( Math.sqrt(2.0 / ((double)N_INPUTS * (double)N_OUPUTS)) );
 		}
 	}
 
@@ -418,9 +377,7 @@ public class Activation{
 		 * @return random double with a Gaussian probability
 		 */
 		public static double randomWeight(final int N_INPUTS){
-			final double LOWER = -  Math.sqrt(2.0 / ((double)N_INPUTS));
-			final double UPPER =    Math.sqrt(2.0 / ((double)N_INPUTS));
-			return LOWER + Math.random() * (UPPER - LOWER);
+			return weightCalc( Math.sqrt(2.0 / ((double)N_INPUTS)) );
 		}
 		/**
 		 * Normalized He Weight Initialization
@@ -429,9 +386,7 @@ public class Activation{
 		 * @return Random double with a uniform probability distribution
 		 */
 		public static double randomWeight(final int N_INPUTS, final int N_OUPUTS){
-			final double LOWER = -  Math.sqrt(2.0 / ((double)N_INPUTS * N_OUPUTS));
-			final double UPPER =    Math.sqrt(2.0 /  ((double)N_INPUTS * N_OUPUTS));
-			return LOWER + Math.random() * (UPPER - LOWER);
+			return weightCalc( Math.sqrt(2.0 / ((double)N_INPUTS * (double)N_OUPUTS)) );
 		}
 	}
 
@@ -459,9 +414,7 @@ public class Activation{
 		 * @return random double with a Gaussian probability
 		 */
 		public static double randomWeight(final int N_INPUTS){
-			final double LOWER = -  Math.sqrt(2.0 / ((double)N_INPUTS));
-			final double UPPER =    Math.sqrt(2.0 / ((double)N_INPUTS));
-			return LOWER + Math.random() * (UPPER - LOWER);
+			return weightCalc( Math.sqrt(2.0 / ((double)N_INPUTS)) );
 		}
 		/**
 		 * Normalized He Weight Initialization
@@ -470,9 +423,7 @@ public class Activation{
 		 * @return Random double with a uniform probability distribution
 		 */
 		public static double randomWeight(final int N_INPUTS, final int N_OUPUTS){
-			final double LOWER = -  Math.sqrt(2.0 / ((double)N_INPUTS * N_OUPUTS));
-			final double UPPER =    Math.sqrt(2.0 /  ((double)N_INPUTS * N_OUPUTS));
-			return LOWER + Math.random() * (UPPER - LOWER);
+			return weightCalc( Math.sqrt(2.0 / ((double)N_INPUTS * (double)N_OUPUTS)) );
 		}
 	}
 
@@ -496,9 +447,7 @@ public class Activation{
 		 * @return random double with a Gaussian probability
 		 */
 		public static double randomWeight(final int N_INPUTS){
-			final double LOWER = -  Math.sqrt(2.0 / ((double)N_INPUTS));
-			final double UPPER =    Math.sqrt(2.0 / ((double)N_INPUTS));
-			return LOWER + Math.random() * (UPPER - LOWER);
+			return weightCalc( Math.sqrt(2.0 / ((double)N_INPUTS)) );
 		}
 		/**
 		 * Normalized He Weight Initialization
@@ -507,9 +456,7 @@ public class Activation{
 		 * @return Random double with a uniform probability distribution
 		 */
 		public static double randomWeight(final int N_INPUTS, final int N_OUPUTS){
-			final double LOWER = -  Math.sqrt(2.0 / ((double)N_INPUTS * N_OUPUTS));
-			final double UPPER =    Math.sqrt(2.0 /  ((double)N_INPUTS * N_OUPUTS));
-			return LOWER + Math.random() * (UPPER - LOWER);
+			return weightCalc( Math.sqrt(2.0 / ((double)N_INPUTS * (double)N_OUPUTS)) );
 		}
 	}
 
@@ -553,9 +500,7 @@ public class Activation{
 		 * @return	Random double with a uniform probability distribution
 		 */
 		public static double randomWeight(final int N_INPUTS){
-			final double LOWER = -  (1.0 / Math.sqrt(N_INPUTS));
-			final double UPPER =    (1.0 / Math.sqrt(N_INPUTS));
-			return LOWER + Math.random() * (UPPER - LOWER);
+			return weightCalc( 1.0 / Math.sqrt(N_INPUTS) );
 		}
 		/**
 		 * Normalized Xavier Weight initialization
@@ -564,10 +509,17 @@ public class Activation{
 		 * @return Random double with a uniform probability distribution
 		 */
 		public static double randomWeight(final int N_INPUTS, final int N_OUPUTS){
-			final double LOWER = -  (6.0 / Math.sqrt(N_INPUTS + N_OUPUTS));
-			final double UPPER =    (6.0 / Math.sqrt(N_INPUTS + N_OUPUTS));
-			return LOWER + Math.random() * (UPPER - LOWER);
+			return weightCalc( 6.0 / Math.sqrt(N_INPUTS + N_OUPUTS) );
 		}
+	}
+
+	/**
+	 * Calculating the initial random weight value
+	 * @param FORMULA
+	 * @return random weight
+	 */
+	private static double weightCalc(final double FORMULA){
+		return (-FORMULA) + Math.random() * (FORMULA - (-FORMULA));
 	}
   
 	/**
@@ -579,7 +531,7 @@ public class Activation{
 		double t = 1.0 / (1.0 + 0.5 * Math.abs(z));
 
 		// use Horner's method
-		double ans = 1.0 - t * Math.exp( -z * -   1.26551223 +
+		double ans = 1.0 - t * Math.exp( -z	* -   1.26551223 +
 											t * ( 1.00002368 +
 											t * ( 0.37409196 + 
 											t * ( 0.09678418 + 

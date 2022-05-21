@@ -1,5 +1,4 @@
 import java.io.FileNotFoundException;
-import lib.Optimizer;
 
 public class Ann{
 
@@ -34,13 +33,14 @@ public class Ann{
 		}catch(Exception e){ throw new FileNotFoundException(); }
 
 		// initialising the model
-		MODEL.buildStructure(dataTrain, dataValid, Optimizer.ADAM, Model.Loss.CROSS_ENTROPY);
+		MODEL.buildStructure(dataTrain, dataValid, lib.Optimizer.ADAM, Model.Loss.CROSS_ENTROPY);
 	}
 
 	// running tests and validations
 	public static void testModel(){
 		MODEL.train(BATCH_SIZE, EPOCHS, LEARNING_RATE);
 		System.out.println("\r\nValidating...");
+
 		MODEL.validate();
 		System.out.println("Accuracy: " + MODEL.getAccuracy() + "%\r\n");
 	}

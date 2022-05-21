@@ -97,14 +97,14 @@ public class DataSet {
 
 
 	public void shuffle(){
-		final int LENGTH = this.SAMPLES.length;
+		final int RANGE = this.SAMPLES.length-1;
 
-		for (int i = 0; i < LENGTH; i++) {
-			final int INDEX		= (int) Util.rangeRandom(0, LENGTH-1);
+		for (int old_index=0; old_index<=RANGE; old_index++) {
+			final int NEW_INDEX		= (int) Util.rangeRandom(0, RANGE);
 
-			Sample temp			= this.SAMPLES[i];
-			this.SAMPLES[i]		= this.SAMPLES[INDEX];
-			this.SAMPLES[INDEX] = temp;
+			Sample temp				= this.SAMPLES[NEW_INDEX];
+			this.SAMPLES[old_index]	= this.SAMPLES[old_index];
+			this.SAMPLES[NEW_INDEX]	= temp;
 		}
 	}
 
@@ -129,7 +129,7 @@ public class DataSet {
 		return SAMPLES.length;
 	}
 
-	public Sample getSample(int index){
-		return SAMPLES[index];
+	public Sample getSample(final int INDEX){
+		return SAMPLES[INDEX];
 	}
 }

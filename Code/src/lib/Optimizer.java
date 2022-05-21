@@ -56,10 +56,10 @@ public enum Optimizer {
             MOMENTUM[0] = (MOMENTUM[0] * this.BETA1) + ((1.0 - this.BETA1) * grad * grad); 
 
             // compute the second moment
-            optGrad 	= (Math.sqrt(MOMENTUM[1] + this.EPSILON) / Math.sqrt(MOMENTUM[0] + this.EPSILON)) * grad;
+            this.optGrad 	= (Math.sqrt(MOMENTUM[1] + this.EPSILON) / Math.sqrt(MOMENTUM[0] + this.EPSILON)) * grad;
 
             // storing the updated second moment value
-            MOMENTUM[1] = (MOMENTUM[1] * this.BETA1) + ((1.0 - this.BETA1) * optGrad * optGrad);
+            MOMENTUM[1] = (MOMENTUM[1] * this.BETA1) + ((1.0 - this.BETA1) * this.optGrad * this.optGrad);
 
             return optGrad;
         }
@@ -102,6 +102,7 @@ public enum Optimizer {
     public abstract double optimize(final double[] MOMENTUM, double grad);
     public abstract int momentNumber();         // get the momentums amount
     public abstract void timeStepIncrease();    // increase the time step
+    
     /**
      * setting the optimizer parameters
      * @param LR Learning rate

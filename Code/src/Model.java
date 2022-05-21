@@ -37,7 +37,6 @@ public class Model {
 				Node.Relation[] FLAT_OUTPUT = LAYER.getFlatOutput();
 				final double[] LABEL_LOCATION = SAMPLE.getLabelLocation();
 
-				//double meanError = 0;
 				for(int classs=0; classs < FLAT_OUTPUT.length; classs++){
 					setIntoNode(lib.Loss.Cross_Entropy.derivative(FLAT_OUTPUT[classs].getOutput(), LABEL_LOCATION[classs]), FLAT_OUTPUT[classs]);
 				}
@@ -124,9 +123,9 @@ public class Model {
 		prevLayer.firstLayerInit(OPT, DATA_TRAIN.getSample(0));	// initialising the input layer
 							
 		// cycling overt the rest of the layers initialising them
-		for(int i=1; i < this.LAYERS.length; i++){
-			this.LAYERS[i].layerInit(OPT, prevLayer.getNodes());
-			prevLayer = this.LAYERS[i];
+		for(final Layer LAYER: this.LAYERS){
+			LAYER.layerInit(OPT, prevLayer.getNodes());
+			prevLayer = LAYER;
 		}
 	}
 
@@ -135,25 +134,25 @@ public class Model {
 	
 	/**
 	 * Feed forward through every layer
-	 * @return boolean wether the prediction is correct
 	 */
 	private void feedForward(){
 		// loading the sample
 		try{ this.LAYERS[0].sampleLoader(this.sample); }
 		catch(Exception e){ System.err.println("Sample loaded into the wrong layer"); }
 
-
-		for(final Layer LAYER: this.LAYERS) LAYER.feedForward();
+		// cycling over the layers
+		for(final Layer LAYER: this.LAYERS)	LAYER.feedForward();
 	}
 
 
 
 
-
-	// Performing the back propagation to every layer
+	/**
+	 * Performing the back propagation to every layer
+	 */
 	private void backPropagate(){
 		this.loss.derivative(LAYERS[this.LAYERS.length-1], this.sample);
-		for(int layer = this.LAYERS.length-1; layer >= 0; layer--) this.LAYERS[layer].backPropagating();
+		for(int layer = this.LAYERS.length-1; layer >= 0; layer--)	this.LAYERS[layer].backPropagating();
 	}
 
 
@@ -181,14 +180,15 @@ public class Model {
 		final int DATA_SIZE = DATA.getSize()-1;
 		
 		//cicling over the dataset samples for "EPOCHS" times
-		for(int e=0; e < EPOCHS; e++){
+		for(int epoch=0; epoch < EPOCHS; epoch++){
+
 			lib.Util.Loading bar = new lib.Util.Loading(DATA_SIZE);
 			DATA.shuffle();	// shuffeling the samples
 
 			// cycling over the samples
 			for(int sampleIndex=0, batch=0; sampleIndex <= DATA_SIZE; sampleIndex++, batch++){
 				this.sample = DATA.getSample(sampleIndex);
-				bar.loading("Epoch: "+ (e+1) + " / " + EPOCHS);
+				bar.loading("Epoch: "+ (epoch+1) + " / " + EPOCHS);
 
 				feedForward();		// performing forward propagation for all the layers
 				backPropagate();	// performing back propagation for all the layers
@@ -206,6 +206,7 @@ public class Model {
 	/**
 	 * Validating / testing the model
 	 * @param DATA dataset
+	 * @return accuracy
 	 */
 	public double validate(){ return validate(this.validateData); }
     public double validate(final DataSet DATA){
@@ -226,9 +227,12 @@ public class Model {
 	}
 
 
-	// checking this sample prediction correctness
+	/**
+	 * Checking this sample prediction correctness
+	 * @param DATA dataset to be checked
+	 * @return result of sample prediction
+	 */
 	private boolean accuracyCheck(final DataSet DATA){
-		
 		Node.Relation[] NODES = this.LAYERS[this.LAYERS.length-1].getFlatOutput();
 
 		int answerIndex		= 0;
@@ -249,9 +253,10 @@ public class Model {
 
 
 	// ------------------ getter methods ------------------------
+	
 	// getting the model accuracy
 	public double getAccuracy(){
 		return lib.Util.round(this.accuracy, 2);
-		}
+	}
 
 }

@@ -222,8 +222,8 @@ public class Util{
      * @return int
      */
     public static double rangeRandom(double min, double max){
-		min = Math.max(min, max);
-		max = Math.min(min, max);
+		min = Math.min(min, max);
+		max = Math.max(min, max);
         return (Math.random() * (max - min)) + min;
     }
 
