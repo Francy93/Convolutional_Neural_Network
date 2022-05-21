@@ -100,7 +100,7 @@ public class DataSet {
 		final int RANGE = this.SAMPLES.length-1;
 
 		for (int old_index=0; old_index<=RANGE; old_index++) {
-			final int NEW_INDEX		= (int) Util.rangeRandom(0, RANGE);
+			final int NEW_INDEX		= (int) Math.round(Util.rangeRandom(0, RANGE));
 
 			Sample temp				= this.SAMPLES[old_index];
 			this.SAMPLES[old_index]	= this.SAMPLES[NEW_INDEX];
