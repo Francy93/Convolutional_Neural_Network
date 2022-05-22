@@ -67,7 +67,7 @@ public class Conv2D extends Layer{
 	 * @throws Exception
 	 */
 	public void sampleLoader(final Sample SMAPLE) throws Exception{
-		if(!this.isFirstLayer) throw new Exception("SampleLoader() can only be used with the first layer");
+		if(!super.isFirstLayer) throw new Exception("SampleLoader() can only be used with the first layer");
 
 		// cycling over this layer inputs array
 		for(int node=0; node < this.inputs.length; node++){

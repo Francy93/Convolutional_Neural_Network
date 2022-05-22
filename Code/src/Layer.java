@@ -1,7 +1,7 @@
 
 public abstract class Layer {
 
-	protected			boolean 	isFirstLayer = false;	//  marking this layer as first layer or hidden one
+	protected			boolean 	isFirstLayer = false;	//  marking this layer as first layer or a hidden one
     private 	final	Node[]		NODES;					//	this layer nodes container
     protected       	Node[]		inputs;					//	this layer inputs container
 	protected       	int			outputSizeY;			//	this layer activation map Y size
@@ -14,96 +14,81 @@ public abstract class Layer {
 	protected			int     	KERNEL_X;				//	Size X of this layer kernel
 	private	Node.Relation[]			flat_output;			//	array of nodes outputs
 	private	Node.Relation[][][][] 	kernelRelations;		//	array of relations between this layer weigths and inputs
-	protected			lib.Optimizer	optimizer;			//	learning optimizer
+	protected	lib.Optimizer		optimizer;			//	learning optimizer
 
 	// activation functions
 	public static enum Activation{
 		LINEAR{
 			public void function(final Node.Relation REL, final Layer LAYER){ REL.setOutput(lib.Activation.Linear.function(REL.getFrontLinearOutput(), 1)); }
 			public void derivative(final Node.Relation REL, final Layer LAYER){ REL.setDerivative(lib.Activation.Linear.derivative(REL.getBackLinearOutput(), REL.getOutput())); }
-			public double randomWeight(final Layer LAYER){ return lib.Activation.Linear.randomWeight(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
+			public double randomWeight(final Layer LAYER){ return lib.Activation.Linear.weightsInit(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X, 0); }
 		}, 
 		BINARY{
 			public void function(final Node.Relation REL, final Layer LAYER){ REL.setOutput(lib.Activation.Binary.function(REL.getFrontLinearOutput())); }
 			public void derivative(final Node.Relation REL, final Layer LAYER){ REL.setDerivative(lib.Activation.Binary.derivative(REL.getBackLinearOutput())); }
-			public double randomWeight(final Layer LAYER){ return lib.Activation.Binary.randomWeight(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
+			public double randomWeight(final Layer LAYER){ return lib.Activation.Binary.weightsInit(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X, 0); }
 		},
 		SIGMOID{
 			public void function(final Node.Relation REL, final Layer LAYER){  REL.setOutput(lib.Activation.Sigmoid.function(REL.getFrontLinearOutput())); }
 			public void derivative(final Node.Relation REL, final Layer LAYER){ REL.setDerivative(lib.Activation.Sigmoid.derivative(REL.getOutput())); }
-			public double randomWeight(final Layer LAYER){ return lib.Activation.Sigmoid.randomWeight(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
+			public double randomWeight(final Layer LAYER){ return lib.Activation.Sigmoid.weightsInit(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X, 0); }
 		},
 		TANH{
 			public void function(final Node.Relation REL, final Layer LAYER){  REL.setOutput(lib.Activation.Tanh.function(REL.getFrontLinearOutput())); }
 			public void derivative(final Node.Relation REL, final Layer LAYER){ REL.setDerivative(lib.Activation.Tanh.derivative(REL.getOutput())); }
-			public double randomWeight(final Layer LAYER){ return lib.Activation.Tanh.randomWeight(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
+			public double randomWeight(final Layer LAYER){ return lib.Activation.Tanh.weightsInit(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X, 0); }
 		},
 		SWISH{
 			public void function(final Node.Relation REL, final Layer LAYER){ REL.setOutput(lib.Activation.Swish.function(REL.getFrontLinearOutput())); }
 			public void derivative(final Node.Relation REL, final Layer LAYER){ REL.setDerivative(lib.Activation.Swish.derivative(REL.getBackLinearOutput(), REL.getOutput())); }
-			public double randomWeight(final Layer LAYER){ return lib.Activation.Swish.randomWeight(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
+			public double randomWeight(final Layer LAYER){ return lib.Activation.Swish.weightsInit(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
 		},
 		MISH{
 			public void function(final Node.Relation REL, final Layer LAYER){ REL.setOutput(lib.Activation.Mish.function(REL.getFrontLinearOutput())); }
 			public void derivative(final Node.Relation REL, final Layer LAYER){ REL.setDerivative(lib.Activation.Mish.derivative(REL.getBackLinearOutput())); }
-			public double randomWeight(final Layer LAYER){ return lib.Activation.Mish.randomWeight(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
+			public double randomWeight(final Layer LAYER){ return lib.Activation.Mish.weightsInit(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
 		},
 		RELU{
 			public void function(final Node.Relation REL, final Layer LAYER){ REL.setOutput(lib.Activation.Relu.function(REL.getFrontLinearOutput())); }
 			public void derivative(final Node.Relation REL, final Layer LAYER){ REL.setDerivative(lib.Activation.Relu.derivative(REL.getBackLinearOutput())); }
-			public double randomWeight(final Layer LAYER){ return lib.Activation.Relu.randomWeight(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
+			public double randomWeight(final Layer LAYER){ return lib.Activation.Relu.weightsInit(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
 		},
 		LRELU{
 			public void function(final Node.Relation REL, final Layer LAYER){ REL.setOutput(lib.Activation.Lrelu.function(REL.getFrontLinearOutput())); }
 			public void derivative(final Node.Relation REL, final Layer LAYER){ REL.setDerivative(lib.Activation.Lrelu.derivative(REL.getBackLinearOutput())); }
-			public double randomWeight(final Layer LAYER){ return lib.Activation.Lrelu.randomWeight(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
+			public double randomWeight(final Layer LAYER){ return lib.Activation.Lrelu.weightsInit(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
 		},
 		GELU{
 			public void function(final Node.Relation REL, final Layer LAYER){ REL.setOutput(lib.Activation.Gelu.function(REL.getFrontLinearOutput())); }
 			public void derivative(final Node.Relation REL, final Layer LAYER){ REL.setDerivative(lib.Activation.Gelu.derivative(REL.getBackLinearOutput())); }
-			public double randomWeight(final Layer LAYER){ return lib.Activation.Gelu.randomWeight(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
+			public double randomWeight(final Layer LAYER){ return lib.Activation.Gelu.weightsInit(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
 		},
 		SELU{
 			public void function(final Node.Relation REL, final Layer LAYER){ REL.setOutput(lib.Activation.Selu.function(REL.getFrontLinearOutput())); }
 			public void derivative(final Node.Relation REL, final Layer LAYER){ REL.setDerivative(lib.Activation.Selu.derivative(REL.getBackLinearOutput())); }
-			public double randomWeight(final Layer LAYER){ return lib.Activation.Selu.randomWeight(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
+			public double randomWeight(final Layer LAYER){ return lib.Activation.Selu.weightsInit(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
 		},
 		PRELU{
 			public void function(final Node.Relation REL, final Layer LAYER){ REL.setOutput(lib.Activation.Prelu.function(REL.getFrontLinearOutput(), 1)); }
 			public void derivative(final Node.Relation REL, final Layer LAYER){ REL.setDerivative(lib.Activation.Prelu.derivative(REL.getBackLinearOutput(), 1)); }
-			public double randomWeight(final Layer LAYER){ return lib.Activation.Prelu.randomWeight(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
+			public double randomWeight(final Layer LAYER){ return lib.Activation.Prelu.weightsInit(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
 		},
 		ELU{
 			public void function(final Node.Relation REL, final Layer LAYER){ REL.setOutput(lib.Activation.Elu.function(REL.getFrontLinearOutput(), 1)); }
 			public void derivative(final Node.Relation REL, final Layer LAYER){ REL.setDerivative(lib.Activation.Elu.derivative(REL.getBackLinearOutput(), 1, REL.getOutput())); }
-			public double randomWeight(final Layer LAYER){ return lib.Activation.Elu.randomWeight(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
+			public double randomWeight(final Layer LAYER){ return lib.Activation.Elu.weightsInit(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
 		},
 		SOFTPLUS{
 			public void function(final Node.Relation REL, final Layer LAYER){ REL.setOutput(lib.Activation.Softplus.function(REL.getFrontLinearOutput())); }
 			public void derivative(final Node.Relation REL, final Layer LAYER){ REL.setDerivative(lib.Activation.Softplus.derivative(REL.getBackLinearOutput())); }
-			public double randomWeight(final Layer LAYER){ return lib.Activation.Softplus.randomWeight(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
+			public double randomWeight(final Layer LAYER){ return lib.Activation.Softplus.weightsInit(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
 		},
 		SOFTMAX{
 			public void function(final Node.Relation REL, final Layer LAYER){ 
-				double sum = 0;
-				double biggestValue = LAYER.flat_output[0].getFrontLinearOutput(); 
-
-				// performing the normalization
-				for(int index = 0 ; index < LAYER.flat_output.length; index++){
-					biggestValue = Math.max(LAYER.flat_output[index].getFrontLinearOutput(), biggestValue);
-				}
-
-				// getting the normalizer current linear output
-				final double L_O = Math.exp(REL.getFrontLinearOutput() - biggestValue);
-		
-				for(int index = 0 ; index < LAYER.flat_output.length; index++){
-					sum += Math.exp(LAYER.flat_output[index].getFrontLinearOutput() - biggestValue);
-				}
-
-				REL.setOutput(L_O/sum);
+				REL.setOutput(lib.Activation.Softmax.function(REL, LAYER.getFlatOutput(), (node) -> node.getFrontLinearOutput()));
 			}
-			public void derivative(final Node.Relation REL, final Layer LAYER){ REL.setDerivative(1.0); }
-			public double randomWeight(final Layer LAYER){ return lib.Activation.Softmax.randomWeight(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
+			public void derivative(final Node.Relation REL, final Layer LAYER){ REL.setDerivative(lib.Activation.Softmax.derivative()); }
+			public double randomWeight(final Layer LAYER){ return lib.Activation.Softmax.weightsInit(LAYER.inputs.length * LAYER.KERNEL_Y * LAYER.KERNEL_X); }
 		};
 
 		// abstract

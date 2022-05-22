@@ -64,7 +64,7 @@
 	 * @throws Exception
 	 */
 	public void sampleLoader(final Sample SMAPLE) throws Exception{
-		if(!this.isFirstLayer) throw new Exception("SampleLoader() can only be used with the first layer");
+		if(!super.isFirstLayer) throw new Exception("SampleLoader() can only be used with the first layer");
 
 		for(int node=0; node < this.inputs.length; node++){
 			Node.Relation[][] OUTPUT = this.inputs[node].getOutput();
