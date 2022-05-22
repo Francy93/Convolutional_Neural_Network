@@ -62,14 +62,14 @@ public class Initializer{
     }
 
     public static class Xavier{
-		
+
         /**
          * Xavier Weight initialization
          * @param N_INPUTS umber of inputs of the current node
          * @return	Random double with a uniform probability distribution
          */
         public static double normal(final int N_INPUTS, final int N_OUPUTS){
-            return randomGen( XAVIER_NORM, (N_INPUTS + N_OUPUTS) );
+            return randomGen( XAVIER_NORM, N_INPUTS + N_OUPUTS );
         }
 
         /**
@@ -79,7 +79,7 @@ public class Initializer{
          * @return Random double with a uniform probability distribution
          */
         public static double uniform(final int N_INPUTS, final int N_OUPUTS){
-            return randomGen( XAVIER_UNIF, (N_INPUTS + N_OUPUTS) );
+            return randomGen( XAVIER_UNIF, N_INPUTS + N_OUPUTS );
         }
     }
 

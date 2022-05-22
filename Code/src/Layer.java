@@ -14,7 +14,7 @@ public abstract class Layer {
 	protected			int     	KERNEL_X;				//	Size X of this layer kernel
 	private	Node.Relation[]			flat_output;			//	array of nodes outputs
 	private	Node.Relation[][][][] 	kernelRelations;		//	array of relations between this layer weigths and inputs
-	protected	lib.Optimizer		optimizer;			//	learning optimizer
+	protected	lib.Optimizer		optimizer;				//	learning optimizer
 
 	// activation functions
 	public static enum Activation{
@@ -160,8 +160,8 @@ public abstract class Layer {
 
 	// initialising this layer nodes
 	protected void nodesInit(){
-        for(int i=0; i< this.NODES_AMOUNT; i++){
-            this.NODES[i] = new Node(this.inputs.length, this.KERNEL_Y, this.KERNEL_X, this.outputSizeY, this.outputSizeX, this.optimizer);
+        for(int index=0; index<this.NODES_AMOUNT; index++){
+            this.NODES[index] = new Node(this.inputs.length, this.KERNEL_Y, this.KERNEL_X, this.outputSizeY, this.outputSizeX, this.optimizer);
         }
     }
 
