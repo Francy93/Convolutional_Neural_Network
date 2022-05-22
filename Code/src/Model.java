@@ -123,9 +123,9 @@ public class Model {
 		prevLayer.firstLayerInit(OPT, DATA_TRAIN.getSample(0));	// initialising the input layer
 							
 		// cycling overt the rest of the layers initialising them
-		for(final Layer LAYER: this.LAYERS){
-			LAYER.layerInit(OPT, prevLayer.getNodes());
-			prevLayer = LAYER;
+		for(int index=1; index < this.LAYERS.length; index++){
+			this.LAYERS[index].layerInit(OPT, prevLayer.getNodes());
+			prevLayer = this.LAYERS[index];
 		}
 	}
 
