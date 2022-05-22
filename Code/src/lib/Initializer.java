@@ -62,6 +62,7 @@ public class Initializer{
     }
 
     public static class Xavier{
+		
         /**
          * Xavier Weight initialization
          * @param N_INPUTS umber of inputs of the current node
@@ -103,7 +104,7 @@ public class Initializer{
         }
     }
 
-	
+
     /**
      * Get weight value
      * @param PARAM 
