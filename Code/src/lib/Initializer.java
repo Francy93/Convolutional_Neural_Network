@@ -66,6 +66,7 @@ public class Initializer{
         /**
          * Xavier Weight initialization
          * @param N_INPUTS umber of inputs of the current node
+         * @param N_OUPUTS number of output of the current node
          * @return	Random double with a uniform probability distribution
          */
         public static double normal(final int N_INPUTS, final int N_OUPUTS){
@@ -96,7 +97,6 @@ public class Initializer{
         /**
          * Normalized He Weight Initialization
          * @param N_INPUTS number of inputs of the current node
-         * @param N_OUPUTS number of output of the current node
          * @return Random double with a uniform probability distribution
          */
         public static double uniform(final int N_INPUTS){
