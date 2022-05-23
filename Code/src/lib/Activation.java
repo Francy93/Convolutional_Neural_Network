@@ -228,13 +228,16 @@ public class Activation{
 		 */
 		public static double function(final double X){
 			return X * (0.5 * (1.0 + erf(X / Math.sqrt(2.0))));
+			//return 0.5 * X * (1.0 + Tanh.function(Math.sqrt(2.0 / 3.14) * (X + 0.044715 * Math.pow(X, 3.0))));	// Light and approximate version
 		}
 		/**
 		 * @param X linear input
 		 * @return derivative
 		 */
 		public static double derivative(final double X){
-			return 0.5 * Math.tanh(0.0356774 * X * 3.0 + 0.797885 * X) + (0.0535161 * X * 3.0 + 0.398942 * X) * sech(0.0356774 * X * 3.0 + 0.797885 * X) + 0.5;
+			return	0.5 * Math.tanh(0.0356774 * Math.pow(X, 3.0) + 0.797885 * X) + 
+					(0.0535161 * Math.pow(X, 3.0) + 0.398942 * X) * 
+					Math.pow(sech(0.0356774 * Math.pow(X, 3.0) + 0.797885 * X), 2.0) + 0.5;
 		}
 		
 		/**
@@ -416,7 +419,7 @@ public class Activation{
 		double t = 1.0 / (1.0 + 0.5 * Math.abs(z));
 
 		// use Horner's method
-		double ans = 1.0 - t * Math.exp( -z	* -   1.26551223 +
+		double ans = 1.0 - t * Math.exp( -z*z -   1.26551223 +
 											t * ( 1.00002368 +
 											t * ( 0.37409196 + 
 											t * ( 0.09678418 + 
