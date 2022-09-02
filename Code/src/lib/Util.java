@@ -63,7 +63,7 @@ public class Util{
 	 * @param n
 	 * @return
 	 */
-	public static String StringRepeat(final String S, final long N){
+	public static String stringRepeat(final String S, final long N){
 		String str = "";
 		for(long i=0; i<N; i++) 	str += S;
 		return str;
@@ -208,11 +208,30 @@ public class Util{
      * @param b
      * @return boolean
      */
-    public static boolean exists(final int[] ARRAY, final int B){
+    public static long contains(final int[] ARRAY, final int B){
+		long occurrence = 0;
         for(final int A: ARRAY){
-            if(A==B) return true;
+            if(A==B) occurrence++;
         }
-        return false;
+        return occurrence;
+    }
+
+	public static long strMatch(final String STRING, final String MATCH){
+        if(STRING.length() < MATCH.length()) return 0;
+        
+		long occurrence = 0;
+        for(int i=0; i<STRING.length(); i++){
+            for(int j=0; j<MATCH.length(); j++){
+                final boolean MATCHED;
+                
+                try{ MATCHED = MATCH.charAt(j) == STRING.charAt(i+j); }
+                catch(IndexOutOfBoundsException e) { return occurrence; }
+                
+				if(MATCHED){ if(j==MATCH.length()-1) occurrence++; }
+				else break;
+			}
+        }
+        return occurrence;
     }
 
 	/**
@@ -227,10 +246,24 @@ public class Util{
         return (Math.random() * (max - min)) + min;
     }
 
-	// append arrays
-	public static <T> T[] append(T[] destination, T[] array) {
-		for(int i=0; i<array.length; i++) destination[i] = array[i];
-		return destination;
+	// merge arrays
+	public static <T> T[] merge(final T[] A, final T[] B) {
+		final T[] LONGEST = A.length >= B.length? A: B;
+		final T[] SHORTEST = A.length >= B.length? B: A;
+
+		for(int i=0; i<SHORTEST.length; i++) LONGEST[i] = SHORTEST[i];
+		return LONGEST;
+	}
+
+	public static <T> int findLargest(final T[][]ARRAY){
+		int largest = 0;
+		for(final T[] ELEM: ARRAY){	if(largest > ELEM.length) largest = ELEM.length; }
+		return largest;
+	}
+	public static int findLargest(final String[] ARRAY){
+		int largest = 0;
+		for(final String ELEM: ARRAY){	if(largest > ELEM.length()) largest = ELEM.length(); }
+		return largest;
 	}
 
 	/**
@@ -241,38 +274,51 @@ public class Util{
 	 * @param print
 	 * @return String[]
 	 */
-	public static String[] navOptions(final long MIN_SIZE, final String COLORS, final boolean PRINT, String ... opts){
-		String[] options = new String[opts.length + 2];
-		append(options, opts);
+	public static String[] navOptions(final long MIN_SIZE, final String COLORS, final boolean PRINT, final String ... OPTS){
+		// customizable parameters
+		final String DELIMITER = ".", STD_NAV_NUM = "0";
+		final String[] STD_NAV = {"Go back", "Exit"};
+		final long MIN_DELIM_LENGTH = 3;
 
-        final long oSize = opts.length;
-        long iSize = 2, i = 0, longest = 7;
+		// getting colors
+		final String COL_START = color(COLORS);								//yellow corresponds to: "\033[1;35m"
+        final String COL_END = COL_START==""? COL_START: color("reset");	//reset  corresponds to: "\033[0m"
+		
+		// arrays of options strings and index strings
+		final String[] STD_NAV_INDEX = new String[STD_NAV.length];
+		for(int i=0; i<STD_NAV_INDEX.length; i++) STD_NAV_INDEX[i] = stringRepeat(STD_NAV_NUM, i+1);
+		final String[] OPTIONS = merge(OPTS, new String[OPTS.length+STD_NAV.length]);
+
+		// getting the size of the longest index num and the size of the longest option string
+        final long oSize = OPTS.length;
+        long iSize = findLargest(STD_NAV_INDEX), i = 0, longest = findLargest(STD_NAV);
 
         // getting the longest string size
-        for(String o: opts){
+        for(String o: OPTS){
             final long strSize = o.length();
             longest = strSize > longest? strSize: longest;
             if(++i == oSize) iSize = Long.toString(i).length() > iSize? Long.toString(i).length(): iSize;
         }
 
-        String cStart = color(COLORS);					//yellow corresponds to: "\033[1;35m"
-        String cEnd = cStart==""? "": color("reset");	//reset  corresponds to: "\033[0m"
 
-        longest = longest+3>=(double)MIN_SIZE-iSize? longest+3: MIN_SIZE-iSize;
-        i = 0;
-        for(String o: opts){
+		i = 0;
+        longest = longest+MIN_DELIM_LENGTH>=(double)MIN_SIZE-iSize? longest+MIN_DELIM_LENGTH: MIN_SIZE-iSize;
+        for(String o: OPTS){
             final long indexSize = iSize - Long.toString(++i).length();
             final long gap = longest - o.length();
-            String index = cStart + Long.toString(i) + cEnd;
+            final String INDEX = COL_START + Long.toString(i) + COL_END;
 
-            options[(int)i-1] = o + StringRepeat(".", gap+indexSize) + index;
+            OPTIONS[(int)i-1] = o + stringRepeat(DELIMITER, gap+indexSize) + INDEX;
         }
-        options[opts.length]	= "Go back" + StringRepeat(".",longest-7+iSize-1) + cStart+"0"+cEnd;
-        options[opts.length+1]	= "Exit"    + StringRepeat(".",longest-4+iSize-2) + cStart+"00"+cEnd;
 
+		// making standard navigation options
+		for(int j=0; j<STD_NAV_INDEX.length; j++){
+        	OPTIONS[OPTS.length+j]	= STD_NAV[j] + stringRepeat(DELIMITER,longest-STD_NAV[j].length()+iSize-STD_NAV_INDEX[j].length()) + COL_START+STD_NAV_INDEX[j]+COL_END;
+		}
+        
         // printing
-        if(PRINT) for(String line: options) System.out.println(line);
-        return options;
+        if(PRINT) for(final String LINE: OPTIONS) System.out.println(LINE);
+        return OPTIONS;
     }
 
 
@@ -410,6 +456,8 @@ public class Util{
 		private final	short	UPDATES;
 		private final	long	CICLES_AMOUNT;
 		private final	String	BLOCK = "█", DOTTED = "░";
+		private final	String	ERASE_LINE = "\033[2K", ERASE_BELOW = "\033[0J", GO_LINE_UP = "\033[A", NL="\n", CR = "\r";
+
 
         /**
 		 * Constructor Method
@@ -438,35 +486,37 @@ public class Util{
          */
 		public void loading(){ if (this.CICLES_AMOUNT > 0 && ++this.index <= this.CICLES_AMOUNT)	barGen(this.CICLES_AMOUNT, this.index, this.BAR_LENGTH, this.UPDATES, ""); }
        	public void loading(final String MESSAGE){ if (this.CICLES_AMOUNT > 0 && ++this.index <= this.CICLES_AMOUNT)	barGen(this.CICLES_AMOUNT, this.index, this.BAR_LENGTH, this.UPDATES, MESSAGE); }
-        public void loading(final long size, long index){ if (size > 0 && ++index <= size)	barGen(size, index, this.BAR_LENGTH, this.UPDATES, ""); }
-        public void loading(final long size, long index , final short barLength){ if (size > 0 && ++index <= size)	barGen(size, index, barLength, this.UPDATES, ""); }
-        public void loading(final long size, long index,  final short barLength, final short updates){ if (size > 0 && ++index <= size)	barGen(size, index, barLength, updates, ""); }
+        public void loading(final long SIZE, long index){ if (SIZE > 0 && ++index <= SIZE)	barGen(SIZE, index, this.BAR_LENGTH, this.UPDATES, ""); }
+        public void loading(final long SIZE, long index , final short BAR_LENGTH){ if (SIZE > 0 && ++index <= SIZE)	barGen(SIZE, index, BAR_LENGTH, this.UPDATES, ""); }
+        public void loading(final long SIZE, long index,  final short BAR_LENGTH, final short UPDATES){ if (SIZE > 0 && ++index <= SIZE)	barGen(SIZE, index, BAR_LENGTH, UPDATES, ""); }
 		
-		private void barGen(final long size, long index,  final short barLength, short updates, final String MESSAGE){
+		private void barGen(final long SIZE, long index,  final short BAR_LENGTH, short UPDATES, final String MESSAGE){
 
 			//calculating loading bar
-			updates = updates > 99? 100: updates < 1? 0: updates;
-			final short BAR_PERCENT		= (short)(index * updates / size);
-			final short TOKENS			= (short)((float)barLength / updates * BAR_PERCENT);
+			UPDATES = UPDATES > 99? 100: UPDATES < 1? 0: UPDATES;
+			final short BAR_PERCENT		= (short)(index * UPDATES / SIZE);
+			final short TOKENS			= (short)((float)BAR_LENGTH / UPDATES * BAR_PERCENT);
 			
 			if(TOKENS != this.counter){
 				// "counter" determines when to print the status bar
 				this.counter = TOKENS;
-				final short PERCENT = (short)(index * 100 / size);
+				final short PERCENT = (short)(index * 100 / SIZE);
 				
-				if(PERCENT < 100 && size > index){
+				if(PERCENT < 100 && SIZE > index){
 					String statusFull = "", statusVoid = "", colors;
-					for(long j=0;j<TOKENS;j++) statusFull += this.BLOCK;
-					for(long j=0;j<barLength-(long)TOKENS;j++) statusVoid += this.DOTTED;
+					for(long j=0; j<TOKENS; j++)	statusFull += this.BLOCK;
+					for(long j=0; j<BAR_LENGTH-(long)TOKENS; j++)	statusVoid += this.DOTTED;
+
 					if      (PERCENT < 33)  colors = "red";
 					else if (PERCENT < 66)  colors = "yellow";
 					else                    colors = "green";
 					
 					final String OUTCOME = colorText(statusFull, colors)+statusVoid+" "+colorText(PERCENT+"%", colors)+"	"+colorText(MESSAGE, "blue")+"\r";
-					System.out.print( "\r" + OUTCOME + "\r");
+					
+					System.out.print( ERASE_BELOW + OUTCOME + stringRepeat(GO_LINE_UP, strMatch(MESSAGE, NL)) + CR);
 				}else {
 					this.counter--;
-					System.out.print( "\33[2K" + "\r");
+					System.out.print( ERASE_BELOW + CR);
 				}
 			}
 		
