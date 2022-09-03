@@ -178,11 +178,10 @@ public class Model {
 		this.optimizer.setParam(LEARNING_RATE, BATCH);
 
 		final int DATA_SIZE = DATA.getSize()-1;
+		lib.Util.Loading bar = new lib.Util.Loading(DATA_SIZE);
 		
 		//cicling over the dataset samples for "EPOCHS" times
 		for(int epoch=0; epoch < EPOCHS; epoch++){
-
-			lib.Util.Loading bar = new lib.Util.Loading(DATA_SIZE);
 			DATA.shuffle();	// shuffeling the samples
 
 			// cycling over the samples
