@@ -455,8 +455,10 @@ public class Util{
 		private final	short	BAR_LENGTH;
 		private final	short	UPDATES;
 		private final	long	CICLES_AMOUNT;
-		private final	String	BLOCK = "█", DOTTED = "░";
-		private final	String	ERASE_LINE = "\033[2K", ERASE_BELOW = "\033[0J", GO_LINE_UP = "\033[A", NL="\n", CR = "\r";
+		private final	String[] BAR_COLORS		= {"red", "yellow", "green"};
+		private final	double	COLORS_INDEX	= (double)BAR_COLORS.length / 100.0;
+		private final	String	BLOCK			= "█", DOTTED = "░";
+		private final	String	ERASE_LINE		= "\033[2K", ERASE_BELOW = "\033[0J", GO_LINE_UP = "\033[A", NL="\n", CR = "\r";
 
 
         /**
@@ -503,15 +505,10 @@ public class Util{
 				final short PERCENT = (short)(index * 100 / SIZE);
 				
 				if(PERCENT < 100 && SIZE > index){
-					String statusFull = "", statusVoid = "", colors;
-					for(long j=0; j<TOKENS; j++)	statusFull += this.BLOCK;
-					for(long j=0; j<BAR_LENGTH-(long)TOKENS; j++)	statusVoid += this.DOTTED;
-
-					if      (PERCENT < 33)  colors = "red";
-					else if (PERCENT < 66)  colors = "yellow";
-					else                    colors = "green";
-					
-					final String OUTCOME = colorText(statusFull, colors)+statusVoid+" "+colorText(PERCENT+"%", colors)+"	"+colorText(MESSAGE, "blue")+"\r";
+					final String STATUS_FULL	= stringRepeat(this.BLOCK, (long)TOKENS);
+					final String STATUS_VOID	= stringRepeat(this.DOTTED, BAR_LENGTH-(long)TOKENS);
+					final String COLORS			= BAR_COLORS[(int)(PERCENT*COLORS_INDEX)]; // selecting the bar color
+					final String OUTCOME		= colorText(STATUS_FULL, COLORS)+STATUS_VOID+" "+colorText(PERCENT+"%", COLORS)+"	"+colorText(MESSAGE, "blue")+"\r";
 					
 					System.out.print( ERASE_BELOW + OUTCOME + stringRepeat(GO_LINE_UP, strMatch(MESSAGE, NL)) + CR);
 				}else {
