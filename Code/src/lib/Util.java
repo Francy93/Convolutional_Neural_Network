@@ -496,7 +496,7 @@ public class Util{
 		private void barGen(final long SIZE, final long INDEX, final short BAR_LENGTH, short updates, final String MESSAGE){
 
 			//calculating loading bar
-			updates = updates > 99? this.MAX_PERCENT: updates < 1? 0: updates;
+			updates = updates > BAR_LENGTH? BAR_LENGTH: updates < 1? 0: updates;
 			final short BAR_PERCENT		= (short)(INDEX * updates / SIZE);
 			final short TOKENS			= (short)((float)BAR_LENGTH / updates * BAR_PERCENT);
 			
