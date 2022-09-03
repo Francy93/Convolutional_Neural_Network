@@ -455,8 +455,9 @@ public class Util{
 		private final	short	BAR_LENGTH;
 		private final	short	UPDATES;
 		private final	long	CICLES_AMOUNT;
+		private final	short	MAX_PERCENT		= 100;
 		private final	String[] BAR_COLORS		= {"red", "yellow", "green"};
-		private final	double	COLORS_INDEX	= (double)BAR_COLORS.length / 100.0;
+		private final	double	COLORS_INDEX	= (double)BAR_COLORS.length / (double)MAX_PERCENT;
 		private final	String	BLOCK			= "█", DOTTED = "░";
 		private final	String	ERASE_LINE		= "\033[2K", ERASE_BELOW = "\033[0J", GO_LINE_UP = "\033[A", NL="\n", CR = "\r";
 
@@ -495,16 +496,16 @@ public class Util{
 		private void barGen(final long SIZE, final long INDEX, final short BAR_LENGTH, short updates, final String MESSAGE){
 
 			//calculating loading bar
-			updates = updates > 99? 100: updates < 1? 0: updates;
+			updates = updates > 99? this.MAX_PERCENT: updates < 1? 0: updates;
 			final short BAR_PERCENT		= (short)(INDEX * updates / SIZE);
 			final short TOKENS			= (short)((float)BAR_LENGTH / updates * BAR_PERCENT);
 			
 			if(TOKENS != this.counter){
 				// "counter" determines when to print the status bar
 				this.counter = TOKENS;
-				final short PERCENT = (short)(INDEX * 100 / SIZE);
+				final short PERCENT = (short)(INDEX * this.MAX_PERCENT / SIZE);
 				
-				if(PERCENT < 100 && SIZE > INDEX){
+				if(PERCENT < this.MAX_PERCENT && SIZE > INDEX){
 					final String STATUS_FULL	= stringRepeat(this.BLOCK, (long)TOKENS);
 					final String STATUS_VOID	= stringRepeat(this.DOTTED, BAR_LENGTH-(long)TOKENS);
 					final String COLORS			= this.BAR_COLORS[(int)(PERCENT*this.COLORS_INDEX)]; // selecting the bar color
