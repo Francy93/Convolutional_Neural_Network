@@ -178,16 +178,18 @@ public class Model {
 		this.optimizer.setParam(LEARNING_RATE, BATCH);
 
 		final int DATA_SIZE = DATA.getSize()-1;
-		lib.Util.Loading bar = new lib.Util.Loading(DATA_SIZE);
+		final lib.Util.Loading BAR = new lib.Util.Loading(DATA_SIZE);
 		
 		//cicling over the dataset samples for "EPOCHS" times
 		for(int epoch=0; epoch < EPOCHS; epoch++){
+			BAR.message("Epoch: "+ (epoch+1) + " / " + EPOCHS, "blue");
 			DATA.shuffle();	// shuffeling the samples
 
 			// cycling over the samples
 			for(int sampleIndex=0, batch=0; sampleIndex <= DATA_SIZE; sampleIndex++, batch++){
 				this.sample = DATA.getSample(sampleIndex);
-				bar.loading("Epoch: "+ (epoch+1) + " / " + EPOCHS);
+				
+				BAR.printNewBar();  // printing the loading bar
 
 				feedForward();		// performing forward propagation for all the layers
 				backPropagate();	// performing back propagation for all the layers

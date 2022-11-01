@@ -450,15 +450,19 @@ public class Util{
 	// loading bar class
 	public static class Loading {
 
-        private			long	index;
-        private			short	counter;
-		private final	short	BAR_LENGTH;
-		private final	short	UPDATES;
-		private final	long	CICLES_AMOUNT;
+        private			long	index			= -1;
+        private			short	counter 		= -1;
+		private			short	barLength		= 50;
+		private			short	updates 		= this.barLength;
+		private			boolean	messageUpdate	= false;
+		private			String	messageColour	= "blue";
+		private			String	message 		= "";
+		private			String	linesUp 		= "";
+		private			long	ciclesAmount;
 		private final	short	MAX_PERCENT		= 100;
 		private final	String[] BAR_COLORS		= {"red", "yellow", "green"};
-		private final	double	COLORS_INDEX	= (double)BAR_COLORS.length / (double)MAX_PERCENT;
-		private final	String	BLOCK			= "█", DOTTED = "░";
+		private final	double	COLORS_INDEX	= (double)this.BAR_COLORS.length / (double)this.MAX_PERCENT;
+		private final	String	BLOCK			= "█", DOTTED = "░", TAB="	";
 		private final	String	ERASE_LINE		= "\033[2K", ERASE_BELOW = "\033[0J", GO_LINE_UP = "\033[A", NL="\n", CR = "\r";
 
 
@@ -468,56 +472,116 @@ public class Util{
 		 * @param BL BAR_LENGTH
 		 * @param U UPDATES
 		 */
-		public Loading(final long CA, final short BL, final short U){
-            counter			= -1;
-			index			= 0;
-			BAR_LENGTH		= BL;
-			UPDATES			= U;
-			CICLES_AMOUNT	= CA;
+		public Loading(final long CA, final short BL, final short U, final String M){
+			this.ciclesAmount	= CA;
+			this.barLength(BL);
+			this.updates(U);
+			this.message(M, this.messageColour);
         }
-		public Loading(final long CA){ this(CA, (short)50, (short)100); }
-		public Loading(){ this(0, (short)50, (short)100); }
+		public Loading(final long CA){ this(CA, (short)50, (short)50, ""); }
+
+		/**
+		 * Setting the updates rate
+		 * @param RATE
+		 */
+		public void updates(final short RATE){
+			if		(RATE > this.barLength)	this.updates = this.barLength;
+			else if	(RATE < 0)	this.updates = 0;
+			else	this.updates = RATE;
+		}
+
+		/**
+		 * Setting the bar length
+		 * @param LENGTH
+		 */
+		public void barLength(final short LENGTH){
+			if(LENGTH > 0) {
+				this.barLength = LENGTH;
+				if(this.updates > this.barLength)	this.updates(this.barLength);
+			}
+		}
+
+		/**
+		 * Setting the message of the bar
+		 * @param TEXT
+		 * @param COLOUR
+		 */
+		public void message(final String TEXT, final String COLOUR){
+			this.message = TEXT;
+			this.messageColour = COLOUR;
+			this.messageUpdate = true;
+		}
+
+		/**
+		 * Setting the cicles amount
+		 * @param CICLES
+		 */
+		public void ciclesAmount(final long CICLES){
+			if(CICLES > 0 && CICLES >= this.index) this.ciclesAmount = CICLES;
+		}
+
+		/**
+		 * Setting the index state
+		 * @param INDEX
+		 */
+		public boolean indexUpdate(final long INDEX){
+			if(INDEX >= 0 && INDEX <= this.ciclesAmount) this.index = INDEX;
+			else return false;
+
+			return true;
+		}
 
 
-    	/**
-         * loading bar
-         * @param size CICLES AMOUNT
-         * @param index Current index
-         * @param barLength (facultative)
-         * @param updates (facultative)
-         * @return string 
-         */
-		public void loading(){ if (this.CICLES_AMOUNT > 0 && this.index <= this.CICLES_AMOUNT)	barGen(this.CICLES_AMOUNT, this.index++, this.BAR_LENGTH, this.UPDATES, ""); }
-       	public void loading(final String MESSAGE){ if (this.CICLES_AMOUNT > 0 && this.index <= this.CICLES_AMOUNT)	barGen(this.CICLES_AMOUNT, this.index++, this.BAR_LENGTH, this.UPDATES, MESSAGE); }
-        public void loading(final long SIZE, final long INDEX){ if (SIZE > 0 && INDEX <= SIZE)	barGen(SIZE, INDEX, this.BAR_LENGTH, this.UPDATES, ""); }
-        public void loading(final long SIZE, final long INDEX, final short BAR_LENGTH){ if (SIZE > 0 && INDEX <= SIZE)	barGen(SIZE, INDEX, BAR_LENGTH, this.UPDATES, ""); }
-        public void loading(final long SIZE, final long INDEX, final short BAR_LENGTH, final short UPDATES){ if (SIZE > 0 && INDEX <= SIZE)	barGen(SIZE, INDEX, BAR_LENGTH, UPDATES, ""); }
-		
-		private void barGen(final long SIZE, final long INDEX, final short BAR_LENGTH, short updates, final String MESSAGE){
-
+		/**
+		 * Tokens generator
+		 */
+		private short tokensGen(){
 			//calculating loading bar
-			updates = updates > BAR_LENGTH? BAR_LENGTH: updates < 1? 0: updates;
-			final short BAR_PERCENT		= (short)(INDEX * updates / SIZE);
-			final short TOKENS			= (short)((float)BAR_LENGTH / updates * BAR_PERCENT);
+			final short BAR_PERCENT		= (short)(this.index * this.updates / this.ciclesAmount);
+			return (short)((float)this.barLength / this.updates * BAR_PERCENT);
+		}
+
+
+		/**
+		 * loading bar generator
+		 * @param TOKENS
+		 * @return bar string
+		 */
+		public String barGen(final short TOKENS){
+			//final short PERCENT = (short)(this.index * this.MAX_PERCENT / this.ciclesAmount);
+			final short PERCENT = (short)(TOKENS * this.MAX_PERCENT / this.barLength);
 			
-			if(TOKENS != this.counter){
-				// "counter" determines when to print the status bar
-				this.counter = TOKENS;
-				final short PERCENT = (short)(INDEX * this.MAX_PERCENT / SIZE);
+			if(PERCENT < this.MAX_PERCENT && this.ciclesAmount > this.index){
+				final String STATUS_FULL	= stringRepeat(this.BLOCK, (long)TOKENS);
+				final String STATUS_VOID	= stringRepeat(this.DOTTED, this.barLength-(long)TOKENS);
+				final String COLORS			= this.BAR_COLORS[(int)(PERCENT*this.COLORS_INDEX)]; // selecting the bar color
+				final String OUTCOME		= colorText(STATUS_FULL, COLORS)+STATUS_VOID+" "+colorText(PERCENT+"%", COLORS)+this.TAB+colorText(this.message, this.messageColour);
 				
-				if(PERCENT < this.MAX_PERCENT && SIZE > INDEX){
-					final String STATUS_FULL	= stringRepeat(this.BLOCK, (long)TOKENS);
-					final String STATUS_VOID	= stringRepeat(this.DOTTED, BAR_LENGTH-(long)TOKENS);
-					final String COLORS			= this.BAR_COLORS[(int)(PERCENT*this.COLORS_INDEX)]; // selecting the bar color
-					final String OUTCOME		= colorText(STATUS_FULL, COLORS)+STATUS_VOID+" "+colorText(PERCENT+"%", COLORS)+"	"+colorText(MESSAGE, "blue");
-					
-					System.out.print( this.CR + this.ERASE_BELOW + OUTCOME + stringRepeat(this.GO_LINE_UP, strMatch(MESSAGE, this.NL)) + this.CR);
-				}else{
-					this.index	= 0;
-					System.out.print( this.CR + this.ERASE_BELOW );
+				if(this.messageUpdate){
+					this.linesUp		= stringRepeat(this.GO_LINE_UP, strMatch(this.message, this.NL));
+					this.messageUpdate	= false;
+				}
+				return this.CR + this.ERASE_BELOW + OUTCOME + this.linesUp + this.CR;
+			}else{
+				this.index	= -1;
+				return this.CR + this.ERASE_BELOW ;
+			}
+        }
+
+
+		/*
+		 * Print the Loading Bar
+		 */
+		public void printNewBar(){
+			if(this.indexUpdate(this.index+1)){
+				final short TOKENS = this.tokensGen();
+
+				if(TOKENS != this.counter){
+					// "counter" determines when to print the status bar
+					this.counter = TOKENS;
+					System.out.print(this.barGen(TOKENS));
 				}
 			}
-		
-        }
+		}
     }
 }
