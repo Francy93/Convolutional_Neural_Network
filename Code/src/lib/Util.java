@@ -8,11 +8,7 @@ import java.util.ArrayList;
  * This class is a collection of various tools
  */
 public class Util{
-	public static final Scanner CIN = new Scanner(System.in);
-	//determining whether the text get colored or not
-	private static boolean colorState = true, timerOnOff;
-	private static ArrayList<Long> compTime = new ArrayList<>();
-
+	
 	/**
 	 * Lambda function with just a parameter
 	 */ 
@@ -24,37 +20,6 @@ public class Util{
     }
 
 
-
-	public static void setColor(final boolean B){ colorState = B; }
-	public static boolean colorState(){ return colorState;  }
-    
-	/**
-	 * Benchmarking the computation time
-	 * @param onOff
-	 * @return current time
-	 */
-	public static double timeTrack(final boolean onOff){
-		long time = System.nanoTime();
-
-		if(onOff && !timerOnOff)					compTime.add(time);
-		else if(compTime.size() > 0 && timerOnOff)	compTime.set(compTime.size()-1, time - compTime.get(compTime.size()-1));
-		else 							return 0;
-
-		timerOnOff = onOff;
-		return compTime.get(compTime.size()-1);
-	}
-
-	// getting the time collected so far
-	public static long getTime(){
-		long totalTime = 0;
-		for(long n: compTime)	totalTime += n;
-        return totalTime;
-    }
-
-	// setting back the time to zero 0
-	public static void timeReset(){
-		compTime.clear();
-    }
 
 
 	/**
@@ -70,61 +35,6 @@ public class Util{
 	}
 
 
-	/**
-	 * detect if a string is a number
-	 * @param str
-	 * @return
-	 */
-	public static boolean isNumeric(final String STR){ 
-		try{ Double.parseDouble(STR); }
-		catch(NumberFormatException e){ return false; }
-		return true;
-	}
-
-	
-	/**
-	 * Sum values of array
-	 * @param array
-	 * @return sum
-	 */
-	public static class ArrayMath {
-
-		public static					 double plus (final int[]		array)	{ return sum(array, (a,b) -> a+b			  ); }
-		public static					 double minus(final int[]		array)	{ return sum(array, (a,b) -> a-b			  ); }
-		public static					 double plus (final double[]	array)	{ return sum(array, (a,b) -> a+b			  ); }
-		public static					 double minus(final double[]	array)	{ return sum(array, (a,b) -> a-b			  ); }
-		public static					 double plus (final long[]		array)	{ return sum(array, (a,b) -> a+b			  ); }
-		public static					 double minus(final long[]		array)	{ return sum(array, (a,b) -> a-b			  ); }
-		public static <T extends Number> double plus (final T[]			array)	{ return sum(array, (a,b) -> a+b.doubleValue()); }
-		public static <T extends Number> double minus(final T[]			array)	{ return sum(array, (a,b) -> a-b.doubleValue()); }
-		public static <T extends Number> double plus (final ArrayList<T>array)	{ return sum(array, (a,b) -> a+b.doubleValue()); }
-		public static <T extends Number> double minus(final ArrayList<T>array)	{ return sum(array, (a,b) -> a-b.doubleValue()); }
-		public static double sum(final int[] array, final Lambda2<Integer, Double> comput){
-			double result = array[0];
-			for(int i=1; i<array.length; i++)   result = comput.op(result, array[i]);
-			return result;
-		}
-		public static double sum(final double[] array, final Lambda2<Double, Double> comput ){
-			double result = array[0];
-			for(int i=1; i<array.length; i++)   result = comput.op(result, array[i]);
-			return result;
-		}
-		public static double sum(final long[] array, final Lambda2<Long, Double> comput ){
-			double result = array[0];
-			for(int i=1; i<array.length; i++)   result = comput.op(result, array[i]);
-			return result;
-		}
-		public static <T extends Number> double sum(final ArrayList<T> array,final Lambda2<T, Double> comput ){
-			double result = array.get(0).doubleValue();
-			for(int i=1; i<array.size(); i++)   result = comput.op(result, array.get(i));
-			return result;
-		}
-		public static <T extends Number> double sum(final T[] array, final Lambda2<T, Double> comput ){
-			double result = array[0].doubleValue();
-			for(int i=1; i<array.length; i++)   result = comput.op(result, array[i]);
-			return result;
-		}
-	}
 
 	/**
 	 * Average finder
@@ -172,41 +82,22 @@ public class Util{
 
 
 	/**
-	 * Get ANSI code for colored text
-	 * @param color
-	 * @return ASCII code
+	 * detect if a string is a number
+	 * @param str
+	 * @return
 	 */
-	public static String color(String color){
-		if(colorState){
-			color = color.toLowerCase();
-
-			String[] colors = {"black","red","green","yellow","blue","magenta","cyan","white"};
-			if(color.equals("reset"))	return "\u001B[0m";
-
-			for(int i=0; i<colors.length; i++){
-				if(color.equals(colors[i]))		return "\u001B[3"+i+"m";
-			}
-		}
-
-		return "";
+	public static boolean isNumeric(final String STR){ 
+		try{ Double.parseDouble(STR); }
+		catch(NumberFormatException e){ return false; }
+		return true;
 	}
 
-
-	/**
-	 * Get colored text
-	 * @param text
-	 * @param color
-	 * @return colored string (ANSI)
-	 */
-	public static String colorText(final String TEXT, final String COLOR){
-		return color(COLOR) + TEXT + color("reset");
-	}
 
 	/**
      * Checking whether a number exists already in the array
-     * @param arr
-     * @param b
-     * @return boolean
+     * @param ARRAY of integers
+     * @param B integer to be found
+     * @return number of times it has been found
      */
     public static long contains(final int[] ARRAY, final int B){
 		long occurrence = 0;
@@ -216,6 +107,12 @@ public class Util{
         return occurrence;
     }
 
+	/**
+	 * Check how many times a pattern match in a given string
+	 * @param STRING given fild
+	 * @param MATCH	given pattern
+	 * @return how many times the pattern has occurred
+	 */
 	public static long strMatch(final String STRING, final String MATCH){
         if(STRING.length() < MATCH.length()) return 0;
         
@@ -238,7 +135,7 @@ public class Util{
      * Generate an integer within a range
      * @param min
      * @param max
-     * @return int
+     * @return random double with a given range
      */
     public static double rangeRandom(double min, double max){
 		min = Math.min(min, max);
@@ -266,109 +163,64 @@ public class Util{
 		return largest;
 	}
 
+
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||| ARRAY_MATH |||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+
+	
 	/**
-	 * Returns a string of enumerated options
-	 * @param opts
-	 * @param minSize
-	 * @param colors
-	 * @param print
-	 * @return String[]
+	 * Sum values of array
+	 * @param array
+	 * @return sum
 	 */
-	public static String[] navOptions(final long MIN_SIZE, final String COLORS, final boolean PRINT, final String ... OPTS){
-		// customizable parameters
-		final String DELIMITER = ".", STD_NAV_NUM = "0";
-		final String[] STD_NAV = {"Go back", "Exit"};
-		final long MIN_DELIM_LENGTH = 3;
+	public static class ArrayMath {
 
-		// getting colors
-		final String COL_START = color(COLORS);								//yellow corresponds to: "\033[1;35m"
-        final String COL_END = COL_START==""? COL_START: color("reset");	//reset  corresponds to: "\033[0m"
-		
-		// arrays of options strings and index strings
-		final String[] STD_NAV_INDEX = new String[STD_NAV.length];
-		for(int i=0; i<STD_NAV_INDEX.length; i++) STD_NAV_INDEX[i] = stringRepeat(STD_NAV_NUM, i+1);
-		final String[] OPTIONS = merge(OPTS, new String[OPTS.length+STD_NAV.length]);
-
-		// getting the size of the longest index num and the size of the longest option string
-        final long oSize = OPTS.length;
-        long iSize = findLargest(STD_NAV_INDEX), i = 0, longest = findLargest(STD_NAV);
-
-        // getting the longest string size
-        for(String o: OPTS){
-            final long strSize = o.length();
-            longest = strSize > longest? strSize: longest;
-            if(++i == oSize) iSize = Long.toString(i).length() > iSize? Long.toString(i).length(): iSize;
-        }
-
-
-		i = 0;
-        longest = longest+MIN_DELIM_LENGTH>=(double)MIN_SIZE-iSize? longest+MIN_DELIM_LENGTH: MIN_SIZE-iSize;
-        for(String o: OPTS){
-            final long indexSize = iSize - Long.toString(++i).length();
-            final long gap = longest - o.length();
-            final String INDEX = COL_START + Long.toString(i) + COL_END;
-
-            OPTIONS[(int)i-1] = o + stringRepeat(DELIMITER, gap+indexSize) + INDEX;
-        }
-
-		// making standard navigation options
-		for(int j=0; j<STD_NAV_INDEX.length; j++){
-        	OPTIONS[OPTS.length+j]	= STD_NAV[j] + stringRepeat(DELIMITER,longest-STD_NAV[j].length()+iSize-STD_NAV_INDEX[j].length()) + COL_START+STD_NAV_INDEX[j]+COL_END;
+		public static					 double plus (final int[]		array)	{ return sum(array, (a,b) -> a+b			  ); }
+		public static					 double minus(final int[]		array)	{ return sum(array, (a,b) -> a-b			  ); }
+		public static					 double plus (final double[]	array)	{ return sum(array, (a,b) -> a+b			  ); }
+		public static					 double minus(final double[]	array)	{ return sum(array, (a,b) -> a-b			  ); }
+		public static					 double plus (final long[]		array)	{ return sum(array, (a,b) -> a+b			  ); }
+		public static					 double minus(final long[]		array)	{ return sum(array, (a,b) -> a-b			  ); }
+		public static <T extends Number> double plus (final T[]			array)	{ return sum(array, (a,b) -> a+b.doubleValue()); }
+		public static <T extends Number> double minus(final T[]			array)	{ return sum(array, (a,b) -> a-b.doubleValue()); }
+		public static <T extends Number> double plus (final ArrayList<T>array)	{ return sum(array, (a,b) -> a+b.doubleValue()); }
+		public static <T extends Number> double minus(final ArrayList<T>array)	{ return sum(array, (a,b) -> a-b.doubleValue()); }
+		public static double sum(final int[] array, final Lambda2<Integer, Double> comput){
+			double result = array[0];
+			for(int i=1; i<array.length; i++)   result = comput.op(result, array[i]);
+			return result;
 		}
-        
-        // printing
-        if(PRINT) for(final String LINE: OPTIONS) System.out.println(LINE);
-        return OPTIONS;
-    }
-
-
-	// getting console input
-	public static String cinln(){
-        String input = CIN.nextLine();
-        System.out.println();
-        return input;
-    }
-
-
-    /**
-     * @since getting user input
-     * @param max
-     * @return int
-     */
-    public static int getChoice(int options){
-        options = options<2?1: options;
-		
-		//checking the choice
-		String input ="";
-		
-		while(true){
-			System.out.print("Enter a choice here :> ");
-			input = cinln();
-			
-			if(!input.equals("0") && !input.equals("00")){
-				for(int i=1; i<=options; i++){
-					if(input.equals(Integer.toString(i))) return i;
-				}
-				System.out.println(colorText("WRONG SELECTION! Try again.", "yellow"));
-			}else if(input.equals("0")) return 0;
-			else return -1;
+		public static double sum(final double[] array, final Lambda2<Double, Double> comput ){
+			double result = array[0];
+			for(int i=1; i<array.length; i++)   result = comput.op(result, array[i]);
+			return result;
+		}
+		public static double sum(final long[] array, final Lambda2<Long, Double> comput ){
+			double result = array[0];
+			for(int i=1; i<array.length; i++)   result = comput.op(result, array[i]);
+			return result;
+		}
+		public static <T extends Number> double sum(final ArrayList<T> array,final Lambda2<T, Double> comput ){
+			double result = array.get(0).doubleValue();
+			for(int i=1; i<array.size(); i++)   result = comput.op(result, array.get(i));
+			return result;
+		}
+		public static <T extends Number> double sum(final T[] array, final Lambda2<T, Double> comput ){
+			double result = array[0].doubleValue();
+			for(int i=1; i<array.length; i++)   result = comput.op(result, array[i]);
+			return result;
 		}
 	}
 
-	/**
-         * @since display options and return choice
-         * @param options 
-         * @param min
-         * @return int 
-         */
-	public static int navChoice(final long MIN, final String ... OPTIONS){
-        
-        //displaying options
-		navOptions(MIN, "yellow", true, OPTIONS);
-		System.out.println();
-		//getting the choice
-		return getChoice(OPTIONS.length);
-    }
+
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||| QUICK_SORT |||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
 
 
 	/**
@@ -419,10 +271,15 @@ public class Util{
 
 			// partition 
 			while (l <= r) {
-				// loop left index if the current element is smaller or greater than pivot
-				while (MODE? COMPARE.op(ARRAY[l]).compareTo(PIVOT) < 0: COMPARE.op(ARRAY[l]).compareTo(PIVOT) > 0)	l++;
-				// loop right index if the current element is greater or smaller than pivot
-				while (MODE? COMPARE.op(ARRAY[r]).compareTo(PIVOT) > 0: COMPARE.op(ARRAY[r]).compareTo(PIVOT) < 0)	r--;
+				if(MODE){	// loop left index if the current element is smaller or greater than pivot
+					while (COMPARE.op(ARRAY[l]).compareTo(PIVOT) < 0)	l++; 
+					while (COMPARE.op(ARRAY[r]).compareTo(PIVOT) > 0)	r--;
+				}else{		// loop right index if the current element is greater or smaller than pivot
+					while (COMPARE.op(ARRAY[l]).compareTo(PIVOT) > 0)	l++; 
+					while (COMPARE.op(ARRAY[r]).compareTo(PIVOT) < 0)	r--;
+				}
+				//while (MODE? COMPARE.op(ARRAY[l]).compareTo(PIVOT) < 0: COMPARE.op(ARRAY[l]).compareTo(PIVOT) > 0)	l++;
+				//while (MODE? COMPARE.op(ARRAY[r]).compareTo(PIVOT) > 0: COMPARE.op(ARRAY[r]).compareTo(PIVOT) < 0)	r--;
 
 				if (l <= r) {
 					final T TMP_NODE= ARRAY[l];
@@ -447,23 +304,246 @@ public class Util{
 		}
 	}
 
+
+
+///||||||||||||||||||||||||||||||||||||||||||||||||||||||||| TIMER |||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+
+	public class Timer{
+		private boolean timerOnOff;
+		private final ArrayList<Long> COMP_TIME = new ArrayList<>();
+
+		// constructor
+		public Timer(){}
+
+		/**
+		 * Benchmarking the computation time
+		 * @param ON_OFF
+		 * @return current time
+		 */
+		public double timeTrack(final boolean ON_OFF){
+			final long TIME = System.nanoTime();
+
+			if(ON_OFF && !this.timerOnOff)	this.COMP_TIME.add(TIME);
+			else if(this.COMP_TIME.size() > 0 && this.timerOnOff){
+				this.COMP_TIME.set(this.COMP_TIME.size()-1, TIME - this.COMP_TIME.get(this.COMP_TIME.size()-1));
+			}else	return 0;
+
+			this.timerOnOff = ON_OFF;
+			return this.COMP_TIME.get(this.COMP_TIME.size()-1);
+		}
+
+		// getting the time collected so far
+		public long getTime(){
+			long totalTime = 0;
+			for(long n: COMP_TIME)	totalTime += n;
+			return totalTime;
+		}
+
+		// setting back the time to zero 0
+		public void timeReset(){
+			this.COMP_TIME.clear();
+		}
+	}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||| ANSI_COLOURS |||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+	
+	public static class AnsiColours{
+
+		//determining whether the text get colored or not
+		private static	boolean		globalState	= true;
+		private			boolean		localState	= true;
+		private	final	String		RESET		= "\u001B[0m";
+		private	final	String[][]	COLOURS		= {	{"black", "\u001B[30m"	},	{"red"		, "\u001B[31m"	},
+													{"green", "\u001B[32m"	},	{"yellow"	, "\u001B[33m"	},
+													{"blue"	, "\u001B[34m"	},	{"magenta"	, "\u001B[35m"	},
+													{"cyan"	, "\u001B[36m"	},	{"white"	, "\u001B[37m"	},
+													{"reset", this.RESET	}	};
+
+		// constructor
+		public AnsiColours(){}
+
+
+		public static	boolean	globalState		()						{	return AnsiColours.globalState;			}
+		public			boolean	localState		()						{	return this.localState;					}
+		public static	void	setGlobalState	(final boolean STATE)	{	AnsiColours.globalState		= STATE;	}
+		public			void	setLocalState	(final boolean STATE)	{	this.localState				= STATE;	}
+
+		/**
+		 * Get ANSI code for colored text
+		 * @param colour
+		 * @return ASCII code
+		 */
+		public String colour(String colour){
+			if(this.localState() && AnsiColours.globalState()){
+				colour = colour.toLowerCase();
+
+				for(final String[] C: this.COLOURS){	if(colour.equals(C[0]))		return C[1]; }
+			}
+
+			return "";
+		}
+
+
+		/**
+		 * Get colored text
+		 * @param text
+		 * @param colour
+		 * @return colored string (ANSI)
+		 */
+		public String colourText(final String TEXT, final String COLOUR){
+			return colour(COLOUR) + TEXT + this.RESET;
+		}
+	}
+
+
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||| NAVIGATOR |||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+
+
+	public static class Navigator{
+
+		private final Scanner		CIN		= new Scanner(System.in);
+		private final AnsiColours	COLOURS	= new AnsiColours();
+
+		// constructor
+		public Navigator(){}
+
+
+		// getting console input
+		public String cinln(){
+			String input = CIN.nextLine();
+			System.out.println();
+			return input;
+		}
+
+		/**
+		 * Returns a string of enumerated options
+		 * @param opts
+		 * @param minSize
+		 * @param colors
+		 * @param print
+		 * @return String[]
+		 */
+		public String[] navOptions(final long MIN_SIZE, final String COLORS, final boolean PRINT, final String ... OPTS){
+			// customizable parameters
+			final String DELIMITER = ".", STD_NAV_NUM = "0";
+			final String[] STD_NAV = {"Go back", "Exit"};
+			final long MIN_DELIM_LENGTH = 3;
+
+			// getting colors
+			final String COL_START = this.COLOURS.colour(COLORS);								//yellow corresponds to: "\033[1;35m"
+			final String COL_END = COL_START==""? COL_START: this.COLOURS.colour("reset");		//reset  corresponds to: "\033[0m"
+			
+			// arrays of options strings and index strings
+			final String[] STD_NAV_INDEX = new String[STD_NAV.length];
+			for(int i=0; i<STD_NAV_INDEX.length; i++) STD_NAV_INDEX[i] = stringRepeat(STD_NAV_NUM, i+1);
+			final String[] OPTIONS = merge(OPTS, new String[OPTS.length+STD_NAV.length]);
+
+			// getting the size of the longest index num and the size of the longest option string
+			final long oSize = OPTS.length;
+			long iSize = findLargest(STD_NAV_INDEX), i = 0, longest = findLargest(STD_NAV);
+
+			// getting the longest string size
+			for(String o: OPTS){
+				final long strSize = o.length();
+				longest = strSize > longest? strSize: longest;
+				if(++i == oSize) iSize = Long.toString(i).length() > iSize? Long.toString(i).length(): iSize;
+			}
+
+
+			i = 0;
+			longest = longest+MIN_DELIM_LENGTH>=(double)MIN_SIZE-iSize? longest+MIN_DELIM_LENGTH: MIN_SIZE-iSize;
+			for(String o: OPTS){
+				final long indexSize = iSize - Long.toString(++i).length();
+				final long gap = longest - o.length();
+				final String INDEX = COL_START + Long.toString(i) + COL_END;
+
+				OPTIONS[(int)i-1] = o + stringRepeat(DELIMITER, gap+indexSize) + INDEX;
+			}
+
+			// making standard navigation options
+			for(int j=0; j<STD_NAV_INDEX.length; j++){
+				OPTIONS[OPTS.length+j]	= STD_NAV[j] + stringRepeat(DELIMITER,longest-STD_NAV[j].length()+iSize-STD_NAV_INDEX[j].length()) + COL_START+STD_NAV_INDEX[j]+COL_END;
+			}
+			
+			// printing
+			if(PRINT){ for(final String LINE: OPTIONS) System.out.println(LINE); }
+			return OPTIONS;
+		}
+
+
+		/**
+		 * @since getting user input
+		 * @param max
+		 * @return int
+		 */
+		public int getChoice(int options){
+			options = options<2?1: options;
+			
+			//checking the choice
+			String input ="";
+			
+			while(true){
+				System.out.print("Enter a choice here :> ");
+				input = cinln();
+				
+				if(!input.equals("0") && !input.equals("00")){
+					for(int i=1; i<=options; i++){
+						if(input.equals(Integer.toString(i))) return i;
+					}
+					System.out.println(this.COLOURS.colourText("WRONG SELECTION! Try again.", "yellow"));
+				}else if(input.equals("0")) return 0;
+				else return -1;
+			}
+		}
+
+		/**
+			 * @since display options and return choice
+			 * @param options 
+			 * @param min
+			 * @return int 
+			 */
+		public int navChoice(final long MIN, final String ... OPTIONS){
+			
+			//displaying options
+			navOptions(MIN, "yellow", true, OPTIONS);
+			System.out.println();
+			//getting the choice
+			return getChoice(OPTIONS.length);
+		}
+	}
+
+
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||| LOADING_BAR |||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+
+
 	// loading bar class
 	public static class Loading {
 
-        private			long	index			= -1;
-        private			short	counter 		= -1;
-		private			short	barLength		= 50;
-		private			short	updates 		= this.barLength;
-		private			boolean	messageUpdate	= false;
-		private			String	messageColour	= "blue";
-		private			String	message 		= "";
-		private			String	linesUp 		= "";
-		private			long	ciclesAmount;
-		private final	short	MAX_PERCENT		= 100;
-		private final	String[] BAR_COLORS		= {"red", "yellow", "green"};
-		private final	double	COLORS_INDEX	= (double)this.BAR_COLORS.length / (double)this.MAX_PERCENT;
-		private final	String	BLOCK			= "█", DOTTED = "░", TAB="	";
-		private final	String	ERASE_LINE		= "\033[2K", ERASE_BELOW = "\033[0J", GO_LINE_UP = "\033[A", NL="\n", CR = "\r";
+		private final	AnsiColours	COLOURS		= new AnsiColours();												//	coloured text
+		private final	short	MAX_PERCENT		= 100		;														//	max percentage is 100
+		private			String[] barColours		= {"red"	,	"yellow"				,	"green"};				//	colours of bar stages
+		private final	String	BLOCK			= "█"		,	DOTTED		= "░"		,	TAB			= "	";		//	bar components
+		private final	String	ERASE_LINE		= "\033[2K"	,	ERASE_BELOW = "\033[0J"	,	GO_LINE_UP	= "\033[A"	,	NL	= "\n"	,	CR		= "\r";
+		private			String	messageColour	= "blue"	,	message 	= ""		,	linesUp		= ""		,	bar	= ""	,	output	= ""  ;
+        private			short	counter 		= -1		,	barLength	= 50		,	percent		= 0;		//	bar parameters
+		private			int		barState 		= 0			,	updates		= this.barLength;						//	calculating loading bar
+		private			double	nextUpdate 		= 0			,	coloursIndex= (double)this.barColours.length / (double)(this.MAX_PERCENT+0.1);
+		private			boolean	messageUpdate	= false		;														//	notes if message has updated
+		private			long	index			= -1		;														//	increasing index per cicle
+		private			long	ciclesAmount				;														//	total amount of cicles
 
 
         /**
@@ -472,22 +552,31 @@ public class Util{
 		 * @param BL BAR_LENGTH
 		 * @param U UPDATES
 		 */
-		public Loading(final long CA, final short BL, final short U, final String M){
+		public Loading(final long CA, final short BL, final int U, final String M){
 			this.ciclesAmount	= CA;
 			this.barLength(BL);
 			this.updates(U);
 			this.message(M, this.messageColour);
         }
-		public Loading(final long CA){ this(CA, (short)50, (short)50, ""); }
+		public Loading(final long CA){ this(CA, (short)50, 50, ""); }
 
+
+		/**
+		 * Setting the bar colours
+		 * @param COLOURS array of strings
+		 */
+		public void barColours(final String ... COLOURS){
+			this.barColours		= COLOURS;
+			this.coloursIndex	= (double)this.barColours.length / (double)(this.MAX_PERCENT+0.1);
+
+		}
 		/**
 		 * Setting the updates rate
 		 * @param RATE
 		 */
-		public void updates(final short RATE){
-			if		(RATE > this.barLength)	this.updates = this.barLength;
-			else if	(RATE < 0)	this.updates = 0;
-			else	this.updates = RATE;
+		public void updates(final int RATE){
+			if	(RATE < 0)	this.updates = 0;
+			else			this.updates = RATE;
 		}
 
 		/**
@@ -497,7 +586,6 @@ public class Util{
 		public void barLength(final short LENGTH){
 			if(LENGTH > 0) {
 				this.barLength = LENGTH;
-				if(this.updates > this.barLength)	this.updates(this.barLength);
 			}
 		}
 
@@ -517,7 +605,10 @@ public class Util{
 		 * @param CICLES
 		 */
 		public void ciclesAmount(final long CICLES){
-			if(CICLES > 0 && CICLES >= this.index) this.ciclesAmount = CICLES;
+			if(CICLES > 0 && CICLES >= this.index){
+				this.ciclesAmount = CICLES;
+				this.percent = (short)(this.index * this.MAX_PERCENT / this.ciclesAmount);
+			}
 		}
 
 		/**
@@ -528,17 +619,49 @@ public class Util{
 			if(INDEX >= 0 && INDEX <= this.ciclesAmount) this.index = INDEX;
 			else return false;
 
+			this.percent = (short)(this.index * this.MAX_PERCENT / this.ciclesAmount);
+			return true;
+		}
+
+
+		/**
+		 * Check if the loading is compleated
+		 * @return loading status
+		 */
+		private boolean loadingComplete(){
+			return !(this.percent < this.MAX_PERCENT && this.ciclesAmount > this.index);
+		}
+
+
+		/**
+		 * Determines whether to update the whole bar or not
+		 * @return update or not the whole bar
+		 */
+		private boolean updateTime(){
+			this.barStateUpdate();
+			
+			if(this.index >= this.nextUpdate){
+				this.nextUpdate = Math.ceil((double)this.ciclesAmount * (double)(this.barState+1) / (double)this.updates);
+			}else return false;
+
 			return true;
 		}
 
 
 		/**
 		 * Tokens generator
+		 * @return token
 		 */
 		private short tokensGen(){
-			//calculating loading bar
-			final short BAR_PERCENT		= (short)(this.index * this.updates / this.ciclesAmount);
-			return (short)((float)this.barLength / this.updates * BAR_PERCENT);
+			return (short)((float)this.barLength / this.updates * this.barState);
+		}
+
+
+		/**
+		 * Updating the bar State
+		 */
+		private void barStateUpdate(){
+			this.barState = (int)(this.index * this.updates / this.ciclesAmount);
 		}
 
 
@@ -547,41 +670,81 @@ public class Util{
 		 * @param TOKENS
 		 * @return bar string
 		 */
-		public String barGen(final short TOKENS){
+		private void barGen(final short TOKENS){
 			//final short PERCENT = (short)(this.index * this.MAX_PERCENT / this.ciclesAmount);
-			final short PERCENT = (short)(TOKENS * this.MAX_PERCENT / this.barLength);
-			
-			if(PERCENT < this.MAX_PERCENT && this.ciclesAmount > this.index){
-				final String STATUS_FULL	= stringRepeat(this.BLOCK, (long)TOKENS);
-				final String STATUS_VOID	= stringRepeat(this.DOTTED, this.barLength-(long)TOKENS);
-				final String COLORS			= this.BAR_COLORS[(int)(PERCENT*this.COLORS_INDEX)]; // selecting the bar color
-				final String OUTCOME		= colorText(STATUS_FULL, COLORS)+STATUS_VOID+" "+colorText(PERCENT+"%", COLORS)+this.TAB+colorText(this.message, this.messageColour);
-				
-				if(this.messageUpdate){
-					this.linesUp		= stringRepeat(this.GO_LINE_UP, strMatch(this.message, this.NL));
-					this.messageUpdate	= false;
-				}
-				return this.CR + this.ERASE_BELOW + OUTCOME + this.linesUp + this.CR;
-			}else{
-				this.index	= -1;
-				return this.CR + this.ERASE_BELOW ;
-			}
+			//final short PERCENT = (short)(TOKENS * this.MAX_PERCENT / this.barLength);
+
+			final String STATUS_FULL	= stringRepeat(this.BLOCK, (long)TOKENS);
+			final String STATUS_VOID	= stringRepeat(this.DOTTED, this.barLength-(long)TOKENS);
+			final String COLORS			= this.barColours[(int)(this.percent*this.coloursIndex)]; // selecting the bar color
+
+			this.bar					= this.COLOURS.colourText(STATUS_FULL, COLORS)+STATUS_VOID+" "+this.COLOURS.colourText(this.percent+"%", COLORS);
         }
+
+
+		/**
+		 * Merging the bar and the message
+		 * @return string of the outcome merged with the message
+		 */
+		private String barAndMessage(){
+			final String OUTCOME	= this.bar+this.TAB+this.COLOURS.colourText(this.message, this.messageColour);
+			
+			if(this.messageUpdate){
+				this.linesUp		= stringRepeat(this.GO_LINE_UP, strMatch(this.message, this.NL));
+				this.messageUpdate	= false;
+			}
+			return this.CR + this.ERASE_BELOW + OUTCOME + this.linesUp + this.CR;
+		}
+
+
+		/**
+		 * Reset main variables
+		 * @return instruction to reset the command screen
+		 */
+		private String reset(){
+			this.index		= -1;
+			this.counter	= -1;
+			this.nextUpdate =  0;
+			return this.CR + this.ERASE_BELOW;
+		}
+
+
+		/**
+		 * Main operations and updates
+		 * @return whether it has updated or not
+		 */
+		public boolean coreUpdated(){
+			if(this.indexUpdate(this.index+1) && this.updateTime()){
+
+				if(loadingComplete()) this.output = this.reset();
+				else{
+					final short TOKENS = this.tokensGen();
+
+					if(TOKENS != this.counter){
+						this.counter = TOKENS; // "counter" determines when to generatee a new bar
+						this.barGen(TOKENS);
+					}
+
+					this.output = this.barAndMessage();
+				}			
+				return true;
+			}else return false;
+		}
 
 
 		/*
 		 * Print the Loading Bar
 		 */
 		public void printNewBar(){
-			if(this.indexUpdate(this.index+1)){
-				final short TOKENS = this.tokensGen();
+			if(this.coreUpdated())	System.out.print(this.output);
+		}
 
-				if(TOKENS != this.counter){
-					// "counter" determines when to print the status bar
-					this.counter = TOKENS;
-					System.out.print(this.barGen(TOKENS));
-				}
-			}
+		/**
+		 * Print the Loading Bar
+		 * @return final resoult
+		 */
+		public String getNewBar(){
+			return this.output;
 		}
     }
 }
