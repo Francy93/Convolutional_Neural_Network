@@ -115,17 +115,17 @@ public class Util{
 	 */
 	public static long strMatch(final String STRING, final String MATCH){
         if(STRING.length() < MATCH.length()) return 0;
-        
+
+		final long MATCH_LAST = MATCH.length()-1;
 		long occurrence = 0;
+
         for(int i=0; i<STRING.length(); i++){
-            for(int j=0; j<MATCH.length(); j++){
-                final boolean MATCHED;
-                
-                try{ MATCHED = MATCH.charAt(j) == STRING.charAt(i+j); }
-                catch(IndexOutOfBoundsException e) { return occurrence; }
-                
-				if(MATCHED){ if(j==MATCH.length()-1) occurrence++; }
-				else break;
+            for(int j=0; j<=MATCH_LAST; j++){
+				
+                try{
+    				if(MATCH.charAt(j) == STRING.charAt(i+j)){ if(j==MATCH_LAST) occurrence++; }
+					else break;
+				}catch(IndexOutOfBoundsException e) { return occurrence; }
 			}
         }
         return occurrence;
@@ -230,20 +230,7 @@ public class Util{
      * @param mode (SortMode)
      * @return City[]
      */
-	public static <T	 extends Comparable<T>> T[] quickSort(final T[] ARRAY){
-        if(ARRAY.length > 1) return new QuickSort<T,T>(ARRAY, true, (a) -> a).getSorted();
-		else return ARRAY;
-    }
-	public static <T	 extends Comparable<T>> T[] quickSort(final T[] ARRAY, final boolean mode){
-        if(ARRAY.length > 1) return new QuickSort<T,T>(ARRAY, mode, (a) -> a).getSorted();
-		else return ARRAY;
-    }
-    public static <T, V  extends Comparable<V>> T[] quickSort(final T[] ARRAY, final Lambda1<T, V> compare){
-		if(ARRAY.length > 1) return new QuickSort<T,V>(ARRAY, true, compare).getSorted();
-		else return ARRAY;
-    }
-
-	private static class QuickSort<T, V extends Comparable<V>>{
+	public static class QuickSort<T, V extends Comparable<V>>{
 
 		private final boolean MODE;				// this is the direction the array get sorted
 		private final Lambda1<T, V> COMPARE;	// this is what of the array has to be compared
@@ -295,11 +282,25 @@ public class Util{
 			return ARRAY;
 		}
 
+
+		public static <T	 extends Comparable<T>> T[] quickSort(final T[] ARRAY){
+			if(ARRAY.length > 1) return new QuickSort<T,T>(ARRAY, true, (a) -> a).getSorted();
+			else return ARRAY;
+		}
+		public static <T	 extends Comparable<T>> T[] quickSort(final T[] ARRAY, final boolean mode){
+			if(ARRAY.length > 1) return new QuickSort<T,T>(ARRAY, mode, (a) -> a).getSorted();
+			else return ARRAY;
+		}
+		public static <T, V  extends Comparable<V>> T[] quickSort(final T[] ARRAY, final Lambda1<T, V> compare){
+			if(ARRAY.length > 1) return new QuickSort<T,V>(ARRAY, true, compare).getSorted();
+			else return ARRAY;
+		}
+
 		/**
 		 * Getting the sorted array
 		 * @return sorted array
 		 */
-		public T[] getSorted(){
+		private T[] getSorted(){
 			return ARRAY;
 		}
 	}
@@ -368,10 +369,10 @@ public class Util{
 		public AnsiColours(){}
 
 
-		public static	boolean	globalState		()						{	return AnsiColours.globalState;			}
-		public			boolean	localState		()						{	return this.localState;					}
-		public static	void	setGlobalState	(final boolean STATE)	{	AnsiColours.globalState		= STATE;	}
-		public			void	setLocalState	(final boolean STATE)	{	this.localState				= STATE;	}
+		public static	boolean	globalState		()						{ return AnsiColours.globalState;	 }
+		public			boolean	localState		()						{ return this.localState;			 }
+		public static	void	setGlobalState	(final boolean STATE)	{ AnsiColours.globalState	= STATE; }
+		public			void	setLocalState	(final boolean STATE)	{ this.localState			= STATE; }
 
 		/**
 		 * Get ANSI code for colored text
@@ -551,6 +552,7 @@ public class Util{
 		 * @param CA CICLES_AMOUNT
 		 * @param BL BAR_LENGTH
 		 * @param U UPDATES
+		 * @param M MESSAGE
 		 */
 		public Loading(final long CA, final short BL, final int U, final String M){
 			this.ciclesAmount	= CA;
