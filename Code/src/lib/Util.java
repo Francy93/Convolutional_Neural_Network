@@ -631,7 +631,7 @@ public class Util{
 		 * @return loading status
 		 */
 		private boolean loadingComplete(){
-			return !(this.percent < this.MAX_PERCENT && this.ciclesAmount > this.index);
+			return this.percent >= this.MAX_PERCENT && this.index >= this.ciclesAmount;
 		}
 
 
@@ -718,7 +718,7 @@ public class Util{
 		public boolean coreUpdated(){
 			if(this.indexUpdate(this.index+1) && this.updateTime()){
 
-				if(loadingComplete()) this.output = this.reset();
+				if(loadingComplete())	this.output = this.reset();
 				else{
 					final short TOKENS = this.tokensGen();
 

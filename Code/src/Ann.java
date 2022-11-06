@@ -39,10 +39,20 @@ public class Ann{
 	// running tests and validations
 	public static void testModel(){
 		MODEL.train(BATCH_SIZE, EPOCHS, LEARNING_RATE);
-		System.out.println("\r\nValidating...");
+		final lib.Util.AnsiColours COLOURS = new lib.Util.AnsiColours();
+		System.out.println(COLOURS.colourText("\r\nValidating...", "yellow"));
 
 		MODEL.validate();
-		System.out.println("Accuracy: " + MODEL.getAccuracy() + "%\r\n");
+		final String RED = "red", YELLOW = "yellow", GREEN = "green";
+		final String ACCURACY_COLOUR	= MODEL.getAccuracy()	<= 100.0/3.0? RED: MODEL.getAccuracy()	<= 100.0/1.5? YELLOW: GREEN;
+		final String PRECISION_COLOUR	= MODEL.getPrecision()	<= 100.0/3.0? RED: MODEL.getPrecision()	<= 100.0/1.5? YELLOW: GREEN;
+		final String RECALL_COLOUR		= MODEL.getRecall()		<= 100.0/3.0? RED: MODEL.getRecall()	<= 100.0/1.5? YELLOW: GREEN;
+		final String F1_COLOUR			= MODEL.getF1Score()	<= 100.0/3.0? RED: MODEL.getF1Score()	<= 100.0/1.5? YELLOW: GREEN;
+		
+		System.out.println("Accuracy:\t"	+ COLOURS.colourText(MODEL.getAccuracy()	+ "%"	, ACCURACY_COLOUR	));	
+		System.out.println("Precision:\t"	+ COLOURS.colourText(MODEL.getPrecision()	+ "%"	, PRECISION_COLOUR	));
+		System.out.println("Recall:\t\t"	+ COLOURS.colourText(MODEL.getRecall()		+ "%"	, RECALL_COLOUR		));
+		System.out.println("F1Score:\t"		+ COLOURS.colourText(MODEL.getF1Score()		+ "%\n"	, F1_COLOUR			));
 	}
 
 }

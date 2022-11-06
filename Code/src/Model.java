@@ -1,13 +1,16 @@
 
 public class Model {
 
-	private			double		accuracy = 0;	// to store the accuracy result
-	private			DataSet 	trainData;		// datastructure of training samples
-	private			DataSet 	validateData;	// datastructure of validation samples
-	private final	Layer[]		LAYERS;			// array containing all the layers
-	private 		Loss		loss;			// loss operations
-	private 		Sample		sample;			// index of the current iterated sample
-	private			lib.Optimizer optimizer;	// Learning (gradient descent) optimizer
+	private			double		accuracy 	= 0;	// to store the accuracy result
+	private			double		precision	= 0;	// to store the precision result
+	private			double		recall		= 0;	// to store the recall result
+	private			double		f1Score 	= 0;	// to store the f1score result
+	private			DataSet 	trainData;			// datastructure of training samples
+	private			DataSet 	validateData;		// datastructure of validation samples
+	private final	Layer[]		LAYERS;				// array containing all the layers
+	private 		Loss		loss;				// loss operations
+	private 		Sample		sample;				// index of the current iterated sample
+	private			lib.Optimizer optimizer;		// Learning (gradient descent) optimizer
 
 
 	// collection of loss functions
@@ -211,29 +214,38 @@ public class Model {
 	 */
 	public double validate(){ return validate(this.validateData); }
     public double validate(final DataSet DATA){
+		final int[] FP	= new int[DATA.getClasses().length];
+		final int[] TP		= new int[DATA.getClasses().length];
+		int correct = 0;
 
 		DATA.shuffle();
-		int correct = 0;
 
 		for(int sampleIndex=0; sampleIndex < DATA.getSize(); sampleIndex++){
 			this.sample = DATA.getSample(sampleIndex);
 
 			feedForward();
-			correct += accuracyCheck(DATA)? 1: 0;
+			final boolean GUESSED = this.sample.getLabel() == this.getPredClass(DATA);
+			correct += GUESSED? 1: 0;										// checking the accuracy
+			if (GUESSED)	TP[DATA.getLabelIndex(getPredClass(DATA))]++;	// getting true positives
+			else 			FP[DATA.getLabelIndex(getPredClass(DATA))]++;	// getting true positives and false positives
 		}
 
-		// storing the accuracy percentage
-		this.accuracy = (double)correct * 100.00 / (double)DATA.getSize();
+		// storing the outcome data
+		this.accuracy	= (double)correct * 100.00 / (double)DATA.getSize();
+		this.precision	= this.getPrecision(TP, FP)*100;
+		this.recall		= this.getRecall(TP, FP, DATA)*100;
+		this.f1Score	= this.getF1Score(this.precision, this.recall);
+		
 		return this.accuracy;
 	}
 
 
 	/**
-	 * Checking this sample prediction correctness
-	 * @param DATA dataset to be checked
-	 * @return result of sample prediction
+	 * Getting the predicted class
+	 * @param DATA dataset
+	 * @return predicted class
 	 */
-	private boolean accuracyCheck(final DataSet DATA){
+	private double getPredClass(final DataSet DATA){
 		Node.Relation[] NODES = this.LAYERS[this.LAYERS.length-1].getFlatOutput();
 
 		int answerIndex		= 0;
@@ -244,13 +256,51 @@ public class Model {
 				valHolder	= NODES[node].getOutput();
 			}
 		}
-
-		return this.sample.getLabel() == DATA.getClasses()[answerIndex];
+		return DATA.getClasses()[answerIndex];
 	}
 
 
 
+	/**
+	 * Calculating the F1Score
+	 * @param PRECISION 
+	 * @param RECALL 
+	 * @return F1Score
+	 */
+	private double getF1Score(final double PRECISION, final double RECALL){
+		return 2 * (PRECISION * RECALL) / (PRECISION + RECALL);
+	}
 
+	/**
+	 * Calculating the precision
+	 * @param TP true positives
+	 * @param FP false positives
+	 * @return precision
+	 */
+	private double getPrecision(final int[] TP, final int[] FP){
+		double precision = 0;
+		for(int label=0; label < TP.length; label++)	precision += (double)TP[label] / (double)(TP[label] + FP[label]);
+		return precision / (double)TP.length;
+	}
+
+	/**
+	 * Calculating the recall
+	 * @param TP true positives
+	 * @param FP false positives
+	 * @return recall
+	 */
+	private double getRecall(final int[] TP, final int[] FP, final	DataSet DATA){
+		double recall = 0;
+
+		for(int label=0; label < TP.length; label++){
+			final long TN = DATA.getSize() - DATA.getClassAmount(label);
+			final long TP_TN = TP[label] + TN;
+			recall += (double)TP[label] / TP_TN;
+		}
+
+		return recall;
+	}
+	
 
 
 	// ------------------ getter methods ------------------------
@@ -259,5 +309,21 @@ public class Model {
 	public double getAccuracy(){
 		return lib.Util.round(this.accuracy, 2);
 	}
+
+	// getting the model precision
+	public double getPrecision(){
+		return lib.Util.round(this.precision, 2);
+	}
+
+	// getting the model recall
+	public double getRecall(){
+		return lib.Util.round(this.recall, 2);
+	}
+
+	// getting the model F1Score
+	public double getF1Score(){
+		return lib.Util.round(this.f1Score, 2);
+	}
+
 
 }

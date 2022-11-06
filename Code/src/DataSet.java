@@ -9,10 +9,11 @@ import lib.Util;
 
 public class DataSet {
 
-    private final String	FILE_NAME;	// name of the file to be read
-    private final double[]	CLASSES;	// number of possible classifications
-    private final Sample[]	SAMPLES;	// samples collection
-	private final String	DELIMITER;	// string file delimiter
+    private final String	FILE_NAME;		// name of the file to be read
+    private final double[]	CLASSES;		// number of possible classifications
+	private final int[]		CLASS_AMOUNT;	// number of samples per class
+    private final Sample[]	SAMPLES;		// samples collection
+	private final String	DELIMITER;		// string file delimiter
 
 	/**
 	 * Dataset constructor
@@ -28,8 +29,9 @@ public class DataSet {
         try {  SAMPLES	= fileReader();  }
 		catch(IOException e) { throw new FileNotFoundException(); }
 
-		CLASSES = labelClasses();	// getting an array of labels
-		classesToSamples();			// equipping every sample with a one-hot array
+		CLASSES			= labelClasses();	// getting an array of labels
+		CLASS_AMOUNT	= classAmount(); // getting the amount of samples per class
+		classesToSamples();					// equipping every sample with a one-hot array
     }
 
 
@@ -75,6 +77,20 @@ public class DataSet {
 		return CLASSES_ARRAY;
 	}
 
+	private int[] classAmount(){
+		final int[] CLASSES_ARRAY = new int[this.CLASSES.length];
+
+		for(final Sample SAMPLE: this.SAMPLES){
+			for(int i = 0; i < this.CLASSES.length; i++){
+				if(SAMPLE.getLabel() == this.CLASSES[i]){
+					CLASSES_ARRAY[i]++;
+					break;
+				}
+			}
+		}
+		return CLASSES_ARRAY;
+	}
+
 	// providing every sample with a one-hot array
 	private void classesToSamples(){
 		for(final Sample SAMPLE: this.SAMPLES){
@@ -112,6 +128,20 @@ public class DataSet {
 
 
 	// ..................getters methods .................
+
+	public int getLabelIndex(final double LABEL){
+		for(int i = 0; i < this.CLASSES.length; i++){
+			if(LABEL == this.CLASSES[i]){
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	// getting the amount of samples per class
+	public int getClassAmount(final double LABEL){
+		return this.CLASS_AMOUNT[this.getLabelIndex(LABEL)];
+	}
 
 	public double[] getClasses(){
 		return CLASSES;
