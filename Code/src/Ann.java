@@ -39,6 +39,7 @@ public class Ann{
 	// running tests and validations
 	public static void testModel(){
 		MODEL.train(BATCH_SIZE, EPOCHS, LEARNING_RATE);
+		
 		final lib.Util.AnsiColours COLOURS = new lib.Util.AnsiColours();
 		System.out.println(COLOURS.colourText("\r\nValidating...", "yellow"));
 
