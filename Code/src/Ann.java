@@ -44,11 +44,12 @@ public class Ann{
 		System.out.println(COLOURS.colourText("\r\nValidating...", "yellow"));
 
 		MODEL.validate();
-		final String RED = "red", YELLOW = "yellow", GREEN = "green";
-		final String ACCURACY_COLOUR	= MODEL.getAccuracy()	<= 100.0/3.0? RED: MODEL.getAccuracy()	<= 100.0/1.5? YELLOW: GREEN;
-		final String PRECISION_COLOUR	= MODEL.getPrecision()	<= 100.0/3.0? RED: MODEL.getPrecision()	<= 100.0/1.5? YELLOW: GREEN;
-		final String RECALL_COLOUR		= MODEL.getRecall()		<= 100.0/3.0? RED: MODEL.getRecall()	<= 100.0/1.5? YELLOW: GREEN;
-		final String F1_COLOUR			= MODEL.getF1Score()	<= 100.0/3.0? RED: MODEL.getF1Score()	<= 100.0/1.5? YELLOW: GREEN;
+		final float	 ONE_THIRD 			= 100f/3f, 	TWO_THIRD 	= 100f/1.5f;
+		final String RED 				= "red",	YELLOW 		= "yellow", GREEN = "green";
+		final String ACCURACY_COLOUR	= MODEL.getAccuracy()	<= ONE_THIRD? RED: MODEL.getAccuracy()	<= TWO_THIRD? YELLOW: GREEN;
+		final String PRECISION_COLOUR	= MODEL.getPrecision()	<= ONE_THIRD? RED: MODEL.getPrecision()	<= TWO_THIRD? YELLOW: GREEN;
+		final String RECALL_COLOUR		= MODEL.getRecall()		<= ONE_THIRD? RED: MODEL.getRecall()	<= TWO_THIRD? YELLOW: GREEN;
+		final String F1_COLOUR			= MODEL.getF1Score()	<= ONE_THIRD? RED: MODEL.getF1Score()	<= TWO_THIRD? YELLOW: GREEN;
 		
 		System.out.println("Accuracy:\t"	+ COLOURS.colourText(MODEL.getAccuracy()	+ "%"	, ACCURACY_COLOUR	));	
 		System.out.println("Precision:\t"	+ COLOURS.colourText(MODEL.getPrecision()	+ "%"	, PRECISION_COLOUR	));

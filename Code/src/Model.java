@@ -293,12 +293,12 @@ public class Model {
 		double recall = 0;
 
 		for(int label=0; label < TP.length; label++){
-			final long TN = DATA.getSize() - DATA.getClassAmount(label);
-			final long TP_TN = TP[label] + TN;
-			recall += (double)TP[label] / TP_TN;
+			final long FN = DATA.getClassAmount(label) - TP[label];
+			final long TP_FN = TP[label] + FN;
+			recall += (double)TP[label] / TP_FN;
 		}
 
-		return recall;
+		return recall / (double)TP.length;
 	}
 	
 
