@@ -9,51 +9,53 @@ public class Loss {
 
     	/**
 		 * Mean Squared Error function
-		 * @param classes_pred the output predicted from the model 
-         * @param classes_act the output which should have been predicted
+		 * @param PRED the output predicted from the model 
+         * @param TARGET the output which should have been predicted
 		 * @return double
 		 */
-        public static double function(final double[] classes_pred, final double[] classes_act){
+        public static double function(final double PRED, final double TARGET){ return Math.pow(PRED - TARGET, 2.0); }
+        public static double function(final double[] PRED, final double[] TARGET){
             double sum = 0.0;
 
-        	for(int index = 0 ; index < classes_pred.length; index++){
-				sum += Math.pow((classes_pred[index] - classes_act[index]), 2.0);
+        	for(int index = 0 ; index < PRED.length; index++){
+				sum += Loss.MSE.function(PRED[index], TARGET[index]);
 			}
-            return sum/classes_pred.length;
+            return sum/PRED.length;
         }
         /**
 		 * Mean Squared Error derivative
-		 * @param F predicted output from the previous Function
+		 * @param P predicted output from the previous Function
          * @param T actual target
 		 * @return
 		 */
-        public static double derivative(final double F, final double T){ return 2.0 * (F - T); }
+        public static double derivative(final double P, final double T){ return 2.0 * (P - T); }
     }
     
     public static class MAE{
 
         /**
-		 * Mean Average Error function
-		 * @param classes_pred the output predicted from the model 
-         * @param classes_act the output which should have been predicted
+		 * Mean Absolute Error function
+		 * @param PRED the output predicted from the model 
+         * @param TARGET the output which should have been predicted
 		 * @return double
 		 */
-        public static double function(final double[] classes_pred, final double[] classes_act){
+        public static double function(final double PRED, final double TARGET){ return Math.abs(PRED - TARGET); }
+        public static double function(final double[] PRED, final double[] TARGET){
             double sum =0.0;
 
-            for(int index = 0 ; index < classes_pred.length; index++){
-                sum += Math.abs((classes_pred[index] - classes_act[index]));
+            for(int index = 0 ; index < PRED.length; index++){
+                sum += Loss.MAE.function(PRED[index], TARGET[index]);
             }
 
-            return sum/classes_pred.length;
+            return sum/PRED.length;
         }
         /**
-		 * Mean Average Error derivative
-	     * @param y_hat the output predicted from the model 
+		 * Mean Absolute Error derivative
+	     * @param P the output predicted from the model 
          * @param T the output (target) which should have been predicted
-		 * @return double
+		 * @return double (P-T)/Math.abs(P-T)
 		 */
-        public static double derivative(final double y_hat, final double T){ return y_hat > T ? 1.0 : -1.0; }
+        public static double derivative(final double P, final double T){ return P > T ? 1.0 : -1.0; }
     }
 
     public static class Cross_Entropy{
@@ -94,19 +96,20 @@ public class Loss {
     public static class Kullback{
         /**
 		 * 
-         * @param classes_pred the output predicted from the model 
-         * @param classes_act the output which should have been predicted
+         * @param PRED the output predicted from the model 
+         * @param TARGET the output which should have been predicted
 		 * @return double
 		 */
-        public static double function(final double[] classes_pred, final double[] classes_act){
+        public static double function(final double PRED, final double TARGET){ return PRED * Math.log((PRED / TARGET)); }
+        public static double function(final double[] PRED, final double[] TARGET){
             double sum =0.0; 
 
-            for(int index = 0 ; index < classes_pred.length; index++){
-				sum += classes_pred[index] * (Math.log((classes_pred[index]/classes_act[index])));
+            for(int index = 0 ; index < PRED.length; index++){
+				sum += Loss.Kullback.function(PRED[index], TARGET[index]);
 			}
 
             return sum;
         }
-        public static double derivative(final double PREV_Y, final double T){return 0.0;} // TO DO
+        public static double derivative(final double PREV_Y, final double T){ return PREV_Y * Math.log((PREV_Y / T)); } // TO DO
     }
 }

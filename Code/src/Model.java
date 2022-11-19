@@ -21,7 +21,7 @@ public class Model {
 				final double[] LABEL_LOCATION = SAMPLE.getLabelLocation();
 
 				for(int classs=0; classs < FLAT_OUTPUT.length; classs++){
-					setIntoNode(lib.Loss.MSE.derivative(FLAT_OUTPUT[classs].getOutput(), LABEL_LOCATION[classs]) / FLAT_OUTPUT.length, FLAT_OUTPUT[classs]);
+					setIntoNode(lib.Loss.MSE.derivative(FLAT_OUTPUT[classs].getOutput(), LABEL_LOCATION[classs]), FLAT_OUTPUT[classs]);
 				}
 			}
 		},
@@ -215,19 +215,19 @@ public class Model {
 	public double validate(){ return validate(this.validateData); }
     public double validate(final DataSet DATA){
 		final int[] FP	= new int[DATA.getClasses().length];
-		final int[] TP		= new int[DATA.getClasses().length];
+		final int[] TP	= new int[DATA.getClasses().length];
 		int correct = 0;
 
 		DATA.shuffle();
 
-		for(int sampleIndex=0; sampleIndex < DATA.getSize(); sampleIndex++){
-			this.sample = DATA.getSample(sampleIndex);
+		for(final Sample SAMPLE: DATA.getDataSet()){
+			this.sample = SAMPLE;
 
 			feedForward();
-			final boolean GUESSED = this.sample.getLabel() == this.getPredClass(DATA);
-			correct += GUESSED? 1: 0;										// checking the accuracy
-			if (GUESSED)	TP[DATA.getLabelIndex(getPredClass(DATA))]++;	// getting true positives
-			else 			FP[DATA.getLabelIndex(getPredClass(DATA))]++;	// getting true positives and false positives
+			if (this.sample.getLabel() == this.getPredClass(DATA)){
+				correct++;													// correct counter
+				TP[DATA.getLabelIndex(getPredClass(DATA))]++;				// getting true positives
+			}else	FP[DATA.getLabelIndex(getPredClass(DATA))]++;			// getting false positives
 		}
 
 		// storing the outcome data
@@ -293,7 +293,7 @@ public class Model {
 		double recall = 0;
 
 		for(int label=0; label < TP.length; label++){
-			final long FN = DATA.getClassAmount(label) - TP[label];
+			final long FN = DATA.getLabelsAmount(label) - TP[label];
 			final long TP_FN = TP[label] + FN;
 			recall += (double)TP[label] / TP_FN;
 		}

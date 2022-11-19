@@ -30,7 +30,7 @@ public class DataSet {
 		catch(IOException e) { throw new FileNotFoundException(); }
 
 		CLASSES			= labelClasses();	// getting an array of labels
-		CLASS_AMOUNT	= classAmount(); // getting the amount of samples per class
+		CLASS_AMOUNT	= classAmount();	// getting the amount of samples per class
 		classesToSamples();					// equipping every sample with a one-hot array
     }
 
@@ -139,7 +139,7 @@ public class DataSet {
 	}
 
 	// getting the amount of samples per class
-	public int getClassAmount(final double LABEL){
+	public int getLabelsAmount(final double LABEL){
 		return this.CLASS_AMOUNT[this.getLabelIndex(LABEL)];
 	}
 
@@ -161,5 +161,9 @@ public class DataSet {
 
 	public Sample getSample(final int INDEX){
 		return SAMPLES[INDEX];
+	}
+
+	public Sample[] getDataSet(){
+		return this.SAMPLES;
 	}
 }
