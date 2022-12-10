@@ -72,9 +72,9 @@ public class Sample {
 		final int MATRIX_SIZE = (int) Math.sqrt( TOKENS.length );
 		final double[][] ARRAY_2D = new double[MATRIX_SIZE][MATRIX_SIZE];
 
-		for(int x=0; x < MATRIX_SIZE; x++){
-			for(int y=0; y < MATRIX_SIZE; y++){
-				ARRAY_2D[x][y] = this.TOKENS[(y*MATRIX_SIZE) + x]; 
+		for(int y=0; y < MATRIX_SIZE; y++){
+			for(int x=0; x < MATRIX_SIZE; x++){ 
+				ARRAY_2D[y][x] = this.TOKENS[(y*MATRIX_SIZE) + x]; 
 			}
 		}
 
@@ -116,8 +116,8 @@ public class Sample {
 	}
 
 	// get the pixel of a specific matrix index
-	public double getToken2D(final int X, final int Y){
-		return this.MATRIX[X][Y];
+	public double getToken2D(final int Y, final int X){
+		return this.MATRIX[Y][X];
 	}
 
 	// getting the one-hot array

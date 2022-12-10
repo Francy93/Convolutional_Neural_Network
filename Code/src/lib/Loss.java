@@ -110,6 +110,6 @@ public class Loss {
 
             return sum;
         }
-        public static double derivative(final double PREV_Y, final double T){ return PREV_Y * Math.log((PREV_Y / T)); } // TO DO
+        public static double derivative(final double PREV_Y, final double T){ return T * Math.log((T / PREV_Y)); } // TO DO
     }
 }
