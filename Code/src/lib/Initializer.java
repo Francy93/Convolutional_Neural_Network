@@ -1,6 +1,10 @@
 package lib;
 
+/**
+ * Collection of weight initialization methods
+ */
 public class Initializer{
+    /* Constant, Lecun, Xavier, He */
 
     private static final double ZERO		= 0;
     private static final double ONE			= 1;

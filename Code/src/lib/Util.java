@@ -678,9 +678,16 @@ public class Util{
 
 			final String STATUS_FULL	= stringRepeat(this.BLOCK, (long)TOKENS);
 			final String STATUS_VOID	= stringRepeat(this.DOTTED, this.barLength-(long)TOKENS);
-			final String COLORS			= this.barColours[(int)(this.percent*this.coloursIndex)]; // selecting the bar color
+			String color = "";
 
-			this.bar					= this.COLOURS.colourText(STATUS_FULL, COLORS)+STATUS_VOID+" "+this.COLOURS.colourText(this.percent+"%", COLORS);
+			try{ // selecting the bar color
+				color = this.barColours[(int)(this.percent*this.coloursIndex)];
+			}catch(ArrayIndexOutOfBoundsException e){
+				if((int)(this.percent*this.coloursIndex) < 0) color = this.barColours[0];
+				else color = this.barColours[this.barColours.length-1];
+			}
+
+			this.bar = this.COLOURS.colourText(STATUS_FULL, color)+STATUS_VOID+" "+this.COLOURS.colourText(this.percent+"%", color);
         }
 
 

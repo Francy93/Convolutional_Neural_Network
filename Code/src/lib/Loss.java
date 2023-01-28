@@ -1,26 +1,24 @@
 package lib;
 
-public class Loss {
-
+/**
+ * Collection of Loss functions
+ */
+public enum Loss {
     /* MSE, MAE, CROSS_ENTROPY, HUBER, KULLBACK; */
-    
-    
-    public static class MSE{
 
+    MSE{
     	/**
 		 * Mean Squared Error function
 		 * @param PRED the output predicted from the model 
          * @param TARGET the output which should have been predicted
 		 * @return double
 		 */
-        public static double function(final double PRED, final double TARGET){ return Math.pow(PRED - TARGET, 2.0); }
-        public static double function(final double[] PRED, final double[] TARGET){
+        public double function(final double PRED, final double TARGET){ return Math.pow(TARGET - PRED, 2.0); }
+        public double function(final double[] PRED, final double[] TARGET){
             double sum = 0.0;
 
-        	for(int index = 0 ; index < PRED.length; index++){
-				sum += Loss.MSE.function(PRED[index], TARGET[index]);
-			}
-            return sum/PRED.length;
+        	for(int index = 0 ; index < PRED.length; index++){ sum += this.function(PRED[index], TARGET[index]); }
+            return sum / PRED.length;
         }
         /**
 		 * Mean Squared Error derivative
@@ -28,88 +26,146 @@ public class Loss {
          * @param T actual target
 		 * @return
 		 */
-        public static double derivative(final double P, final double T){ return 2.0 * (P - T); }
-    }
-    
-    public static class MAE{
+        public double derivative(final double P, final double T){ return 2.0 * (P - T); }
+        public double derivative(final double[] P, final double[] T){ 
+            double sum = 0.0;
 
+            for(int index = 0 ; index < P.length; index++){ sum += P[index] - T[index]; }
+            return (sum * 2.0 ) / P.length;
+        }
+    },
+    
+    MAE{
         /**
 		 * Mean Absolute Error function
 		 * @param PRED the output predicted from the model 
          * @param TARGET the output which should have been predicted
 		 * @return double
 		 */
-        public static double function(final double PRED, final double TARGET){ return Math.abs(PRED - TARGET); }
-        public static double function(final double[] PRED, final double[] TARGET){
-            double sum =0.0;
+        public double function(final double PRED, final double TARGET){ return Math.abs(TARGET - PRED); }
+        public double function(final double[] PRED, final double[] TARGET){
+            double sum = 0.0;
 
-            for(int index = 0 ; index < PRED.length; index++){
-                sum += Loss.MAE.function(PRED[index], TARGET[index]);
-            }
-
-            return sum/PRED.length;
+            for(int index = 0 ; index < PRED.length; index++){ sum += this.function(PRED[index], TARGET[index]); }
+            return sum / PRED.length;
         }
         /**
 		 * Mean Absolute Error derivative
 	     * @param P the output predicted from the model 
          * @param T the output (target) which should have been predicted
-		 * @return double (P-T)/Math.abs(P-T)
+		 * @return double P > T ? 1.0 : (P < T ? -1.0: 0.0);
 		 */
-        public static double derivative(final double P, final double T){ return P > T ? 1.0 : -1.0; }
-    }
+        public double derivative(final double P, final double T){ return Math.signum(P - T); }
+        public double derivative(final double[] P, final double[] T){ 
+            double sum = 0.0;
 
-    public static class Cross_Entropy{
+            for(int index = 0 ; index < P.length; index++){ sum += this.derivative(P[index], T[index]); }
+            return sum / P.length;
+        }
+    },
+
+    CROSS_ENTROPY{
         /**
 		 * Cross entropy function
          * @param PRED the output predicted from the model 
-         * @param T the output (target) which should have been predicted
+         * @param TARGET the output (target) which should have been predicted
 		 * @return function
 		 */
-        public static double function(final double PRED, final double T){  
-            if(T == 1.0)	return -(Math.log(PRED));
-            else			return -(Math.log(1.0 - PRED));
+        public double function(final double PRED, final double TARGET){ return -Math.log(TARGET == 1 ? PRED : 1 - PRED); }
+        public double function(final double[] PRED, final double[] TARGET){
+            double sum = 0.0;
+
+            for(int index = 0 ; index < PRED.length; index++){ sum += this.function(PRED[index], TARGET[index]); }
+            return sum / PRED.length;
         }
         /**
          * Cross Entropy derivative
-         * @param PRED output of the previous neuron (softmax output)
+         * @param P output of the previous neuron (softmax output)
          * @param T target value
          * @return derivative
          */
-        public static double derivative(final double PRED, final double T){ return PRED - T; }
-    }
+        public double derivative(final double P, final double T){ return P - T; }
+        public double derivative(final double[] P, final double[] T){ 
+            double sum = 0.0;
 
+            for(int index = 0 ; index < P.length; index++){ sum += this.derivative(P[index], T[index]); }
+            return sum / P.length;
+        }
+    },
 
-    public static class Huber{
+    HUBER{
         /**
-		 * 
+		 * Huber loss function
          * @param PRED the output predicted from the model 
-         * @param T the output (target) which should have been predicted
+         * @param TARGET the output (target) which should have been predicted
 		 * @return double
 		 */
-        public static double function(final double PRED, final double T){
-            final double DELTA = 1.0;
-            return Math.abs(PRED - T) < DELTA ?  Math.pow((0.5 * (T - PRED)), 2.0) : DELTA * (Math.abs(T - PRED) -0.5 * DELTA);
+        public double function(final double PRED, final double TARGET){
+            final double DIFF = Loss.MAE.function(PRED, TARGET);
+            if(DIFF <= delta)   return 0.5 * Math.pow(DIFF, 2.0);
+            else                return delta * DIFF - 0.5 * Math.pow(delta, 2.0);
         }
-        public static double derivative(final double PREV_Y, final double T){return 0.0;} // TO DO
-    }
+        public double function(final double[] PRED, final double[] TARGET){
+            double sum = 0.0;
 
-    public static class Kullback{
+            for(int index = 0 ; index < PRED.length; index++){ sum += this.function(PRED[index], TARGET[index]); }
+            return sum / PRED.length;
+        }
+        /**
+         * Huber loss derivative
+         * @param P output of the previous neuron (softmax output)
+         * @param T target value
+         * @return derivative
+         */
+        public double derivative(final double P, final double T) {
+            final double DIFF = T - P;
+            return Math.abs(DIFF) <= delta? DIFF: (DIFF > 0? -delta: delta);
+        }
+        public double derivative(final double[] P, final double[] T){ 
+            double sum = 0.0;
+
+            for(int index = 0 ; index < P.length; index++){ sum += this.derivative(P[index], T[index]); }
+            return sum / P.length;
+        }
+    },
+
+    KULLBACK{
         /**
 		 * 
          * @param PRED the output predicted from the model 
          * @param TARGET the output which should have been predicted
 		 * @return double
 		 */
-        public static double function(final double PRED, final double TARGET){ return PRED * Math.log((PRED / TARGET)); }
-        public static double function(final double[] PRED, final double[] TARGET){
+        public double function(final double PRED, final double TARGET){ return PRED * Math.log((PRED / TARGET)); }
+        public double function(final double[] PRED, final double[] TARGET){
             double sum =0.0; 
 
             for(int index = 0 ; index < PRED.length; index++){
-				sum += Loss.Kullback.function(PRED[index], TARGET[index]);
+				if (PRED[index] != 0) sum += this.function(PRED[index], TARGET[index]);
 			}
 
             return sum;
         }
-        public static double derivative(final double PREV_Y, final double T){ return T * Math.log((T / PREV_Y)); } // TO DO
-    }
+        /**
+         * As the derivative of the Kullback-Leibler divergence is not defined, we use the derivative of the Cross Entropy function
+         * @param P output of the previous neuron (softmax output)
+         * @param T target value
+         * @return derivative
+         */
+        public double derivative(final double P, final double T){ return Loss.CROSS_ENTROPY.derivative(P, T); }
+        public double derivative(final double[] P, final double[] T){ return Loss.CROSS_ENTROPY.derivative(P, T); }
+    };
+
+    // Abstract methods
+    public abstract double function(final double PREDICTD, final double TERGAET);
+    public abstract double function(final double PREDICTD[], final double TERGAET[]);
+    public abstract double derivative(final double PREDICTD, final double TERGAET);
+    public abstract double derivative(final double PREDICTD[], final double TERGAET[]);
+
+    protected double delta = 1.0; // Delta value for Huber loss function  
+    /**
+     * Set the delta value for the Huber loss function
+     * @param DELTA
+     */
+    public void setDelta(final double DELTA){ this.delta = DELTA; }
 }

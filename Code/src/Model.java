@@ -14,76 +14,42 @@ public class Model {
 
 
 	// collection of loss functions
-	public static enum Loss {
-		MSE{
-			public void derivative(final Layer LAYER, final Sample SAMPLE){
-				Node.Relation[] FLAT_OUTPUT = LAYER.getFlatOutput();
-				final double[] LABEL_LOCATION = SAMPLE.getLabelLocation();
+	public enum Loss {
+		CROSS_ENTROPY( lib.Loss.CROSS_ENTROPY ),	// Cross Entropy
+		KULLBACK( lib.Loss.KULLBACK ),				// Kullback Leibler Divergence
+		HUBER( lib.Loss.HUBER ),					// Huber Loss
+		MSE( lib.Loss.MSE ),						// Mean Squared Error
+		MAE( lib.Loss.MAE );						// Mean Absolute Error
 
-				for(int classs=0; classs < FLAT_OUTPUT.length; classs++){
-					setIntoNode(lib.Loss.MSE.derivative(FLAT_OUTPUT[classs].getOutput(), LABEL_LOCATION[classs]), FLAT_OUTPUT[classs]);
-				}
-			}
-		},
-		MAE{
-			public void derivative(final Layer LAYER, final Sample SAMPLE){
-				Node.Relation[] FLAT_OUTPUT = LAYER.getFlatOutput();
-				final double[] LABEL_LOCATION = SAMPLE.getLabelLocation();
+		// variables
+		private final lib.Loss LOSS;				// loss function
 
-				for(int classs=0; classs < FLAT_OUTPUT.length; classs++){
-					setIntoNode(lib.Loss.MAE.derivative(FLAT_OUTPUT[classs].getOutput(), LABEL_LOCATION[classs]), FLAT_OUTPUT[classs]);
-				}
-			}
-		},
-		CROSS_ENTROPY{
-			public void derivative(final Layer LAYER, final Sample SAMPLE){
-				Node.Relation[] FLAT_OUTPUT = LAYER.getFlatOutput();
-				final double[] LABEL_LOCATION = SAMPLE.getLabelLocation();
+		// constructor
+		private Loss(final lib.Loss LOSS){ this.LOSS = LOSS; }
 
-				for(int classs=0; classs < FLAT_OUTPUT.length; classs++){
-					setIntoNode(lib.Loss.Cross_Entropy.derivative(FLAT_OUTPUT[classs].getOutput(), LABEL_LOCATION[classs]), FLAT_OUTPUT[classs]);
-				}
-			}
-		},
-		HUBER{
-			public void derivative(final Layer LAYER, final Sample SAMPLE){
-				Node.Relation[] FLAT_OUTPUT = LAYER.getFlatOutput();
-				final double[] LABEL_LOCATION = SAMPLE.getLabelLocation();
+		// methods
+		/**
+		 * Setting the result into the node
+		 * @param RESULT
+		 * @param RELATION
+		 */
+		private void setIntoNode(final double RESULT, final Node.Relation ... RELATION){
+			for(final Node.Relation REL: RELATION)	REL.addToChainRuleSum(RESULT);
+		}
 
-				for(int classs=0; classs < FLAT_OUTPUT.length; classs++){
-					setIntoNode(lib.Loss.Huber.derivative(FLAT_OUTPUT[classs].getOutput(), LABEL_LOCATION[classs]), FLAT_OUTPUT[classs]);
-				}
-			}
-		},
-		KULLBACK{
-			public void derivative(final Layer LAYER, final Sample SAMPLE){
-				Node.Relation[] FLAT_OUTPUT = LAYER.getFlatOutput();
-				final double[] LABEL_LOCATION = SAMPLE.getLabelLocation();
-
-				for(int classs=0; classs < FLAT_OUTPUT.length; classs++){
-					setIntoNode(lib.Loss.Kullback.derivative(FLAT_OUTPUT[classs].getOutput(), LABEL_LOCATION[classs]), FLAT_OUTPUT[classs]);
-				}
-			}
-		};
-
-		// abstracts
 		/**
 		 * Loss function derivative
 		 * @param LAYER	layer object
 		 * @param SAMPLE Sample object
 		 */
-		public abstract void derivative(final Layer LAYER, final Sample SAMPLE);
-		
-		// setters
-		/**
-		 * Setting the result into the nodes
-		 * @param RESULT
-		 * @param RELATION
-		 */
-		private static void setIntoNode(final double RESULT, final Node.Relation ... RELATION){
-			for(final Node.Relation REL: RELATION)	REL.addToChainRuleSum(RESULT);
-		}
+		public void derivative(final Layer LAYER, final Sample SAMPLE){
+			final Node.Relation[] FLAT_OUTPUT	= LAYER.getFlatOutput();
+			final double[] ONE_HOT				= SAMPLE.getLabelLocation();
 
+			for(int classs=0; classs < FLAT_OUTPUT.length; classs++){
+				setIntoNode(this.LOSS.derivative(FLAT_OUTPUT[classs].getOutput(), ONE_HOT[classs]), FLAT_OUTPUT[classs]);
+			}
+		}
 	}
 
 

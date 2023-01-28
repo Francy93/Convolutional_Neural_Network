@@ -16,7 +16,7 @@ public abstract class Layer {
 	private	Node.Relation[][][][] 	kernelRelations;		//	array of relations between this layer weigths and inputs
 	protected	lib.Optimizer		optimizer;				//	learning optimizer
 
-	// activation functions
+	// collection of activation functions
 	public static enum Activation{
 		LINEAR{
 			public void function(final Node.Relation REL, final Layer LAYER){ REL.setOutput(lib.Activation.Linear.function(REL.getFrontLinearOutput(), 1)); }
@@ -293,7 +293,7 @@ public abstract class Layer {
                             }
                         }						
                     }
-					// summming the bias
+					// summing the bias
 					SINGLE_OUTPUT.addToLinearOutput(NODE.getBias(map_y, map_x));
 					// performing the activation function for this output / feature-map "pixel"
 					this.ACTIVATION.function(SINGLE_OUTPUT, this);

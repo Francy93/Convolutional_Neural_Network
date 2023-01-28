@@ -1,9 +1,11 @@
 package lib;
 
 /**
+ * Collection of Optimizers
  * @see inspired by https://github.com/pritishmishra703/Deep-Learning-From-Neurons-to-GANs/blob/master/Chapter4_Optimization.ipynb
  */
 public enum Optimizer {
+    /* SGD, MOMENTUM, RMSPROP, NESTEROV, ADAGRAD, ADADELTA, ADAM, ADAMAX, AMSGRAD, NADAM; */
   
     SGD{
         public void timeStepIncrease(){}
@@ -32,6 +34,18 @@ public enum Optimizer {
             MOMENTUM[0] = (MOMENTUM[0] * this.BETA1) + ((1.0 - this.BETA1) * grad * grad);
 
             return (this.learningRate / Math.sqrt(MOMENTUM[0] + this.EPSILON)) * grad;
+        }
+    },
+    NESTEROV{
+        public void timeStepIncrease(){}
+        public int momentNumber(){ return 1; }
+        public double optimize(final double[] MOMENTUM, double grad){
+            grad		/= this.batchSize; // batch size average
+
+            // colculating the momentum
+            MOMENTUM[0] = (MOMENTUM[0] * this.BETA1) + (this.learningRate * grad); 
+
+            return (this.BETA1 * MOMENTUM[0]) + ((1.0 - this.BETA1) * this.learningRate * grad);
         }
     },
     ADAGRAD{
@@ -81,6 +95,61 @@ public enum Optimizer {
             this.norm2	= MOMENTUM[1] / (1.0 - Math.pow(this.BETA2, this.timeStep));
 
             return this.learningRate * this.norm1 / (Math.sqrt(this.norm2) + this.EPSILON);
+        }
+    },
+    ADAMAX{
+        public void timeStepIncrease(){ this.timeStep++; }
+        public int momentNumber(){ return 2; }
+        public double optimize(final double[] MOMENTUM, double grad){
+            grad		/= this.batchSize; // batch size average
+
+            // compute the first moment
+            MOMENTUM[0] = (MOMENTUM[0] * this.BETA1) + ((1.0 - this.BETA1) * grad); 
+
+            // compute the second moment
+            MOMENTUM[1] = Math.max(this.BETA2 * MOMENTUM[1], Math.abs(grad));
+
+            // normalisation
+            this.norm1	= MOMENTUM[0] / (1.0 - Math.pow(this.BETA1, this.timeStep));
+
+            return this.learningRate * this.norm1 / (MOMENTUM[1] + this.EPSILON);
+        }
+    },
+    NADAM{
+        public void timeStepIncrease(){ this.timeStep++; }
+        public int momentNumber(){ return 2; }
+        public double optimize(final double[] MOMENTUM, double grad){
+            grad		/= this.batchSize; // batch size average
+
+            // compute the first moment
+            MOMENTUM[0] = (MOMENTUM[0] * this.BETA1) + ((1.0 - this.BETA1) * grad); 
+
+            // compute the second moment
+            MOMENTUM[1] = (MOMENTUM[1] * this.BETA2) + ((1.0 - this.BETA2) * grad * grad); 
+
+            // normalisation
+            this.norm1	= MOMENTUM[0] / (1.0 - Math.pow(this.BETA1, this.timeStep));
+            this.norm2	= MOMENTUM[1] / (1.0 - Math.pow(this.BETA2, this.timeStep));
+
+            return this.learningRate * (this.BETA1 * this.norm1 + (1.0 - this.BETA1) * grad / (1.0 - Math.pow(this.BETA1, this.timeStep))) / (Math.sqrt(this.norm2) + this.EPSILON);
+        }
+    },
+    AMSGRAD{
+        public void timeStepIncrease(){ this.timeStep++; }
+        public int momentNumber(){ return 2; }
+        public double optimize(final double[] MOMENTUM, double grad){
+            grad		/= this.batchSize; // batch size average
+
+            // compute the first moment
+            MOMENTUM[0] = (MOMENTUM[0] * this.BETA1) + ((1.0 - this.BETA1) * grad); 
+
+            // compute the second moment
+            MOMENTUM[1] = Math.max((MOMENTUM[1] * this.BETA2), (grad * grad)); 
+
+            // normalisation
+            this.norm1	= MOMENTUM[0] / (1.0 - Math.pow(this.BETA1, this.timeStep));
+
+            return this.learningRate * this.norm1 / (Math.sqrt(MOMENTUM[1]) + this.EPSILON);
         }
     };
 
