@@ -8,7 +8,7 @@ public class Ann{
 	private static			DataSet dataValid;								//	detaset used to perform the validation
 	private static final	double	LEARNING_RATE	= 0.001;				//	learning rate suggested is about 0.001
 	private static final	int		BATCH_SIZE		= 4;					//	number of samples processed before updating the weights
-	private static final	int		EPOCHS			= 5;					//	number of dataset cycles
+	private static final	int		EPOCHS			= 50;					//	number of dataset cycles
 	
 
 

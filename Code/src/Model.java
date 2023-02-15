@@ -4,22 +4,22 @@ public class Model {
 	private			double		accuracy 	= 0;	// to store the accuracy result
 	private			double		precision	= 0;	// to store the precision result
 	private			double		recall		= 0;	// to store the recall result
-	private			double		f1Score 	= 0;	// to store the f1score result
-	private			DataSet 	trainData;			// datastructure of training samples
-	private			DataSet 	validateData;		// datastructure of validation samples
-	private final	Layer[]		LAYERS;				// array containing all the layers
-	private 		Sample		sample;				// index of the current iterated sample
-	private 		Loss		loss;				// loss operations
+	private			double		f1Score		= 0;	// to store the f1score result
+	private			DataSet		trainData;			// datastructure of training samples
+	private			DataSet		validateData;		// datastructure of validation samples
+	private	final	Layer[]		LAYERS;				// array containing all the layers
+	private			Sample		sample;				// index of the current iterated sample
+	private			Loss		loss;				// loss operations
 	private			Optimizer	optimizer;			// Learning (gradient descent) optimizer
 
 
 	// Collection of loss functions
 	public enum Loss {
 		CROSS_ENTROPY(	lib.Loss.CROSS_ENTROPY	),	// Cross Entropy
-		KULLBACK( 		lib.Loss.KULLBACK		),	// Kullback Leibler Divergence
-		HUBER( 			lib.Loss.HUBER			),	// Huber Loss
-		MSE( 			lib.Loss.MSE			),	// Mean Squared Error
-		MAE( 			lib.Loss.MAE			);	// Mean Absolute Error
+		KULLBACK(		lib.Loss.KULLBACK		),	// Kullback Leibler Divergence
+		HUBER(			lib.Loss.HUBER			),	// Huber Loss
+		MSE(			lib.Loss.MSE			),	// Mean Squared Error
+		MAE(			lib.Loss.MAE			);	// Mean Absolute Error
 
 		// variables
 		private final lib.Loss LOSS;				// loss function
