@@ -33,8 +33,8 @@ public class Sample {
 	 * @param DELIMITER
 	 * @return
 	 */
-    private double[] validator(final String str, final String DELIMITER){
-		final String[]	DATA_STRING = str.split(DELIMITER);
+    private double[] validator(final String STR, final String DELIMITER){
+		final String[]	DATA_STRING = STR.split(DELIMITER);
 		final int		DATA_LENGTH = DATA_STRING.length;
 		final double	SQUARE_ROOT = Math.sqrt( DATA_STRING.length -1 );
 

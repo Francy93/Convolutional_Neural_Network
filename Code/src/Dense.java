@@ -22,11 +22,11 @@
         super.inputs	= INPUTS;
 		super.optimizer = OPT;
 
-        this.sizesInit();					// initialising this layer sizes
-        super.nodesInit();					// initialising this layer nodes
-        super.weightsInit();				// initialising all this layer weights
-        super.flatOutInit();				// flattening the output
-        super.kernelRelationsInit();		// initialising this layer kernel relations
+        this.sizesInit();				// initialising this layer sizes
+        super.nodesInit();				// initialising this layer nodes
+        super.weightsInit();			// initialising all this layer weights
+        super.flatOutInit();			// flattening the output
+        super.kernelRelationsInit();	// initialising this layer kernel relations
     }
 
 	/**
@@ -38,7 +38,7 @@
         final Node[] NODE	= {new Node(SAMPLE.getData1D(), OPT)};
         super.isFirstLayer	= true;
 
-        layerInit(OPT, NODE);
+        this.layerInit(OPT, NODE);
     }
 
 

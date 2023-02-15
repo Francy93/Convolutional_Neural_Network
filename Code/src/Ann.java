@@ -8,7 +8,7 @@ public class Ann{
 	private static			DataSet dataValid;								//	detaset used to perform the validation
 	private static final	double	LEARNING_RATE	= 0.001;				//	learning rate suggested is about 0.001
 	private static final	int		BATCH_SIZE		= 4;					//	number of samples processed before updating the weights
-	private static final	int		EPOCHS			= 50;					//	number of dataset cycles
+	private static final	int		EPOCHS			= 5;					//	number of dataset cycles
 	
 
 
@@ -33,25 +33,25 @@ public class Ann{
 		}catch(Exception e){ throw new FileNotFoundException(); }
 
 		// initialising the model
-		MODEL.buildStructure(dataTrain, dataValid, lib.Optimizer.ADAM, Model.Loss.CROSS_ENTROPY);
+		MODEL.buildStructure(dataTrain, dataValid, Model.Optimizer.ADAM, Model.Loss.CROSS_ENTROPY);
 	}
 
 	// running tests and validations
 	public static void testModel(){
-		MODEL.train(BATCH_SIZE, EPOCHS, LEARNING_RATE);
+		MODEL.train(BATCH_SIZE, EPOCHS, LEARNING_RATE);											//	performing the training
 		
-		final lib.Util.AnsiColours COLOURS = new lib.Util.AnsiColours();
-		System.out.println(COLOURS.colourText("\r\nValidating...", "yellow"));
+		final lib.Util.AnsiColours COLOURS = new lib.Util.AnsiColours();						//	used to colour the output
+		System.out.println(COLOURS.colourText("\r\nValidating...", "yellow"));					//	validation message
 
-		MODEL.validate();
-		final float	 ONE_THIRD 			= 100f/3f, 	TWO_THIRD 	= 100f/1.5f;
-		final String RED 				= "red",	YELLOW 		= "yellow", GREEN = "green";
+		MODEL.validate();																		//	performing the validation
+		final float	 ONE_THIRD 			= 100f/3f, 	TWO_THIRD 	= 100f/1.5f;					//	used to determine the output colour
+		final String RED 				= "red",	YELLOW 		= "yellow", GREEN = "green";	//	colours for the output
 		final String ACCURACY_COLOUR	= MODEL.getAccuracy()	<= ONE_THIRD? RED: MODEL.getAccuracy()	<= TWO_THIRD? YELLOW: GREEN;
 		final String PRECISION_COLOUR	= MODEL.getPrecision()	<= ONE_THIRD? RED: MODEL.getPrecision()	<= TWO_THIRD? YELLOW: GREEN;
 		final String RECALL_COLOUR		= MODEL.getRecall()		<= ONE_THIRD? RED: MODEL.getRecall()	<= TWO_THIRD? YELLOW: GREEN;
 		final String F1_COLOUR			= MODEL.getF1Score()	<= ONE_THIRD? RED: MODEL.getF1Score()	<= TWO_THIRD? YELLOW: GREEN;
 		
-		System.out.println("Accuracy:\t"	+ COLOURS.colourText(MODEL.getAccuracy()	+ "%"	, ACCURACY_COLOUR	));	
+		System.out.println("Accuracy:\t"	+ COLOURS.colourText(MODEL.getAccuracy()	+ "%"	, ACCURACY_COLOUR	));
 		System.out.println("Precision:\t"	+ COLOURS.colourText(MODEL.getPrecision()	+ "%"	, PRECISION_COLOUR	));
 		System.out.println("Recall:\t\t"	+ COLOURS.colourText(MODEL.getRecall()		+ "%"	, RECALL_COLOUR		));
 		System.out.println("F1Score:\t"		+ COLOURS.colourText(MODEL.getF1Score()		+ "%\n"	, F1_COLOUR			));

@@ -91,8 +91,8 @@ public class Node {
 		}
 
 		// summing all weigths and inputs moltiplications
-		public void addToLinearOutput(final double ADD){
-			this.frontLinearOutput	+= ADD;
+		public void addToLinearOutput(final double FLO){
+			this.frontLinearOutput	+= FLO;
 		}
 		
 		// setting this node partial derivative
@@ -206,9 +206,8 @@ public class Node {
 
 	//Updating weights and biases
 	public void update(){
-		this.OPTIMIZER.timeStepIncrease();
-		weightsUpdate();
-		biasUpdate();
+		this.weightsUpdate();	// updating the weights
+		this.biasUpdate();		// updating the biases
 	}
 
 	//Weights update

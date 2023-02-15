@@ -14,8 +14,9 @@ public abstract class Layer {
 	protected			int     	KERNEL_X;				//	Size X of this layer kernel
 	private	Node.Relation[]			flat_output;			//	array of nodes outputs
 	private	Node.Relation[][][][] 	kernelRelations;		//	array of relations between this layer weigths and inputs
-	protected	lib.Optimizer		optimizer;				//	learning optimizer
+	protected		lib.Optimizer	optimizer;				//	learning optimizer
 
+	
 	// collection of activation functions
 	public static enum Activation{
 		LINEAR{
@@ -95,7 +96,6 @@ public abstract class Layer {
 		public abstract void function(final Node.Relation REL, final Layer LAYER);
 		public abstract void derivative(final Node.Relation REL, final Layer LAYER);
 		public abstract double randomWeight(final Layer LAYER);
-
 	}
 
 
@@ -208,13 +208,13 @@ public abstract class Layer {
         final int PATCH_SIZE	= this.outputSizeY * this.outputSizeX;
         this.kernelRelations 	= new Node.Relation[this.inputs.length][this.KERNEL_Y][this.KERNEL_X][PATCH_SIZE];
 
-        // calculating for possible need for padding
-        final int IMAGE_Y		= this.inputSizeY - this.KERNEL_Y;
-        final int IMAGE_X		= this.inputSizeX - this.KERNEL_X;
-        final int LEFT_IMAGE_Y	= IMAGE_Y>= 0? 0: IMAGE_Y;
-        final int LEFT_IMAGE_X	= IMAGE_X>= 0? 0: IMAGE_X;
-        final int RIGHT_IMAGE_Y = IMAGE_Y>= 0? IMAGE_Y + 1: 1;
-        final int RIGHT_IMAGE_X = IMAGE_X>= 0? IMAGE_X + 1: 1;
+        // calculating the possible need for padding
+        final int IMAGE_Y		= this.inputSizeY - this.KERNEL_Y;	// if negative, padding is needed
+        final int IMAGE_X		= this.inputSizeX - this.KERNEL_X;	// if negative, padding is needed
+        final int LEFT_IMAGE_Y	= IMAGE_Y>= 0? 0: IMAGE_Y;			// if Y is greater than 0, no padding is needed
+        final int LEFT_IMAGE_X	= IMAGE_X>= 0? 0: IMAGE_X;			// if X is greater than 0, no padding is needed
+        final int RIGHT_IMAGE_Y = IMAGE_Y>= 0? IMAGE_Y + 1: 1;		// if Y is greater than 0, no padding is needed
+        final int RIGHT_IMAGE_X = IMAGE_X>= 0? IMAGE_X + 1: 1;		// if X is greater than 0, no padding is needed
 
 
         // cycling over the channels
@@ -321,7 +321,7 @@ public abstract class Layer {
                 for(int map_x=0; map_x < this.outputSizeX; map_x++){
 
                     // calculationthe derivative of the non-linear to linear operation
-                    final double DERIV_SUM = calculateDerivative(NODE_OUTPUT[map_y][map_x]);
+                    final double DERIV_SUM = this.calculateDerivative(NODE_OUTPUT[map_y][map_x]);
                     // storing the biases gradients
                     NODE.addBiasGradients(DERIV_SUM, map_y, map_x);
 
@@ -378,8 +378,8 @@ public abstract class Layer {
 
     // calculating the derivative of a single output
     private double calculateDerivative(final Node.Relation NODE_SINGLE_OUT){
-	    this.ACTIVATION.derivative(NODE_SINGLE_OUT, this);
-        NODE_SINGLE_OUT.derivAndCRS_sum();
+	    this.ACTIVATION.derivative(NODE_SINGLE_OUT, this);	// calculating the derivative of the activation function
+        NODE_SINGLE_OUT.derivAndCRS_sum();					// calculating the derivative of the non-linear to linear operation
 
         return NODE_SINGLE_OUT.getDerivativeSum();
     }

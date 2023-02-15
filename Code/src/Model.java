@@ -8,18 +8,18 @@ public class Model {
 	private			DataSet 	trainData;			// datastructure of training samples
 	private			DataSet 	validateData;		// datastructure of validation samples
 	private final	Layer[]		LAYERS;				// array containing all the layers
-	private 		Loss		loss;				// loss operations
 	private 		Sample		sample;				// index of the current iterated sample
-	private			lib.Optimizer optimizer;		// Learning (gradient descent) optimizer
+	private 		Loss		loss;				// loss operations
+	private			Optimizer	optimizer;			// Learning (gradient descent) optimizer
 
 
-	// collection of loss functions
+	// Collection of loss functions
 	public enum Loss {
-		CROSS_ENTROPY( lib.Loss.CROSS_ENTROPY ),	// Cross Entropy
-		KULLBACK( lib.Loss.KULLBACK ),				// Kullback Leibler Divergence
-		HUBER( lib.Loss.HUBER ),					// Huber Loss
-		MSE( lib.Loss.MSE ),						// Mean Squared Error
-		MAE( lib.Loss.MAE );						// Mean Absolute Error
+		CROSS_ENTROPY(	lib.Loss.CROSS_ENTROPY	),	// Cross Entropy
+		KULLBACK( 		lib.Loss.KULLBACK		),	// Kullback Leibler Divergence
+		HUBER( 			lib.Loss.HUBER			),	// Huber Loss
+		MSE( 			lib.Loss.MSE			),	// Mean Squared Error
+		MAE( 			lib.Loss.MAE			);	// Mean Absolute Error
 
 		// variables
 		private final lib.Loss LOSS;				// loss function
@@ -33,7 +33,7 @@ public class Model {
 		 * @param RESULT
 		 * @param RELATION
 		 */
-		private void setIntoNode(final double RESULT, final Node.Relation ... RELATION){
+		private void setIntoNode(final double RESULT, final Node.Relation ... RELATION){	// setting the result into the node
 			for(final Node.Relation REL: RELATION)	REL.addToChainRuleSum(RESULT);
 		}
 
@@ -43,15 +43,36 @@ public class Model {
 		 * @param SAMPLE Sample object
 		 */
 		public void derivative(final Layer LAYER, final Sample SAMPLE){
-			final Node.Relation[] FLAT_OUTPUT	= LAYER.getFlatOutput();
-			final double[] ONE_HOT				= SAMPLE.getLabelLocation();
+			final Node.Relation[] FLAT_OUTPUT	= LAYER.getFlatOutput();		// getting the output of the layer	
+			final double[] ONE_HOT				= SAMPLE.getLabelLocation();	// getting the label of the sample
 
-			for(int classs=0; classs < FLAT_OUTPUT.length; classs++){
-				setIntoNode(this.LOSS.derivative(FLAT_OUTPUT[classs].getOutput(), ONE_HOT[classs]), FLAT_OUTPUT[classs]);
+			for(int classs=0; classs < FLAT_OUTPUT.length; classs++){			// cycling over the classes
+				// setting the result into the node
+				this.setIntoNode(this.LOSS.derivative(FLAT_OUTPUT[classs].getOutput(), ONE_HOT[classs]), FLAT_OUTPUT[classs]);
 			}
 		}
 	}
 
+	
+	// Collection of Optimizers
+	public enum Optimizer {
+		SGD(		lib.Optimizer.SGD		),	// Stochastic Gradient Descent
+		MOMENTUM(	lib.Optimizer.MOMENTUM	),	// Momentum
+		RMSPROP(	lib.Optimizer.RMSPROP	),	// RMSProp
+		NESTEROV(	lib.Optimizer.NESTEROV	),	// Nesterov Accelerated Gradient
+		ADAGRAD(	lib.Optimizer.ADAGRAD	),	// Adaptive Gradient
+		ADADELTA(	lib.Optimizer.ADADELTA	),	// Adaptive Delta
+		ADAM(		lib.Optimizer.ADAM		),	// Adaptive Moment Estimation
+		ADAMAX(		lib.Optimizer.ADAMAX	),	// Adaptive Moment Estimation (max)
+		AMSGRAD(	lib.Optimizer.AMSGRAD	),	// Adaptive Moment Estimation (max)
+		NADAM(		lib.Optimizer.NADAM		);	// Nesterov Adaptive Moment Estimation
+
+		// variables
+		public final lib.Optimizer OPT;	// optimizer
+
+		// constructor
+		private Optimizer(final lib.Optimizer OPT){ this.OPT = OPT; }
+	}
 
 
 	/**
@@ -67,9 +88,12 @@ public class Model {
 	 * @param L array of layers
 	 * @return model object
 	 */
-	public static Model Sequential(final Layer ... L){
-		return new Model(L);
+	public static Model Sequential(final Layer ... L){	// getting the model object
+		return new Model(L);							// returning the model object
 	}
+
+
+
 
 
 
@@ -82,19 +106,19 @@ public class Model {
 	 * @param OPT
 	 * @param L
 	 */
-	public void buildStructure(final DataSet DATA_TRAIN, final DataSet DATA_VALID, final lib.Optimizer OPT, final Loss L){
-		this.trainData		= DATA_TRAIN;
-		this.validateData	= DATA_VALID;
-		this.loss			= L;
-		this.optimizer		= OPT;
+	public void buildStructure(final DataSet DATA_TRAIN, final DataSet DATA_VALID, final Optimizer OPT, final Loss L){
+		this.trainData		= DATA_TRAIN;	// training data
+		this.validateData	= DATA_VALID;	// validation data
+		this.loss			= L;			// loss function
+		this.optimizer		= OPT;			// optimizer
 
-		Layer prevLayer = this.LAYERS[0];						// previous layer
-		prevLayer.firstLayerInit(OPT, DATA_TRAIN.getSample(0));	// initialising the input layer
+		Layer prevLayer = this.LAYERS[0];								// previous layer
+		prevLayer.firstLayerInit(OPT.OPT, DATA_TRAIN.getSample(0));		// initialising the input layer
 							
 		// cycling overt the rest of the layers initialising them
 		for(int index=1; index < this.LAYERS.length; index++){
-			this.LAYERS[index].layerInit(OPT, prevLayer.getNodes());
-			prevLayer = this.LAYERS[index];
+			this.LAYERS[index].layerInit(OPT.OPT, prevLayer.getNodes());// initialising the layer
+			prevLayer = this.LAYERS[index];								// updating the previous layer
 		}
 	}
 
@@ -106,8 +130,8 @@ public class Model {
 	 */
 	private void feedForward(){
 		// loading the sample
-		try{ this.LAYERS[0].sampleLoader(this.sample); }
-		catch(Exception e){ System.err.println("Sample loaded into the wrong layer"); }
+	try{ this.LAYERS[0].sampleLoader(this.sample); }									// loading the sample into the input layer
+		catch(Exception e){ System.err.println("Sample loaded into the wrong layer"); }	// error handling
 
 		// cycling over the layers
 		for(final Layer LAYER: this.LAYERS)	LAYER.feedForward();
@@ -120,8 +144,8 @@ public class Model {
 	 * Performing the back propagation to every layer
 	 */
 	private void backPropagate(){
-		this.loss.derivative(LAYERS[this.LAYERS.length-1], this.sample);
-		for(int layer = this.LAYERS.length-1; layer >= 0; layer--)	this.LAYERS[layer].backPropagating();
+		this.loss.derivative(LAYERS[this.LAYERS.length-1], this.sample);									// getting the loss function derivative
+		for(int layer = this.LAYERS.length-1; layer >= 0; layer--)	this.LAYERS[layer].backPropagating();	// cycling over the layers
 	}
 
 
@@ -129,7 +153,8 @@ public class Model {
 
 	// Updating the weights upon the Batch-size end
 	private void weightsUpdate(){
-		for(final Layer LAYER: this.LAYERS) LAYER.updateWeights();
+		this.optimizer.OPT.timeStepIncrease();						// increasing the time step of the optimizer
+		for(final Layer LAYER: this.LAYERS) LAYER.updateWeights();	// updating the weights
 	}
 
 
@@ -142,31 +167,31 @@ public class Model {
 	 * @param EPOCHS cicles of entire dataset
 	 * @param LEARNING_RATE learning rate
 	 */
-	public void train(final int BATCH, final int EPOCHS, final double LEARNING_RATE){ train( this.trainData, BATCH, EPOCHS, LEARNING_RATE); }
+	public void train(final int BATCH, final int EPOCHS, final double LEARNING_RATE){ this.train( this.trainData, BATCH, EPOCHS, LEARNING_RATE); }
 	public void train(final DataSet DATA, final int BATCH, final int EPOCHS, final double LEARNING_RATE){
-		this.optimizer.setParam(LEARNING_RATE, BATCH);
+		this.optimizer.OPT.setParam(LEARNING_RATE, BATCH);				// setting the learning rate and the batch size
 
-		final int DATA_SIZE = DATA.getSize()-1;
-		final lib.Util.Loading BAR = new lib.Util.Loading(DATA_SIZE);
+		final int DATA_SIZE = DATA.getSize()-1;							// getting the size of the dataset
+		final lib.Util.Loading BAR = new lib.Util.Loading(DATA_SIZE);	// loading bar
 		
 		//cicling over the dataset samples for "EPOCHS" times
 		for(int epoch=0; epoch < EPOCHS; epoch++){
-			BAR.message("Epoch: "+ (epoch+1) + " / " + EPOCHS, "blue");
-			DATA.shuffle();	// shuffeling the samples
+			BAR.message("Epoch: "+ (epoch+1) + " / " + EPOCHS, "blue");	// printing the epoch number
+			DATA.shuffle();												// shuffeling the samples
 
 			// cycling over the samples
-			for(int sampleIndex=0, batch=0; sampleIndex <= DATA_SIZE; sampleIndex++, batch++){
-				this.sample = DATA.getSample(sampleIndex);
+			for(int sampleIndex=0, nextBatch=BATCH-1; sampleIndex <= DATA_SIZE; sampleIndex++){
+				this.sample = DATA.getSample(sampleIndex);				// getting the sample
 				
-				BAR.printNewBar();  // printing the loading bar
+				BAR.printNewBar();  									// printing the loading bar
 
-				feedForward();		// performing forward propagation for all the layers
-				backPropagate();	// performing back propagation for all the layers
+				this.feedForward();										// performing forward propagation for all the layers
+				this.backPropagate();									// performing back propagation for all the layers
 
 				// updating weights after a certain amount of samples (mini batch)
-				if(batch >= BATCH || sampleIndex >= DATA_SIZE){
-					weightsUpdate();
-					batch = 0;
+				if(sampleIndex == nextBatch || sampleIndex == DATA_SIZE){
+					this.weightsUpdate();								// updating the weights
+					nextBatch += BATCH;									// updating the next batch
 				}
 			}
 		}
@@ -180,27 +205,28 @@ public class Model {
 	 */
 	public double validate(){ return validate(this.validateData); }
     public double validate(final DataSet DATA){
-		final int[] FP	= new int[DATA.getClasses().length];
-		final int[] TP	= new int[DATA.getClasses().length];
-		int correct = 0;
+		final int[] FP	= new int[DATA.getClasses().length];			// false positives
+		final int[] TP	= new int[DATA.getClasses().length];			// true positives
+		int correct = 0;												// correct counter
 
-		DATA.shuffle();
+		DATA.shuffle();													// shuffeling the samples
 
+		// cycling over the samples
 		for(final Sample SAMPLE: DATA.getDataSet()){
-			this.sample = SAMPLE;
+			this.sample = SAMPLE;										// loading the sample
 
-			feedForward();
-			if (this.sample.getLabel() == this.getPredClass(DATA)){
-				correct++;													// correct counter
-				TP[DATA.getLabelIndex(getPredClass(DATA))]++;				// getting true positives
-			}else	FP[DATA.getLabelIndex(getPredClass(DATA))]++;			// getting false positives
+			this.feedForward();											// performing forward propagation for all the layers
+			if (this.sample.getLabel() == this.getPredClass(DATA)){		// checking if the prediction is correct
+				correct++;												// correct counter
+				TP[DATA.getLabelIndex(this.getPredClass(DATA))]++;		// getting true positives
+			}else	FP[DATA.getLabelIndex(this.getPredClass(DATA))]++;	// getting false positives
 		}
 
 		// storing the outcome data
-		this.accuracy	= (double)correct * 100.00 / (double)DATA.getSize();
-		this.precision	= this.getPrecision(TP, FP)*100;
-		this.recall		= this.getRecall(TP, FP, DATA)*100;
-		this.f1Score	= this.getF1Score(this.precision, this.recall);
+		this.accuracy	= (double)correct * 100.00 / (double)DATA.getSize();	// accuracy
+		this.precision	= this.getPrecision(TP, FP) * 100;						// precision
+		this.recall		= this.getRecall(TP, FP, DATA) * 100;					// recall
+		this.f1Score	= this.getF1Score(this.precision, this.recall);			// f1Score
 		
 		return this.accuracy;
 	}
@@ -214,12 +240,12 @@ public class Model {
 	private double getPredClass(final DataSet DATA){
 		Node.Relation[] NODES = this.LAYERS[this.LAYERS.length-1].getFlatOutput();
 
-		int answerIndex		= 0;
-		double valHolder	= 0; 
-		for(int node=0; node < NODES.length; node++){
-			if(NODES[node].getOutput() > valHolder){
-				answerIndex = node;
-				valHolder	= NODES[node].getOutput();
+		int answerIndex		= 0;						// index of the answer
+		double valHolder	= 0; 						// value holder
+		for(int node=0; node < NODES.length; node++){	// cycling over the nodes
+			if(NODES[node].getOutput() > valHolder){	// checking if the node output is greater than the value holder
+				answerIndex = node;						// setting the answer index
+				valHolder	= NODES[node].getOutput();	// setting the value holder
 			}
 		}
 		return DATA.getClasses()[answerIndex];
@@ -234,7 +260,7 @@ public class Model {
 	 * @return F1Score
 	 */
 	private double getF1Score(final double PRECISION, final double RECALL){
-		return 2 * (PRECISION * RECALL) / (PRECISION + RECALL);
+		return 2 * (PRECISION * RECALL) / (PRECISION + RECALL);	// F1Score
 	}
 
 	/**
@@ -246,7 +272,7 @@ public class Model {
 	private double getPrecision(final int[] TP, final int[] FP){
 		double precision = 0;
 		for(int label=0; label < TP.length; label++)	precision += (double)TP[label] / (double)(TP[label] + FP[label]);
-		return precision / (double)TP.length;
+		return precision / (double)TP.length;	// precision
 	}
 
 	/**
@@ -258,13 +284,13 @@ public class Model {
 	private double getRecall(final int[] TP, final int[] FP, final	DataSet DATA){
 		double recall = 0;
 
-		for(int label=0; label < TP.length; label++){
-			final long FN = DATA.getLabelsAmount(label) - TP[label];
-			final long TP_FN = TP[label] + FN;
-			recall += (double)TP[label] / TP_FN;
+		for(int label=0; label < TP.length; label++){					// cycling over the labels
+			final long FN = DATA.getLabelsAmount(label) - TP[label];	// getting the false negatives
+			final long TP_FN = TP[label] + FN;							// getting the true positives + false negatives
+			recall += (double)TP[label] / TP_FN;						// calculating the recall
 		}
 
-		return recall / (double)TP.length;
+		return recall / (double)TP.length;								// recall
 	}
 	
 

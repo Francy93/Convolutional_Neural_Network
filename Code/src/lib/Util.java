@@ -570,7 +570,6 @@ public class Util{
 		public void barColours(final String ... COLOURS){
 			this.barColours		= COLOURS;
 			this.coloursIndex	= (double)this.barColours.length / (double)(this.MAX_PERCENT+0.1);
-
 		}
 		/**
 		 * Setting the updates rate

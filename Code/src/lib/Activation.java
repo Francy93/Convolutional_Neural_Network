@@ -183,7 +183,7 @@ public class Activation {
 		 * @param F non linear output
 		 * @return inverse
 		 */
-		public static double inverse(double F) {
+		public static double inverse(final double F) {
 			double a = -10, b = 10, x = 0, fx = 0, eps = 1e-10;
 			
 			while (b - a > eps) {

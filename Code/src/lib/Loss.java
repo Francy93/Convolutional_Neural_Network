@@ -102,14 +102,14 @@ public enum Loss {
 		 */
         public double function(final double PRED, final double TARGET){
             final double DIFF = Loss.MAE.function(PRED, TARGET);
-            if(DIFF <= delta)   return 0.5 * Math.pow(DIFF, 2.0);
-            else                return delta * DIFF - 0.5 * Math.pow(delta, 2.0);
+            if(DIFF <= delta)	return 0.5 * Math.pow(DIFF, 2.0);
+            else				return delta * DIFF - 0.5 * Math.pow(delta, 2.0);
         }
         public double function(final double[] PRED, final double[] TARGET){
             double sum = 0.0;
 
             for(int index = 0 ; index < PRED.length; index++){ sum += this.function(PRED[index], TARGET[index]); }
-            return sum / PRED.length;
+        	return sum / PRED.length;
         }
         /**
          * Huber loss derivative
@@ -131,7 +131,7 @@ public enum Loss {
 
     KULLBACK{
         /**
-		 * 
+		 * Kullback-Leibler divergence function
          * @param PRED the output predicted from the model 
          * @param TARGET the output which should have been predicted
 		 * @return double
@@ -152,15 +152,15 @@ public enum Loss {
          * @param T target value
          * @return derivative
          */
-        public double derivative(final double P, final double T){ return Loss.CROSS_ENTROPY.derivative(P, T); }
+        public double derivative(final double P, final double T)	{ return Loss.CROSS_ENTROPY.derivative(P, T); }
         public double derivative(final double[] P, final double[] T){ return Loss.CROSS_ENTROPY.derivative(P, T); }
     };
 
     // Abstract methods
-    public abstract double function(final double PREDICTD, final double TERGAET);
-    public abstract double function(final double PREDICTD[], final double TERGAET[]);
-    public abstract double derivative(final double PREDICTD, final double TERGAET);
-    public abstract double derivative(final double PREDICTD[], final double TERGAET[]);
+    public abstract double function		(final double PREDICTED		, final double TERGAET	);
+    public abstract double function		(final double PREDICTED[]	, final double TERGAET[]);
+    public abstract double derivative	(final double PREDICTED		, final double TERGAET	);
+    public abstract double derivative	(final double PREDICTED[]	, final double TERGAET[]);
 
     protected double delta = 1.0; // Delta value for Huber loss function  
     /**
