@@ -40,7 +40,7 @@ public class Conv2D extends Layer{
 	 * @param SAMPLE 
 	 */
     public void firstLayerInit(final lib.Optimizer OPT, final Sample SAMPLE){
-        final Node[] NODE	= {new Node(SAMPLE.getData2D(), OPT)}; 
+        final Node[] NODE	= {new Node(SAMPLE.getFeature2D(), OPT)}; 
         super.isFirstLayer	= true;
 
         this.layerInit(OPT, NODE);

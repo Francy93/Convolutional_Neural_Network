@@ -86,12 +86,23 @@ public class Sample {
 	// ..................setter method .................
 
 	/**
-	 * Setting the "one-hot" array
+	 * Setting the "one-hot" encoder array
 	 * @param LABEL_LOCATION
 	 */
 	public void setClassLocation(final double[] LABEL_LOCATION){
 		labelLocation = LABEL_LOCATION;
 	}
+
+	/**
+	 * Setting the pixel of a specific indx of both array and matrix
+	 * @param INDEX the index of the pixel
+	 * @param VALUE the value of the pixel
+	 */
+	public void setToken(final int INDEX, final double VALUE){
+		this.TOKENS[INDEX] = VALUE;
+		this.MATRIX[(int) INDEX / (int) Math.sqrt(TOKENS.length)][INDEX % (int) Math.sqrt(TOKENS.length)] = VALUE;
+	}
+	
 
 
 
@@ -103,11 +114,11 @@ public class Sample {
 		return this.LABEL;
 	}
 
-	public double[] getData1D(){
+	public double[] getFeature1D(){
 		return this.TOKENS;
 	}
 
-	public double[][] getData2D(){
+	public double[][] getFeature2D(){
 		return this.MATRIX;
 	}
 	// get the pixel of a specific array index
@@ -121,7 +132,7 @@ public class Sample {
 	}
 
 	// getting the one-hot array
-	public double[] getLabelLocation(){
+	public double[] getOneHot(){
 		return this.labelLocation;
 	}
 }

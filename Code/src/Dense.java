@@ -35,7 +35,7 @@
 	 * @param SAMPLE 
 	 */
     public void firstLayerInit(final lib.Optimizer OPT, final Sample SAMPLE){
-        final Node[] NODE	= {new Node(SAMPLE.getData1D(), OPT)};
+        final Node[] NODE	= {new Node(SAMPLE.getFeature1D(), OPT)};
         super.isFirstLayer	= true;
 
         this.layerInit(OPT, NODE);

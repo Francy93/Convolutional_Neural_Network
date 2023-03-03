@@ -118,9 +118,33 @@ public class DataSet {
 		for (int old_index=0; old_index<=RANGE; old_index++) {
 			final int NEW_INDEX		= (int) Math.round(Util.rangeRandom(0, RANGE));
 
-			Sample temp				= this.SAMPLES[old_index];
+			final Sample TEMP		= this.SAMPLES[old_index];
 			this.SAMPLES[old_index]	= this.SAMPLES[NEW_INDEX];
-			this.SAMPLES[NEW_INDEX]	= temp;
+			this.SAMPLES[NEW_INDEX]	= TEMP;
+		}
+	}
+
+	// normalizing the dataset
+	public void normalize(){
+		final double[] MIN = new double[this.SAMPLES[0].getFeature1D().length];
+		final double[] MAX = new double[this.SAMPLES[0].getFeature1D().length];
+
+		// getting the min and max values for each feature
+		for(int i = 0; i < this.SAMPLES[0].getFeature1D().length; i++){
+			MIN[i] = Double.MAX_VALUE;
+			MAX[i] = Double.MIN_VALUE;
+
+			for(final Sample SAMPLE: this.SAMPLES){
+				if(SAMPLE.getToken1D(i) < MIN[i]) MIN[i] = SAMPLE.getToken1D(i);
+				if(SAMPLE.getToken1D(i) > MAX[i]) MAX[i] = SAMPLE.getToken1D(i);
+			}
+		}
+
+		// normalizing the dataset
+		for(final Sample SAMPLE: this.SAMPLES){
+			for(int i = 0; i < SAMPLE.getFeature1D().length; i++){
+				SAMPLE.setToken(i, (SAMPLE.getToken1D(i) - MIN[i]) / (MAX[i] - MIN[i]));
+			}
 		}
 	}
 

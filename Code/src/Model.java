@@ -15,14 +15,14 @@ public class Model {
 
 	// Collection of loss functions
 	public enum Loss {
-		CROSS_ENTROPY(	lib.Loss.CROSS_ENTROPY	),	// Cross Entropy
-		KULLBACK(		lib.Loss.KULLBACK		),	// Kullback Leibler Divergence
-		HUBER(			lib.Loss.HUBER			),	// Huber Loss
-		MSE(			lib.Loss.MSE			),	// Mean Squared Error
-		MAE(			lib.Loss.MAE			);	// Mean Absolute Error
+		CROSS_ENTROPY	(	lib.Loss.CROSS_ENTROPY	),	// Cross Entropy
+		KULLBACK		(	lib.Loss.KULLBACK		),	// Kullback Leibler Divergence
+		HUBER			(	lib.Loss.HUBER			),	// Huber Loss
+		MSE				(	lib.Loss.MSE			),	// Mean Squared Error
+		MAE				(	lib.Loss.MAE			);	// Mean Absolute Error
 
 		// variables
-		private final lib.Loss LOSS;				// loss function
+		private final lib.Loss LOSS;					// loss function
 
 		// constructor
 		private Loss(final lib.Loss LOSS){ this.LOSS = LOSS; }
@@ -44,7 +44,7 @@ public class Model {
 		 */
 		public void derivative(final Layer LAYER, final Sample SAMPLE){
 			final Node.Relation[] FLAT_OUTPUT	= LAYER.getFlatOutput();		// getting the output of the layer	
-			final double[] ONE_HOT				= SAMPLE.getLabelLocation();	// getting the label of the sample
+			final double[] ONE_HOT				= SAMPLE.getOneHot();			// getting the label of the sample
 
 			for(int classs=0; classs < FLAT_OUTPUT.length; classs++){			// cycling over the classes
 				// setting the result into the node
@@ -56,16 +56,16 @@ public class Model {
 	
 	// Collection of Optimizers
 	public enum Optimizer {
-		SGD(		lib.Optimizer.SGD		),	// Stochastic Gradient Descent
+		SGD		(	lib.Optimizer.SGD		),	// Stochastic Gradient Descent
 		MOMENTUM(	lib.Optimizer.MOMENTUM	),	// Momentum
-		RMSPROP(	lib.Optimizer.RMSPROP	),	// RMSProp
+		RMSPROP	(	lib.Optimizer.RMSPROP	),	// RMSProp
 		NESTEROV(	lib.Optimizer.NESTEROV	),	// Nesterov Accelerated Gradient
-		ADAGRAD(	lib.Optimizer.ADAGRAD	),	// Adaptive Gradient
+		ADAGRAD	(	lib.Optimizer.ADAGRAD	),	// Adaptive Gradient
 		ADADELTA(	lib.Optimizer.ADADELTA	),	// Adaptive Delta
-		ADAM(		lib.Optimizer.ADAM		),	// Adaptive Moment Estimation
-		ADAMAX(		lib.Optimizer.ADAMAX	),	// Adaptive Moment Estimation (max)
-		AMSGRAD(	lib.Optimizer.AMSGRAD	),	// Adaptive Moment Estimation (max)
-		NADAM(		lib.Optimizer.NADAM		);	// Nesterov Adaptive Moment Estimation
+		ADAM	(	lib.Optimizer.ADAM		),	// Adaptive Moment Estimation
+		ADAMAX	(	lib.Optimizer.ADAMAX	),	// Adaptive Moment Estimation (max)
+		AMSGRAD	(	lib.Optimizer.AMSGRAD	),	// Adaptive Moment Estimation (max)
+		NADAM	(	lib.Optimizer.NADAM		);	// Nesterov Adaptive Moment Estimation
 
 		// variables
 		public final lib.Optimizer OPT;	// optimizer

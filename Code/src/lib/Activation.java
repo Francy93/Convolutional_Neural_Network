@@ -97,9 +97,8 @@ public class Activation {
 		/**
 		 * Tanh function
 		 * @param X linear input
-		 * @return function
+		 * @return function = (2/(1 + Math.exp(-2.0*X))) -1.0
 		 */
-		//public static double function(final double X){ return (2/(1 + Math.exp(-2.0*X))) -1.0; }
 		public static double function(final double X){ return Math.tanh(X); }
 		/**
 		 * Derivative of the tanh function
@@ -457,29 +456,44 @@ public class Activation {
 		public static interface Lambda1<T, V>{
 			public V getVal(T a);
 		}
-
 		/**
-		 * Softmax function
-		 * @param I linear output
-		 * @param classes linear output
+		 * Softmax function with a normalization
+		 * @param <T> type of the classes
+		 * @param CURRENT_CLASS linear output of the current class
+		 * @param CLASSES array of linear outputs of the other classes
+		 * @param OPE lambda function to get the linear output of a class
 		 * @return function
 		 */
-		public static <T> double function(final T CURRENT_CLASS, final T[] CLASSES, final Lambda1<T, Double> OPE){ 
-			double sum = 0;
-			double biggestValue = OPE.getVal(CLASSES[0]);
-
+		public static <T> double normFunction(final T CURRENT_CLASS, final T[] CLASSES, final Lambda1<T, Double> OPE){ 
+			double sum = 0, biggestValue = OPE.getVal(CLASSES[0]);
 			// performing the normalization
 			for(final T ITER_CLASS: CLASSES){
 				biggestValue = Math.max(OPE.getVal(ITER_CLASS), biggestValue);
 			}
-
 			// getting the normalized current linear output
 			final double L_O = Math.exp(OPE.getVal(CURRENT_CLASS) - biggestValue);
 	
 			for(final T ITER_CLASS: CLASSES){
 				sum += Math.exp(OPE.getVal(ITER_CLASS) - biggestValue);
 			}
+			return L_O / sum;
+		}
 
+		/**
+		 * Softmax function
+		 * @param <T> type of the classes
+		 * @param CURRENT_CLASS linear output of the current class
+		 * @param CLASSES array of linear outputs of the other classes
+		 * @param OPE lambda function to get the linear output of a class
+		 * @return function
+		 */
+		public static <T> double function(final T CURRENT_CLASS, final T[] CLASSES, final Lambda1<T, Double> OPE){ 
+			double sum = 0;
+			// getting the current linear output
+			final double L_O = Math.exp(OPE.getVal(CURRENT_CLASS));
+			// summing the linear outputs of the other classes
+			for(final T ITER_CLASS: CLASSES)	sum += Math.exp(OPE.getVal(ITER_CLASS));
+			// dividing the current linear output by the sum of the linear outputs of the other classes
 			return L_O / sum;
 		}
 		/**
@@ -550,10 +564,10 @@ public class Activation {
 	
 	/**
 	 * Hyperbolic secant
-	 * @param a
+	 * @param A angle
 	 * @return
 	 */
-	public static double sech(double a) {
-		return 1.0D / Math.cosh(a);
+	public static double sech(final double A) {
+		return 1.0D / Math.cosh(A);
 	}
 }

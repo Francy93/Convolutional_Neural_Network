@@ -57,11 +57,14 @@ public class Main {
 
 
 		// main loop
-		for(int nav = envSet();	nav!=EXIT;	nav = nav!=BACK? nav: envSet()){
+		for(int nav = envSet(), iter = 1;	nav!=EXIT;	nav = nav!=BACK? nav: envSet(), iter++){
 			nav = nav==BACK? nav: menu();
 
 			// Perform the training and validation
-			if(nav == AHEAD)	Ann.testModel();
+			if(nav == AHEAD){
+				Ann.testModel();
+				System.out.println("Epocs completed: " + Ann.EPOCHS * iter + "\r\n");
+			}
 		}
 
 		// exiting the main loop
