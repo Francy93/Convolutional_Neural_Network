@@ -130,7 +130,7 @@ public class Model {
 	 */
 	private void feedForward(){
 		// loading the sample
-	try{ this.LAYERS[0].sampleLoader(this.sample); }									// loading the sample into the input layer
+		try{ this.LAYERS[0].sampleLoader(this.sample); }								// loading the sample into the input layer
 		catch(Exception e){ System.err.println("Sample loaded into the wrong layer"); }	// error handling
 
 		// cycling over the layers
@@ -168,31 +168,28 @@ public class Model {
 	 * @param LEARNING_RATE learning rate
 	 */
 	public void train(final int BATCH, final int EPOCHS, final double LEARNING_RATE){ this.train( this.trainData, BATCH, EPOCHS, LEARNING_RATE); }
-	public void train(final DataSet DATA, final int BATCH, final int EPOCHS, final double LEARNING_RATE){
-		this.optimizer.OPT.setParam(LEARNING_RATE, BATCH);				// setting the learning rate and the batch size
-
-		final int DATA_SIZE = DATA.getSize()-1;							// getting the size of the dataset
-		final lib.Util.Loading BAR = new lib.Util.Loading(DATA_SIZE);	// loading bar
+	public void train(final DataSet DATA, int batch, final int EPOCHS, final double LEARNING_RATE){
+		final int BATCH = Math.max(batch, 1);									// setting the batch size to 1 if it is less than 1
+		final lib.Util.Loading BAR = new lib.Util.Loading(DATA.getSize()-1);	// loading bar
+		this.optimizer.OPT.setParam(LEARNING_RATE, BATCH);						// setting the learning rate and the batch size
 		
 		//cicling over the dataset samples for "EPOCHS" times
-		for(int epoch=0; epoch < EPOCHS; epoch++){
-			BAR.message("Epoch: "+ (epoch+1) + " / " + EPOCHS, "blue");	// printing the epoch number
-			DATA.shuffle();												// shuffeling the samples
+		for(int epoch = 1; epoch <= EPOCHS; epoch++){
+			BAR.message("Epoch: " + epoch + " / " + EPOCHS, "blue");			// printing the epoch number
+			DATA.shuffle();														// shuffeling the samples
 
 			// cycling over the samples
-			for(int sampleIndex=0, nextBatch=BATCH-1; sampleIndex <= DATA_SIZE; sampleIndex++){
-				this.sample = DATA.getSample(sampleIndex);				// getting the sample
-				
-				BAR.printNewBar();  									// printing the loading bar
+			for(int startBatch = 0; startBatch < DATA.getSize(); startBatch += BATCH){
+				final int END_BATCH = Math.min(startBatch+BATCH,DATA.getSize());// getting the end of the batch
 
-				this.feedForward();										// performing forward propagation for all the layers
-				this.backPropagate();									// performing back propagation for all the layers
-
-				// updating weights after a certain amount of samples (mini batch)
-				if(sampleIndex == nextBatch || sampleIndex == DATA_SIZE){
-					this.weightsUpdate();								// updating the weights
-					nextBatch += BATCH;									// updating the next batch
+				for(int sampleIndex=startBatch; sampleIndex < END_BATCH; sampleIndex++){
+					this.sample = DATA.getSample(sampleIndex);					// getting the sample
+					
+					BAR.printNewBar();  										// printing the loading bar
+					this.feedForward();											// performing forward propagation for all the layers
+					this.backPropagate();										// performing back propagation for all the layers
 				}
+				this.weightsUpdate();											// updating the weights
 			}
 		}
 	}
@@ -203,7 +200,7 @@ public class Model {
 	 * @param DATA dataset
 	 * @return accuracy
 	 */
-	public double validate(){ return validate(this.validateData); }
+	public double validate(){ return this.validate(this.validateData); }
     public double validate(final DataSet DATA){
 		final int[] FP	= new int[DATA.getClasses().length];			// false positives
 		final int[] TP	= new int[DATA.getClasses().length];			// true positives
@@ -217,8 +214,8 @@ public class Model {
 
 			this.feedForward();											// performing forward propagation for all the layers
 			if (this.sample.getLabel() == this.getPredClass(DATA)){		// checking if the prediction is correct
-				correct++;												// correct counter
 				TP[DATA.getLabelIndex(this.getPredClass(DATA))]++;		// getting true positives
+				correct++;												// correct counter
 			}else	FP[DATA.getLabelIndex(this.getPredClass(DATA))]++;	// getting false positives
 		}
 

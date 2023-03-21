@@ -1,3 +1,4 @@
+import java.util.stream.IntStream;
 
 public abstract class Layer {
 
@@ -268,8 +269,11 @@ public abstract class Layer {
     // --------------------- feed forward -------------------------
 
     public void feedForward(){
-		// cycling over all this layer nodes
-		for(final Node NODE: this.NODES){
+		// cycling over all this layer nodes with parallel computing
+		IntStream.range(0, this.NODES_AMOUNT)
+        .parallel()
+		.forEach(nodeIndex -> {
+			final Node NODE = this.NODES[nodeIndex];
 			int strideCounter = 0;
 			
 			 // cycling over all the "pixels" of the output matrix
@@ -300,7 +304,7 @@ public abstract class Layer {
                     strideCounter++;
                 }
             }
-		}
+		});
     }
 
 
@@ -311,8 +315,11 @@ public abstract class Layer {
 
     // the back propagation method
     public void backPropagating(){
-        // cycling overall the nodes
-        for(final Node NODE: this.NODES){
+        // cycling overall the nodes with parallel computing
+        IntStream.range(0, this.NODES_AMOUNT)
+        .parallel()
+        .forEach(nodeIndex -> {
+			final Node NODE = this.NODES[nodeIndex];
             final Node.Relation[][] NODE_OUTPUT		= NODE.getOutput();
             int						strideCounter	= 0;
 
@@ -339,7 +346,7 @@ public abstract class Layer {
                     strideCounter++;
                 }
             }
-        }
+        });
     }
 
 	/**
@@ -393,8 +400,10 @@ public abstract class Layer {
 	//Weights Update
     public void updateWeights(){
 
-		// cycling overall the nodes
-		for(final Node NODE: this.NODES)	NODE.update(); // updating both weights and biases 	
+		// cycling overall the nodes with parallel computing
+		IntStream.range(0, this.NODES_AMOUNT)
+        .parallel()
+        .forEach(nodeIndex -> {	this.NODES[nodeIndex].update();	});	
     }
 
 

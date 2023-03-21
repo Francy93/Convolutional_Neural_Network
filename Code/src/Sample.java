@@ -14,16 +14,21 @@ public class Sample {
 	 * @param D	data delimiter
 	 * @throws ExceptionInInitializerError
 	 */
-    public Sample(final String S, final String D) throws ExceptionInInitializerError{
+	public Sample(final String S, final String D) throws ExceptionInInitializerError{
         double[] SAMPLE_DATA;
 
 		// getting validated sample data
 		try { SAMPLE_DATA = validator(S, D); }
 		catch(Exception e){ throw new ExceptionInInitializerError(); }
 
-        TOKENS	= tokenFilter(SAMPLE_DATA);	// extract this sample pixels only
-        LABEL	= labelFilter(SAMPLE_DATA);	// extract this sample label only
-		MATRIX	= matrixInit();				// initialising this sample image matrix
+        this.TOKENS	= tokenFilter(SAMPLE_DATA);	// extract this sample pixels only
+        this.LABEL	= labelFilter(SAMPLE_DATA);	// extract this sample label only
+		this.MATRIX	= matrixInit();				// initialising this sample image matrix
+    }
+	public Sample(final double[] SAMPLE_DATA, final double L){
+        this.TOKENS	= SAMPLE_DATA;
+        this.LABEL	= L;
+		this.MATRIX	= this.matrixInit();		// initialising this sample image matrix
     }
 
 
@@ -69,7 +74,7 @@ public class Sample {
 
 	// initialising this sample image matrix
 	private double[][] matrixInit(){
-		final int MATRIX_SIZE = (int) Math.sqrt( TOKENS.length );
+		final int MATRIX_SIZE = (int) Math.sqrt( this.TOKENS.length );
 		final double[][] ARRAY_2D = new double[MATRIX_SIZE][MATRIX_SIZE];
 
 		for(int y=0; y < MATRIX_SIZE; y++){
@@ -90,7 +95,7 @@ public class Sample {
 	 * @param LABEL_LOCATION
 	 */
 	public void setClassLocation(final double[] LABEL_LOCATION){
-		labelLocation = LABEL_LOCATION;
+		this.labelLocation = LABEL_LOCATION;
 	}
 
 	/**
@@ -100,7 +105,7 @@ public class Sample {
 	 */
 	public void setToken(final int INDEX, final double VALUE){
 		this.TOKENS[INDEX] = VALUE;
-		this.MATRIX[(int) INDEX / (int) Math.sqrt(TOKENS.length)][INDEX % (int) Math.sqrt(TOKENS.length)] = VALUE;
+		this.MATRIX[(int) INDEX / (int) Math.sqrt(this.TOKENS.length)][INDEX % (int) Math.sqrt(this.TOKENS.length)] = VALUE;
 	}
 	
 

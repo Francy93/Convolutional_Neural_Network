@@ -138,8 +138,6 @@ public class Util{
      * @return random double with a given range
      */
     public static double rangeRandom(double min, double max){
-		min = Math.min(min, max);
-		max = Math.max(min, max);
         return (Math.random() * (max - min)) + min;
     }
 
@@ -537,7 +535,7 @@ public class Util{
 		private final	short	MAX_PERCENT		= 100		;														//	max percentage is 100
 		private			String[] barColours		= {"red"	,	"yellow"				,	"green"};				//	colours of bar stages
 		private final	String	BLOCK			= "█"		,	DOTTED		= "░"		,	TAB			= "	";		//	bar components
-		private final	String	ERASE_LINE		= "\033[2K"	,	ERASE_BELOW = "\033[0J"	,	GO_LINE_UP	= "\033[A"	,	NL	= "\n"	,	CR		= "\r";
+		private final	String	ERASE_BELOW		= "\033[0J"	,	GO_LINE_UP	= "\033[A"	,	NL	= "\n"	,	CR		= "\r"; // ERASE_LINE = "\033[2K"
 		private			String	messageColour	= "blue"	,	message 	= ""		,	linesUp		= ""		,	bar	= ""	,	output	= ""  ;
         private			short	counter 		= -1		,	barLength	= 50		,	percent		= 0;		//	bar parameters
 		private			int		barState 		= 0			,	updates		= this.barLength;						//	calculating loading bar

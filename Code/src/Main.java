@@ -49,7 +49,7 @@ public class Main {
 
 		// initialising the model
 		System.out.println(COLOURS.colourText("Loading Dataset and model...\r\n", "cyan"));
-		try{ Ann.setModel(); }
+		try{ Ann.loadAndBuild(); }
 		catch(FileNotFoundException e){
 			System.out.println("Error. File not found");
 			System.exit(1);
@@ -62,8 +62,8 @@ public class Main {
 
 			// Perform the training and validation
 			if(nav == AHEAD){
-				Ann.testModel();
-				System.out.println("Epocs completed: " + Ann.EPOCHS * iter + "\r\n");
+				Ann.trainAndTest();
+				System.out.println("Epochs completed: " + Ann.EPOCHS * iter + "\r\n");
 			}
 		}
 
