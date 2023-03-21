@@ -55,7 +55,7 @@ public class Ann{
 			String message				= "Validating epoch " + e;								// validation message
 			final double OVERFITTING	= bestAccuracy - MODEL.getAccuracy();					// used to determine if the model is overfitting
 
-			if (bestAccuracy < 98){
+			if (MODEL.getAccuracy() < 98){
 				if(OVERFITTING > 0 && noise > 2) noise -= noise == (int)noise? 1: 0.5;			// reducing the noise if the model is overfitting
 				else if(OVERFITTING < 1 && noise <= 9.5) noise += 0.5;							// increasing the noise if the model is underfitting
 				dataTrain.setDataSet(dataTrain.adversarialSampling(1, noise));					// replacing the training dataset with noise
