@@ -94,7 +94,7 @@ public class DataSet {
 	}
 
 	// providing every sample with a one-hot array
-	private void classesToSamples(){
+	public void classesToSamples(){
 		for(final Sample SAMPLE: this.samples){
 			// creating an array to store the class location
 			final double[] LABEL_LOCATION = new double[this.CLASSES.length];
@@ -129,8 +129,8 @@ public class DataSet {
 	 * @param MAX max value of the dataset
 	 * @return normalized value
 	 */
-	private double normalization(final double VAl){
-		return VAl / Math.pow(10d, (Math.floor(Math.log10(Math.abs(VAl))) + 1d));
+	public double normalization(final double VAL){
+		return VAL == 0? 0: VAL / Math.pow(10d, (Math.floor(Math.log10(Math.abs(VAL))) + 1d));
 	}
 	private double normalization(final double VAl, final double MIN, final double MAX){
 		return (VAl - MIN) / (MAX - MIN);	// normalization formula
@@ -165,11 +165,11 @@ public class DataSet {
 
 	// normalizing the dataset
 	public void normalize(){
-		this.minmaxUpdate();
+		this.minmaxUpdate(); // updating the max and min values of the dataset
 		
 		// avoiding division by zero
-		final double MIN = this.min == 0?  -Double.MIN_VALUE:	this.min;
-		final double MAX = this.max == 0?	Double.MIN_VALUE:	this.max;
+		final double MIN = this.min == 0?	-1d/this.max:	this.min;
+		final double MAX = this.max == 0?	1d/this.min:	this.max;
 
 		// normalizing the dataset
 		for(final Sample SAMPLE: this.samples){
@@ -177,6 +177,9 @@ public class DataSet {
 				SAMPLE.setToken(i, this.normalization(SAMPLE.getToken1D(i), MIN, MAX));
 			}
 		}
+		// updating the max and min values of the dataset
+		this.minmaxUpdate();
+
 	}
 
 	/**
@@ -185,11 +188,9 @@ public class DataSet {
 	 * @param EPSILON the amount of noise to be added to the sample (from 0 to 1)
 	 */
 	public Sample[] adversarialSampling(){ return this.adversarialSampling(1); }
-	public Sample[]  adversarialSampling(final int AMOUNT){
-		this.minmaxUpdate();							// updating the max and min values of the dataset
-		return this.adversarialSampling(AMOUNT, 1d/3d);	// creating the adversarial samples
-	}
-	public Sample[]  adversarialSampling(final int AMOUNT, double epsilon){
+	public Sample[] adversarialSampling(final int AMOUNT){ return this.adversarialSampling(AMOUNT, 1d/3d); }
+	public Sample[] adversarialSampling(final int AMOUNT, double epsilon){
+		this.minmaxUpdate();																// updating the max and min values of the dataset
 		epsilon = this.normalization(epsilon);												// normalizing the epsilon value
 		final int FEATURES_AMOUNT	= this.samples[0].getFeature1D().length;				// amount of features
 		final ArrayList<Sample> ADVERSARIAL_SAMPLES = new ArrayList<>();					// list of adversarial samples
@@ -201,14 +202,16 @@ public class DataSet {
 
 				for(int f = 0; f < FEATURES_AMOUNT; f++){
 					final double TOKEN	= SAMPLE.getToken1D(f);								// getting the token value
-					final double RANDOM	= Math.random();									// random variable
+					/*final double RANDOM	= Math.random();									// random variable
 
 					if(RANDOM < epsilon){
-						double rangeRandom = RANDOM * this.max;								// calculating the range of the random value
-						rangeRandom = TOKEN + Util.rangeRandom(-rangeRandom, rangeRandom);	// adding the random value to the original value
-						rangeRandom = rangeRandom > this.max? this.max: rangeRandom < this.min? this.min: rangeRandom;
+						double rangeRandom = epsilon * this.max;								// calculating the range of the random value
+						rangeRandom = (Math.random() < 0.5) ? TOKEN - rangeRandom : TOKEN + rangeRandom;	// adding the random value to the original value
+						rangeRandom = Math.max(Math.min(rangeRandom, this.max), this.min);	// avoiding the value to be out of range
 						FEATURE[f]	= rangeRandom;											// setting the feature with the random value
-					}else FEATURE[f]= TOKEN;												// setting the feature with the original value
+					}else FEATURE[f]= TOKEN;												// setting the feature with the original value */
+					// adding the random value to the original value
+					FEATURE[f] = Math.max(Math.min(TOKEN + Util.rangeRandom(-epsilon, epsilon), this.max), this.min);
 				}
 				ADVERSARIAL_SAMPLES.add(new Sample(FEATURE, SAMPLE.getLabel()));			// adding the adversarial sample to the dataset
 				// setting the class location (oneHot)
