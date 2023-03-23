@@ -37,8 +37,14 @@ public class Ann{
 			dataValid = new DataSet(VALIDATE_FILE, ",");	// loading the dataset 2
 		}catch(Exception e){ throw new FileNotFoundException(); }
 
+		//dataTrain.print2D();								// printing the training dataset
+		dataTrain.print1D();
+
 		dataTrain.normalize();								// normalising the training dataset
 		dataValid.normalize();								// normalising the validation dataset
+
+		//dataTrain.adversarialSampling(1,9);					// augmenting the training dataset with noise
+		//dataTrain.print2D();								// printing the training dataset
 
 		// initialising the model
 		MODEL.buildStructure(dataTrain, dataValid, Model.Optimizer.ADAM, Model.Loss.CROSS_ENTROPY);
@@ -58,7 +64,7 @@ public static void trainAndTest(){
         bestAccuracy				= Math.max(MODEL.getAccuracy(), bestAccuracy);			// storing the highest accuracy
 		String message				= "Validating epoch " + e;								// validation message
 
-        if (MODEL.getAccuracy() < 98){
+        if (MODEL.getAccuracy() < 97){
             final double HALF_NS = NOISE_STEP/2d;											// half of the noise step
             if(OVERFITTING>0 && noise>2) noise -= noise==(int)noise? NOISE_STEP: HALF_NS; 	// reducing the noise if the model is overfitting
             else if(OVERFITTING+5<0 && noise+HALF_NS<10) noise += HALF_NS;					// increasing the noise if the model is underfitting

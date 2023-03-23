@@ -409,8 +409,8 @@ public class Util{
 
 	public static class Navigator{
 
-		private final Scanner		CIN		= new Scanner(System.in);
-		private final AnsiColours	COLOURS	= new AnsiColours();
+		private 		Scanner		scanner	= new Scanner(System.in);
+		private final	AnsiColours	COLOURS	= new AnsiColours();
 
 		// constructor
 		public Navigator(){}
@@ -418,9 +418,10 @@ public class Util{
 
 		// getting console input
 		public String cinln(){
-			String input = CIN.nextLine();
+			try{ return scanner.nextLine(); }
+			catch(Exception e){ scanner	= new Scanner(System.in);}
 			System.out.println();
-			return input;
+			return "";
 		}
 
 		/**

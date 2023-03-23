@@ -1,4 +1,4 @@
-import java.util.stream.IntStream;
+import java.util.Arrays;				// used to convert the array to a list
 
 public abstract class Layer {
 
@@ -270,10 +270,7 @@ public abstract class Layer {
 
     public void feedForward(){
 		// cycling over all this layer nodes with parallel computing
-		IntStream.range(0, this.NODES_AMOUNT)
-        .parallel()
-		.forEach(nodeIndex -> {
-			final Node NODE = this.NODES[nodeIndex];
+		Arrays.stream(this.NODES).parallel().forEach(NODE -> {
 			int strideCounter = 0;
 			
 			 // cycling over all the "pixels" of the output matrix
@@ -316,10 +313,7 @@ public abstract class Layer {
     // the back propagation method
     public void backPropagating(){
         // cycling overall the nodes with parallel computing
-        IntStream.range(0, this.NODES_AMOUNT)
-        .parallel()
-        .forEach(nodeIndex -> {
-			final Node NODE = this.NODES[nodeIndex];
+        Arrays.stream(this.NODES).parallel().forEach(NODE -> {
             final Node.Relation[][] NODE_OUTPUT		= NODE.getOutput();
             int						strideCounter	= 0;
 
@@ -401,9 +395,9 @@ public abstract class Layer {
     public void updateWeights(){
 
 		// cycling overall the nodes with parallel computing
-		IntStream.range(0, this.NODES_AMOUNT)
+		Arrays.stream(this.NODES)
         .parallel()
-        .forEach(nodeIndex -> {	this.NODES[nodeIndex].update();	});	
+        .forEach(N -> {	N.update();	});
     }
 
 
