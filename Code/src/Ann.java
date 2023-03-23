@@ -37,14 +37,8 @@ public class Ann{
 			dataValid = new DataSet(VALIDATE_FILE, ",");	// loading the dataset 2
 		}catch(Exception e){ throw new FileNotFoundException(); }
 
-		//dataTrain.print2D();								// printing the training dataset
-		dataTrain.print1D();
-
 		dataTrain.normalize();								// normalising the training dataset
 		dataValid.normalize();								// normalising the validation dataset
-
-		//dataTrain.adversarialSampling(1,9);					// augmenting the training dataset with noise
-		//dataTrain.print2D();								// printing the training dataset
 
 		// initialising the model
 		MODEL.buildStructure(dataTrain, dataValid, Model.Optimizer.ADAM, Model.Loss.CROSS_ENTROPY);
