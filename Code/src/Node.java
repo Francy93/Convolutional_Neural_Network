@@ -29,17 +29,17 @@ public class Node {
     public Node(final int CA, final int KY, final int KX, final int OUTPUT_Y, final int OUTPUT_X, final lib.Optimizer OPT){
 		final int MOMENTUM_AMOUNT	= OPT.momentNumber();	// numbers of momentums for the optimizators
 
-		CHANNEL_AMOUNT	= CA;
-		KERNEL_Y		= KY;
-		KERNEL_X		= KX;
-		OPTIMIZER		= OPT;
-        KERNEL			= new double[CA][KY][KX];
-		OUTPUT			= outputInit(OUTPUT_Y, OUTPUT_X);
-		BIAS			= new double[OUTPUT_Y][OUTPUT_X];
-		kernelGradients	= new double[CA][KY][KX];
-		biasGradients	= new double[OUTPUT_Y][OUTPUT_X];
-		KERNEL_MOMENTUM = new double[CA][KY][KX][MOMENTUM_AMOUNT];
-		BIAS_MOMENTUM	= new double[OUTPUT_Y][OUTPUT_X][MOMENTUM_AMOUNT];
+		this.CHANNEL_AMOUNT	= CA;
+		this.KERNEL_Y		= KY;
+		this.KERNEL_X		= KX;
+		this.OPTIMIZER		= OPT;
+        this.KERNEL			= new double[CA][KY][KX];
+		this.OUTPUT			= this.outputInit(OUTPUT_Y, OUTPUT_X);
+		this.BIAS			= new double[OUTPUT_Y][OUTPUT_X];
+		this.kernelGradients= new double[CA][KY][KX];
+		this.biasGradients	= new double[OUTPUT_Y][OUTPUT_X];
+		this.KERNEL_MOMENTUM= new double[CA][KY][KX][MOMENTUM_AMOUNT];
+		this.BIAS_MOMENTUM	= new double[OUTPUT_Y][OUTPUT_X][MOMENTUM_AMOUNT];
     }
 	// constructor for convnet first layer
 	public Node(final double[][] INPUT, final lib.Optimizer OPT){
@@ -51,6 +51,10 @@ public class Node {
         this(1, 1, INPUT.length, 1, INPUT.length, OPT);
 		fillOutput(INPUT);
     }
+	// constructor for all the first layers
+	public Node(final int SY, final int SX, final int CHANNELS, final lib.Optimizer OPT){
+		this(CHANNELS, SY, SX, SY, SX, OPT);
+	}
     
 
 	// activation map "pixels"
@@ -72,8 +76,8 @@ public class Node {
 		 * @param X Index X of this node into the Activation map
 		 */
         public Relation(final int Y, final int X){
-			INDEX_Y = Y;
-			INDEX_X = X;
+			this.INDEX_Y = Y;
+			this.INDEX_X = X;
 		}
 
 		// ------------ setters ------------------
@@ -217,7 +221,7 @@ public class Node {
 		for(int channel=0; channel < this.CHANNEL_AMOUNT; channel++){
 			for(int kernel_y=0; kernel_y < this.KERNEL_Y; kernel_y++){
 				for(int kernel_x=0; kernel_x < this.KERNEL_X; kernel_x++){
-
+					
 					// updating every single weight dividing it by the mini batch to find its average
 					this.KERNEL[channel][kernel_y][kernel_x] -= this.OPTIMIZER.optimize(this.KERNEL_MOMENTUM[channel][kernel_y][kernel_x], this.kernelGradients[channel][kernel_y][kernel_x]);
 				}

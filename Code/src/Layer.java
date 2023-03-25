@@ -1,4 +1,6 @@
+
 import java.util.Arrays;				// used to convert the array to a list
+
 
 public abstract class Layer {
 
@@ -109,11 +111,11 @@ public abstract class Layer {
 	 * @param KX KERNEL_X
 	 */
     protected Layer(final int N, final Activation A, final int KY, final int KX){
-        NODES_AMOUNT	= N;
-        ACTIVATION		= A;
-		KERNEL_Y		= KY < 1? 1: KY;
-        KERNEL_X		= KX < 1? 1: KX;
-		NODES			= new Node[NODES_AMOUNT];
+        this.NODES_AMOUNT	= N;
+        this.ACTIVATION		= A;
+		this.KERNEL_Y		= KY < 1? 1: KY;
+        this.KERNEL_X		= KX < 1? 1: KX;
+		this.NODES			= new Node[NODES_AMOUNT];
     }
 
     
@@ -269,8 +271,8 @@ public abstract class Layer {
     // --------------------- feed forward -------------------------
 
     public void feedForward(){
-		// cycling over all this layer nodes with parallel computing
-		Arrays.stream(this.NODES).parallel().forEach(NODE -> {
+		// cycling over all this layer nodes
+		Arrays.stream(this.NODES).parallel().forEach( NODE -> {
 			int strideCounter = 0;
 			
 			 // cycling over all the "pixels" of the output matrix
@@ -290,7 +292,7 @@ public abstract class Layer {
 									SINGLE_OUTPUT.addToLinearOutput(
 										NODE.getWeight(channel, kernel_y, kernel_x) * this.kernelRelations[channel][kernel_y][kernel_x][strideCounter].getOutput()
 									);
-								} catch(NullPointerException e){}
+								}catch(NullPointerException e){}
                             }
                         }						
                     }
@@ -312,8 +314,8 @@ public abstract class Layer {
 
     // the back propagation method
     public void backPropagating(){
-        // cycling overall the nodes with parallel computing
-        Arrays.stream(this.NODES).parallel().forEach(NODE -> {
+        // cycling overall the nodes
+        Arrays.stream(this.NODES).parallel().forEach( NODE -> {
             final Node.Relation[][] NODE_OUTPUT		= NODE.getOutput();
             int						strideCounter	= 0;
 
@@ -391,17 +393,11 @@ public abstract class Layer {
 
 	// --------------------- final update -------------------------
 
-	//Weights Update
-    public void updateWeights(){
-
-		// cycling overall the nodes with parallel computing
-		Arrays.stream(this.NODES)
-        .parallel()
-        .forEach(N -> {	N.update();	});
-    }
-
-
-
+	// updating the weights and biases
+	public void updateWeights(){
+		// cycling overall the nodes
+		Arrays.stream(this.NODES).parallel().forEach(Node::update); // updating both weights and biases
+	}
 
 
 
@@ -439,6 +435,8 @@ public abstract class Layer {
 	 * @param SMAPLE
 	 */
     public abstract void firstLayerInit(final lib.Optimizer OPT, final Sample SMAPLE);
+
+	public abstract void firstLayerInit(final lib.Optimizer OPT, final int SHAPE_Y, final int SHAPE_X, final int CHANNELS);
 
 	/**
 	 * Samples Loader

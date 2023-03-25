@@ -37,58 +37,69 @@ public class Ann{
 			dataValid = new DataSet(VALIDATE_FILE, ",");	// loading the dataset 2
 		}catch(Exception e){ throw new FileNotFoundException(); }
 
+		// normalising the datasets
 		dataTrain.normalize();								// normalising the training dataset
 		dataValid.normalize();								// normalising the validation dataset
 
+		// getting the shape of the training dataset
+		final int INPUT_SHAPE_Y	=	dataTrain.getSample(0).getFeature2D().length;		// getting the y shape of the training dataset
+		final int INPUT_SHAPE_X	=	dataTrain.getSample(0).getFeature2D()[0].length;	// getting the x shape of the training dataset
+
 		// initialising the model
-		MODEL.buildStructure(dataTrain, dataValid, Model.Optimizer.ADAM, Model.Loss.CROSS_ENTROPY);
+		MODEL.buildStructure(
+			INPUT_SHAPE_Y,				// y shape of the input
+			INPUT_SHAPE_X,				// x shape of the input
+			1,							// number of channels
+			Model.Optimizer.ADAM,		// optimizer
+			Model.Loss.CROSS_ENTROPY	// loss function
+		);
 	}
 
 
 	// running tests and validations
-public static void trainAndTest(){
-    final AnsiColours COLOR = new AnsiColours();		// used to colour the output
-    Sample[] SAMPLES		= dataTrain.getDataSet();	// getting the samples from the validation dataset
-    double bestAccuracy		= MODEL.getAccuracy();		// used to determine if the model is overfitting
-    double noise = 9.5;
+	public static void trainAndTest(){
+		final AnsiColours COLOR = new AnsiColours();		// used to colour the output
+		final DataSet ORIGINAL	= dataTrain.clone();		// used to determine if the model is overfitting
+		double bestAccuracy		= MODEL.getAccuracy();		// used to determine if the model is overfitting
+		final double HALF_NS = NOISE_STEP/2d;				// half of the noise step
+		double noise			= 9;						// used to determine if the model is overfitting
 
-    for(int e = 1; e <= EPOCHS; e++){
-		dataTrain.setDataSet(SAMPLES);														// resetting the training dataset
-        final double OVERFITTING	= bestAccuracy - MODEL.getAccuracy();					// used to determine if the model is overfitting
-        bestAccuracy				= Math.max(MODEL.getAccuracy(), bestAccuracy);			// storing the highest accuracy
-		String message				= "Validating epoch " + e;								// validation message
+		for(int e = 1; e <= EPOCHS; e++){														// looping through the epochs
+			dataTrain = ORIGINAL.clone();														// resetting the training dataset
+			final double OVERFITTING	= bestAccuracy - MODEL.getAccuracy();					// used to determine if the model is overfitting
+			bestAccuracy				= Math.max(MODEL.getAccuracy(), bestAccuracy);			// storing the highest accuracy
+			String message				= "Validating epoch " + e;								// validation message
 
-        if (MODEL.getAccuracy() < 97){
-            final double HALF_NS = NOISE_STEP/2d;											// half of the noise step
-            if(OVERFITTING>0 && noise>2) noise -= noise==(int)noise? NOISE_STEP: HALF_NS; 	// reducing the noise if the model is overfitting
-            else if(OVERFITTING+5<0 && noise+HALF_NS<10) noise += HALF_NS;					// increasing the noise if the model is underfitting
+			if (MODEL.getAccuracy() < 95){
+				if(OVERFITTING>0 && noise>2) noise -= noise==(int)noise? NOISE_STEP: HALF_NS; 	// reducing the noise if the model is overfitting
+				else if(OVERFITTING+5<0 && noise+HALF_NS<10) noise += HALF_NS;					// increasing the noise if the model is underfitting
 
-            dataTrain.setDataSet(dataTrain.adversarialSampling(1, noise));					// replacing the training dataset with noise
-            message	= "Validating noise (" + noise + ") at epoch: " + e;					// validation message"
-        }else if((OVERFITTING >= 1) || (OVERFITTING <= 0.40 && OVERFITTING >= 0.10)){		// if the model is overfitting
-            dataTrain.adversarialSampling(1, OVERFITTING);									// augmenting the training dataset with noise
-            message	= "Validating FIX (" + lib.Util.round(OVERFITTING, 2) + ")";			// validation message
-            e--;																			// reducing the epochs counter
-        }
+				dataTrain.setDataSet(dataTrain.adversarialSampling(1, noise));					// replacing the training dataset with noise
+				message	= "Validating noise (" + noise + ") at epoch: " + e;					// validation message"
+			}else if((OVERFITTING >= 1) || (OVERFITTING <= 0.40 && OVERFITTING >= 0.10)){		// if the model is overfitting
+				dataTrain.adversarialSampling(1, OVERFITTING);									// augmenting the training dataset with noise
+				message	= "Validating FIX (" + lib.Util.round(OVERFITTING, 2) + ")";			// validation message
+				e--;																			// reducing the epochs counter
+			}
 
-        MODEL.train(BATCH_SIZE, 1, LEARNING_RATE);											// performing the training
-        
-        System.out.println(COLOR.colourText("\r\n"+message+" ...","yellow"));				// validation message
-        MODEL.validate();																	// performing the validation
-        printMetrics();																		// printing the metrics
-        
-    }
-    System.out.println(COLOR.colourText("\nHighest Accuracy: "+ bestAccuracy,"cyan"));		// printing the highest accuracy
-}
+			MODEL.train(dataTrain, BATCH_SIZE, 1, LEARNING_RATE);								// performing the training
+			
+			System.out.println(COLOR.colourText("\r\n"+message+" ...","yellow"));				// validation message
+			MODEL.validate(dataValid);															// performing the validation
+			printMetrics();																		// printing the metrics
+			
+		}
+		System.out.println(COLOR.colourText("\nHighest Accuracy: "+ bestAccuracy,"cyan"));		// printing the highest accuracy
+	}
 
 
 	// printing the metrics
 	public static void printMetrics(){
-		final lib.Util.AnsiColours COLOURS = new AnsiColours();								// used to colour the output
+		final lib.Util.AnsiColours COLOURS = new AnsiColours();									// used to colour the output
 		
 		// setting the colours according to the metrics
-		final float	 ONE_THIRD 			= 100f/3f, 	TWO_THIRDS 	= 100f/1.5f;				// used to determine the output colour
-		final String RED 				= "red",	YELLOW 		= "yellow", GREEN = "green";// colours for the output
+		final float	 ONE_THIRD 			= 100f/3f, 	TWO_THIRDS 	= 100f/1.5f;					// used to determine the output colour
+		final String RED 				= "red",	YELLOW 		= "yellow", GREEN = "green";	// colours for the output
 		final String ACCURACY_COLOUR	= MODEL.getAccuracy()	<= ONE_THIRD? RED: MODEL.getAccuracy()	<= TWO_THIRDS? YELLOW: GREEN;
 		final String PRECISION_COLOUR	= MODEL.getPrecision()	<= ONE_THIRD? RED: MODEL.getPrecision()	<= TWO_THIRDS? YELLOW: GREEN;
 		final String RECALL_COLOUR		= MODEL.getRecall()		<= ONE_THIRD? RED: MODEL.getRecall()	<= TWO_THIRDS? YELLOW: GREEN;

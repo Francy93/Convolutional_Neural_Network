@@ -5,8 +5,6 @@ public class Model {
 	private			double		precision	= 0;	// to store the precision result
 	private			double		recall		= 0;	// to store the recall result
 	private			double		f1Score		= 0;	// to store the f1score result
-	private			DataSet		trainData;			// datastructure of training samples
-	private			DataSet		validateData;		// datastructure of validation samples
 	private	final	Layer[]		LAYERS;				// array containing all the layers
 	private			Sample		sample;				// index of the current iterated sample
 	private			Loss		loss;				// loss operations
@@ -80,7 +78,7 @@ public class Model {
 	 * @param L Layers
 	 */
 	private Model(final Layer[] L){
-		LAYERS = L;
+		this.LAYERS = L;
 	}
 
 	/**
@@ -106,14 +104,12 @@ public class Model {
 	 * @param OPT
 	 * @param L
 	 */
-	public void buildStructure(final DataSet DATA_TRAIN, final DataSet DATA_VALID, final Optimizer OPT, final Loss L){
-		this.trainData		= DATA_TRAIN;	// training data
-		this.validateData	= DATA_VALID;	// validation data
+	public void buildStructure(final int SHAPE_Y, final int SHAPE_X, final int CHANNELS, final Optimizer OPT, final Loss L){
 		this.loss			= L;			// loss function
 		this.optimizer		= OPT;			// optimizer
 
 		Layer prevLayer = this.LAYERS[0];								// previous layer
-		prevLayer.firstLayerInit(OPT.OPT, DATA_TRAIN.getSample(0));		// initialising the input layer
+		prevLayer.firstLayerInit(OPT.OPT, SHAPE_Y, SHAPE_X, CHANNELS);		// initialising the input layer
 							
 		// cycling overt the rest of the layers initialising them
 		for(int index=1; index < this.LAYERS.length; index++){
@@ -153,8 +149,8 @@ public class Model {
 
 	// Updating the weights upon the Batch-size end
 	private void weightsUpdate(){
-		this.optimizer.OPT.timeStepIncrease();						// increasing the time step of the optimizer
 		for(final Layer LAYER: this.LAYERS) LAYER.updateWeights();	// updating the weights
+		this.optimizer.OPT.timeStepIncrease();						// increasing the time step of the optimizer
 	}
 
 
@@ -167,10 +163,9 @@ public class Model {
 	 * @param EPOCHS cicles of entire dataset
 	 * @param LEARNING_RATE learning rate
 	 */
-	public void train(final int BATCH, final int EPOCHS, final double LEARNING_RATE){ this.train( this.trainData, BATCH, EPOCHS, LEARNING_RATE); }
 	public void train(final DataSet DATA, int batch, final int EPOCHS, final double LEARNING_RATE){
 		final int BATCH = Math.max(batch, 1);									// setting the batch size to 1 if it is less than 1
-		final lib.Util.Loading BAR = new lib.Util.Loading(DATA.getSize()-1);	// loading bar
+		final lib.Util.Loading BAR = new lib.Util.Loading(DATA.size()-1);		// loading bar
 		this.optimizer.OPT.setParam(LEARNING_RATE, BATCH);						// setting the learning rate and the batch size
 		
 		//cicling over the dataset samples for "EPOCHS" times
@@ -179,8 +174,8 @@ public class Model {
 			DATA.shuffle();														// shuffeling the samples
 
 			// cycling over the samples
-			for(int startBatch = 0; startBatch < DATA.getSize(); startBatch += BATCH){
-				final int END_BATCH = Math.min(startBatch+BATCH,DATA.getSize());// getting the end of the batch
+			for(int startBatch = 0; startBatch < DATA.size(); startBatch += BATCH){
+				final int END_BATCH = Math.min(startBatch+BATCH,DATA.size());	// getting the end of the batch
 
 				for(int sampleIndex=startBatch; sampleIndex < END_BATCH; sampleIndex++){
 					this.sample = DATA.getSample(sampleIndex);					// getting the sample
@@ -200,7 +195,6 @@ public class Model {
 	 * @param DATA dataset
 	 * @return accuracy
 	 */
-	public double validate(){ return this.validate(this.validateData); }
     public double validate(final DataSet DATA){
 		final int[] FP	= new int[DATA.getClasses().length];			// false positives
 		final int[] TP	= new int[DATA.getClasses().length];			// true positives
@@ -220,10 +214,10 @@ public class Model {
 		}
 
 		// storing the outcome data
-		this.accuracy	= (double)correct * 100.00 / (double)DATA.getSize();	// accuracy
-		this.precision	= this.getPrecision(TP, FP) * 100;						// precision
-		this.recall		= this.getRecall(TP, FP, DATA) * 100;					// recall
-		this.f1Score	= this.getF1Score(this.precision, this.recall);			// f1Score
+		this.accuracy	= (double)correct * 100.00 / (double)DATA.size();	// accuracy
+		this.precision	= this.getPrecision(TP, FP) * 100;					// precision
+		this.recall		= this.getRecall(TP, FP, DATA) * 100;				// recall
+		this.f1Score	= this.getF1Score(this.precision, this.recall);		// f1Score
 		
 		return this.accuracy;
 	}

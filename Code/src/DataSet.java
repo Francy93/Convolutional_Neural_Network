@@ -1,6 +1,6 @@
-import java.io.BufferedReader;			// used to read the file
 import java.util.stream.IntStream;		// used to convert the array to a stream
 import java.util.stream.Collectors;		// used to convert the stream to a list
+import java.io.BufferedReader;			// used to read the file
 import java.io.FileReader;				// used to read the file
 import java.io.IOException;				// used to throw an exception
 import java.io.FileNotFoundException;	// used to throw an exception
@@ -16,7 +16,7 @@ public class DataSet {
 	private double			min;			// min value of the dataset
 
 	/**
-	 * Dataset constructor
+	 * Dataset constructor from a file
 	 * @param F_N File name
 	 * @param D Data Delimiter
 	 * @throws FileNotFoundException
@@ -31,12 +31,27 @@ public class DataSet {
 		this.classesToSamples();					// equipping every sample with a one-hot array
 		this.minmaxUpdate();						// updating the max and min values of the dataset
     }
+	/**
+	 * Dataset constructor from an array of samples
+	 * @param S array of samples
+	 */
 	public DataSet(final Sample[] S){
 		this.samples		= S.clone();			// getting the samples
 		this.CLASSES		= this.labelClasses();	// getting an array of labels
 		this.CLASS_AMOUNT	= this.classAmount();	// getting the amount of samples per class
 		this.classesToSamples();					// equipping every sample with a one-hot array
 		this.minmaxUpdate();						// updating the max and min values of the dataset
+	}
+	/**
+	 * Dataset constructor from another dataset
+	 * @param DS dataset
+	 */
+	private DataSet(DataSet DS){
+		this.samples		= DS.samples.clone();		// getting the samples
+		this.CLASSES		= DS.CLASSES.clone();		// getting an array of labels
+		this.CLASS_AMOUNT	= DS.CLASS_AMOUNT.clone();	// getting the amount of samples per class
+		this.min			= DS.min;					// getting the min value of the dataset
+		this.max			= DS.max;					// getting the max value of the dataset
 	}
 
     /**
@@ -46,16 +61,16 @@ public class DataSet {
 	private Sample[] fileReader(final String FILE_NAME, final String DELIMITER) throws FileNotFoundException {
 		// reading the file
 		try (final BufferedReader SCANN = new BufferedReader(new FileReader(FILE_NAME))) {
-			return SCANN.lines().parallel()										// reading the file line by line
+			return SCANN.lines().parallel()									// reading the file line by line
 				.filter(line -> line.matches("^(\\d|["+DELIMITER+"])*$"))	// filtering out the lines that are not numbers
-				.map(line -> {													// converting the line to a sample
+				.map(line -> {												// converting the line to a sample
 					try { return new Sample(line, DELIMITER);				// creating a sample
-					}catch (Exception e) { return null; }						// if the line is not a sample, return null
+					}catch (Exception e) { return null; }					// if the line is not a sample, return null
 				})
-				.filter(sample -> sample != null)								// filtering out the null samples
+				.filter(sample -> sample != null)							// filtering out the null samples
 				.collect(Collectors.toList())
-				.toArray(new Sample[0]);										// collecting the samples into a list
-		} catch (IOException e) { throw new FileNotFoundException(); }			// if the file is not found, throw an exception
+				.toArray(Sample[]::new);									// collecting the samples into a list
+		} catch (IOException e) { throw new FileNotFoundException(); }		// if the file is not found, throw an exception
 
 		// updating the max and min values of the dataset
 	}
@@ -156,12 +171,15 @@ public class DataSet {
 		final double MIN = this.min == 0?	-1d/this.max:	this.min;
 		final double MAX = this.max == 0?	1d/this.min:	this.max;
 
-		// normalizing the dataset
-		for(final Sample SAMPLE: this.samples){
+		// normalizing the samples
+		this.samples = Arrays.stream(this.samples).parallel().map(sample -> {
+			final Sample SAMPLE = new Sample(sample.getFeature1D(), sample.getLabel() );
 			for(int i = 0; i < SAMPLE.getFeature1D().length; i++){
 				SAMPLE.setToken(i, this.normalization(SAMPLE.getToken1D(i), MIN, MAX));
 			}
-		}
+			SAMPLE.setClassLocation(sample.getOneHot().clone());// setting the one-hot array
+			return SAMPLE;										// returning the sample
+		}).toArray(Sample[]::new);								// converting the stream to an array
 		// updating the max and min values of the dataset
 		this.minmaxUpdate();
 
@@ -183,23 +201,23 @@ public class DataSet {
 				.mapToObj(i -> {										// creating a stream of samples
 					final Sample SAMPLE = new Sample(Arrays.stream(sample.getFeature1D())
 						.map(TOKEN -> {									// creating a stream of features
-							final double RANDOM = Math.random();		// getting a random number
-							double range = E * max;						// calculating the range
+							double range = E * this.max;				// calculating the range
 							range = Util.rangeRandom(-range, range);	// getting a random number in the range
-							return Math.min(Math.max(RANDOM <= E? range: TOKEN+range, this.min), this.max);
+							if(Math.random() < E) return range*10;		// adding noise to the sample
+							else return Math.min(Math.max(TOKEN+range, this.min), this.max);
 						}).toArray(),									// converting the stream to an array
 						sample.getLabel()
 					);
-					SAMPLE.setClassLocation(sample.getOneHot());		// setting the one-hot array
+					SAMPLE.setClassLocation(sample.getOneHot().clone());// setting the one-hot array
 					return SAMPLE;										// returning the sample
 				})
 			).toList()													// converting the stream to a list
 		);
-		
-		final ArrayList<Sample> JOINT = new ArrayList<>(Arrays.asList(this.samples));	// creating an array list to store the adversarial samples
+		// creating an array list to store the adversarial samples
+		final ArrayList<Sample> JOINT = new ArrayList<>(Arrays.asList(this.samples));	
 		JOINT.addAll(ADVERSARIAL);										// adding the adversarial samples to the array list
-		this.samples = JOINT.toArray(new Sample[0]);					// converting the array list to an array
-		return ADVERSARIAL.toArray(new Sample[0]);						// returning the adversarial samples
+		this.samples = JOINT.toArray(Sample[]::new);					// converting the array list to an array
+		return ADVERSARIAL.toArray(Sample[]::new);						// returning the adversarial samples
 	}
 
 
@@ -207,45 +225,9 @@ public class DataSet {
 
 	// ..................getters methods .................
 
-	/**
-	 * Get dataset samples
-	 * @param SAMPLE array of samples
-	 */
-	public void print1D(final Sample SAMPLE){
-		System.out.println(
-			Arrays.stream(SAMPLE.getFeature1D())
-				.mapToObj(String::valueOf)
-				.collect(Collectors.joining(", "))
-			+ "\b\b"
-		);
-	}
-
 	// printing the dataset
 	public void print1D(){
-		Arrays.stream(this.samples).parallel().forEach(S -> this.print1D(S));
-	}
-
-	/**
-	 * Print the dataset in 2D
-	 * @param SAMPLE sample to be printed
-	 * @param SCGS	 sample color gradient scale
-	 * @param ACGS	 ascii color gradient scale
-	 * @param SIZE	 size of the ascii character
-	 */
-	public void print2D(final Sample SAMPLE, final double SCGS, final int ACGS, final int SIZE){
-		StringBuilder sb = new StringBuilder();
-			for (double[] feature : SAMPLE.getFeature2D()) {
-				for (double val : feature) {
-					final float SP = (float) val * 100f / (float) SCGS; // sample percentage
-					final float AP = SP / 100f * (float) ACGS; // ascii percentage
-					final int COL = 232 + Math.round(AP); // color index
-					for (int i = 0; i < SIZE; i++) {
-						sb.append("\033[38;5;"+COL+";48;5;"+COL+"m███\033[0m");
-					}
-				}
-				sb.append("\r\n");
-			}
-       		System.out.println(sb.toString());
+		Arrays.stream(this.samples).parallel().forEach(SAMPLE -> SAMPLE.print1D());
 	}
 
 	/**
@@ -256,14 +238,15 @@ public class DataSet {
 	 */
 	public void print2D(){ this.print2D(this.max, 23, 1); }
 	public void print2D(final double SCGS, final int ACGS, final int SIZE){
-		Arrays.stream(this.samples).parallel().forEach(S -> {			// cycling through the samples
-			this.print2D(S, SCGS, ACGS, SIZE);							// printing the sample
+		Arrays.stream(this.samples).parallel().forEach(SAMPLE -> {			// cycling through the samples
+			SAMPLE.print2D(SCGS, ACGS, SIZE);								// printing the sample
 		});
 	}
 
 	/**
 	 * Get the index of the label
 	 * @param LABEL label to be searched
+	 * @return		index of the label
 	 */
 	public int getLabelIndex(final double LABEL){
 		for(int i = 0; i < this.CLASSES.length; i++){
@@ -289,7 +272,7 @@ public class DataSet {
 		return this.CLASSES.length;
 	}
 
-	public int getSize(){
+	public int size(){
 		return this.samples.length;
 	}
 
@@ -304,5 +287,10 @@ public class DataSet {
 
 	public Sample[] getDataSet(){
 		return this.samples.clone();
+	}
+
+	// clone dataset
+	public DataSet clone(){
+		return new DataSet(this);
 	}
 }

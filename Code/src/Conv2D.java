@@ -45,6 +45,17 @@ public class Conv2D extends Layer{
 
         this.layerInit(OPT, NODE);
     }
+    /**
+	 * First Densenet layer initialiser
+	 * @param OPT   optimizer 
+	 * @param SAMPLE 
+	 */
+    public void firstLayerInit(final lib.Optimizer OPT, final int SHAPE_Y, final int SHAPE_X, final int CHANNEL){
+        final Node[] NODE	= {new Node(SHAPE_Y, SHAPE_X, CHANNEL, OPT)};
+        super.isFirstLayer	= true;
+
+        this.layerInit(OPT, NODE);
+    }
 
 
 	// initialising this layer sizes

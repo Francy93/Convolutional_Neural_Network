@@ -418,10 +418,11 @@ public class Util{
 
 		// getting console input
 		public String cinln(){
-			try{ return scanner.nextLine(); }
-			catch(Exception e){ scanner	= new Scanner(System.in);}
+			String input = "";
+			try{ input = scanner.nextLine(); }
+			catch(Exception e){ this.scanner= new Scanner(System.in);}
 			System.out.println();
-			return "";
+			return input;
 		}
 
 		/**

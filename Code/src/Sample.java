@@ -18,15 +18,15 @@ public class Sample {
         double[] SAMPLE_DATA;
 
 		// getting validated sample data
-		try { SAMPLE_DATA = validator(S, D); }
+		try { SAMPLE_DATA = this.validator(S, D); }
 		catch(Exception e){ throw new ExceptionInInitializerError(); }
 
-        this.TOKENS	= tokenFilter(SAMPLE_DATA);	// extract this sample pixels only
-        this.LABEL	= labelFilter(SAMPLE_DATA);	// extract this sample label only
-		this.MATRIX	= matrixInit();				// initialising this sample image matrix
+        this.TOKENS	= this.tokenFilter(SAMPLE_DATA);	// extract this sample pixels only
+        this.LABEL	= this.labelFilter(SAMPLE_DATA);	// extract this sample label only
+		this.MATRIX	= this.matrixInit();				// initialising this sample image matrix
     }
 	public Sample(final double[] SAMPLE_DATA, final double L){
-        this.TOKENS	= SAMPLE_DATA;
+        this.TOKENS	= SAMPLE_DATA.clone();
         this.LABEL	= L;
 		this.MATRIX	= this.matrixInit();		// initialising this sample image matrix
     }
@@ -113,6 +113,40 @@ public class Sample {
 
 
 	// ..................getters method .................
+
+	/**
+	 * Get dataset samples
+	 * @param SAMPLE array of samples
+	 */
+	public void print1D(){
+		StringBuilder sb = new StringBuilder();
+		for (double val : this.getFeature1D()) sb.append(val + " ");
+		sb.append("\r\n");
+		System.out.println(sb.toString());
+	}
+
+	/**
+	 * Print the dataset in 2D
+	 * @param SAMPLE sample to be printed
+	 * @param SCGS	 sample color gradient scale
+	 * @param ACGS	 ascii color gradient scale
+	 * @param SIZE	 size of the ascii character
+	 */
+	public void print2D(final double SCGS, final int ACGS, final int SIZE){
+		StringBuilder sb = new StringBuilder();
+			for (double[] feature : this.getFeature2D()) {
+				for (double val : feature) {
+					final float SP	= (float) val * 100f / (float) SCGS; // sample percentage
+					final float AP	= SP / 100f * (float) ACGS; // ascii percentage
+					final int	COL = 232 + Math.round(AP); // color index
+					for (int i = 0; i < SIZE; i++) {
+						sb.append("\033[38;5;"+COL+";48;5;"+COL+"m███\033[0m");
+					}
+				}
+				sb.append("\r\n");
+			}
+       		System.out.println(sb.toString());
+	}
 
 	// getting this sample label
 	public double getLabel(){

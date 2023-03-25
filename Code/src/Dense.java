@@ -40,6 +40,17 @@
 
         this.layerInit(OPT, NODE);
     }
+	/**
+	 * First Densenet layer initialiser
+	 * @param OPT   optimizer 
+	 * @param SAMPLE 
+	 */
+    public void firstLayerInit(final lib.Optimizer OPT, final int SHAPE_Y, final int SHAPE_X, final int CHANNEL){
+        final Node[] NODE	= {new Node(1, SHAPE_Y*SHAPE_X, CHANNEL, OPT)};
+        super.isFirstLayer	= true;
+
+        this.layerInit(OPT, NODE);
+    }
 
 
     protected void sizesInit(){
@@ -66,12 +77,15 @@
 	public void sampleLoader(final Sample SMAPLE) throws Exception{
 		if(!super.isFirstLayer) throw new Exception("SampleLoader() can only be used with the first layer");
 
+		// cycling over this layer inputs array
 		for(int node=0; node < this.inputs.length; node++){
 			Node.Relation[][] OUTPUT = this.inputs[node].getOutput();
 			int sample1D_iterator = 0;
 
+			// cycling over the activation map of this layer nodes
 			for(int out_y=0; out_y < OUTPUT.length; out_y++){
 				for(int out_x=0; out_x < OUTPUT[0].length; out_x++){
+					// loading the sample pixel as it were an output of an ipothtical previous layer
 					OUTPUT[out_y][out_x].setOutput(SMAPLE.getToken1D(sample1D_iterator++));
 				}
 			}
