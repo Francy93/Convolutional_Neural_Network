@@ -1,7 +1,5 @@
 # Convolutional_Neural_Network
-```diff
-! AI: Second project of the Computer Science third-year about Convolutional Neural Network (CNN)
-```
+AI: Second project of the Computer Science third-year about Convolutional Neural Network (CNN)
 
 <font color="blue"><h2>Convolutional Neural Network 🧠</h2></font>
 This project is about Convolutional Neural Network (CNN) and is the second project of the Computer Science third-year course.
