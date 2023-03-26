@@ -65,7 +65,7 @@ public class Ann{
 		double noise			= 5;						// used to determine if the model is overfitting
 
 		for(int e = 1; e <= EPOCHS; e++){														// looping through the epochs
-			System.out.println("Testing..");
+			System.out.println("Training..");
 			dataTrain = ORIGINAL.clone();														// resetting the training dataset
 			final double OVERFITTING	= bestAccuracy - MODEL.getAccuracy();					// used to determine if the model is overfitting
 			bestAccuracy				= Math.max(MODEL.getAccuracy(), bestAccuracy);			// storing the highest accuracy
