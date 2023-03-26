@@ -1,8 +1,11 @@
 # Convolutional_Neural_Network
 AI: Second project of the Computer Science third-year about Convolutional Neural Network (CNN)
 
-<span style="color:#00FF00">Convolutional Neural Network 🧠</span>
-This project is about Convolutional Neural Network (CNN) and is the second project of the Computer Science third-year course.
+```diff
++ text in green<h2>Convolutional Neural Network 🧠</h2></font>
+```
+`#ffffff` This project is about Convolutional Neural Network (CNN) and is the second project of the Computer Science third-year course.
+
 
 <font color="blue"><h2>Overview 📚</h2></font>
 Convolutional Neural Networks (CNN) are a type of neural network that have been widely used in image and video recognition. CNNs are inspired by the structure of the animal visual cortex and can automatically learn to recognize visual patterns such as edges and shapes.
