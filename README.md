@@ -14,7 +14,7 @@ You can try out our implementation of the CNN on Google Colab by clicking on thi
 <a href="https://colab.research.google.com/drive/1UjcC4Cm2_UlceRvDiEEb3FQzJLsSwNjr#scrollTo=VWjk2um_hSyR"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 ```
-https://bit.ly/3TSSCaf
+https://colab.research.google.com/drive/1UjcC4Cm2_UlceRvDiEEb3FQzJLsSwNjr?usp=sharing
 ```
 
 
