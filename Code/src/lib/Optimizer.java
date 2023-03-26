@@ -86,7 +86,6 @@ public enum Optimizer {
 
 			// compute the first moment
 			MOMENTUM[0] = (MOMENTUM[0] * this.BETA1) + (this.BETA1_MINUS * grad); 
-
 			// compute the second moment
 			MOMENTUM[1] = (MOMENTUM[1] * this.BETA2) + (this.BETA2_MINUS * grad * grad); 
 
@@ -105,14 +104,13 @@ public enum Optimizer {
 
 			// compute the first moment
 			MOMENTUM[0] = (MOMENTUM[0] * this.BETA1) + (this.BETA1_MINUS * grad); 
-
 			// compute the second moment
 			MOMENTUM[1] = Math.max(this.BETA2 * MOMENTUM[1], Math.abs(grad));
 
 			// normalisation
-			final double NORM	= MOMENTUM[0] / (1.0 - Math.pow(this.BETA1, this.timeStep));
+			final double NORM	= MOMENTUM[0]	/ (1.0 - Math.pow(this.BETA1, this.timeStep));
 
-			return this.learningRate * NORM / (MOMENTUM[1] + this.EPSILON);
+			return this.learningRate * NORM		/ (MOMENTUM[1] + this.EPSILON);
 		}
 	},
 	NADAM{
@@ -123,7 +121,6 @@ public enum Optimizer {
 
 			// compute the first moment
 			MOMENTUM[0] = (MOMENTUM[0] * this.BETA1) + (this.BETA1_MINUS * grad); 
-
 			// compute the second moment
 			MOMENTUM[1] = (MOMENTUM[1] * this.BETA2) + (this.BETA2_MINUS * grad * grad); 
 
@@ -142,14 +139,13 @@ public enum Optimizer {
 
 			// compute the first moment
 			MOMENTUM[0] = (MOMENTUM[0] * this.BETA1) + (this.BETA1_MINUS * grad); 
-
 			// compute the second moment
 			MOMENTUM[1] = Math.max((MOMENTUM[1] * this.BETA2), (grad * grad)); 
 
 			// normalisation
-			final double NORM	= MOMENTUM[0] / (1.0 - Math.pow(this.BETA1, this.timeStep));
+			final double NORM	= MOMENTUM[0]	/ (1.0 - Math.pow(this.BETA1, this.timeStep));
 
-			return this.learningRate * NORM / (Math.sqrt(MOMENTUM[1]) + this.EPSILON);
+			return this.learningRate * NORM		/ (Math.sqrt(MOMENTUM[1]) + this.EPSILON);
 		}
 	};
 

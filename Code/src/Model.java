@@ -108,13 +108,13 @@ public class Model {
 		this.loss			= L;			// loss function
 		this.optimizer		= OPT;			// optimizer
 
-		Layer prevLayer = this.LAYERS[0];								// previous layer
+		Layer prevLayer = this.LAYERS[0];									// previous layer
 		prevLayer.firstLayerInit(OPT.OPT, SHAPE_Y, SHAPE_X, CHANNELS);		// initialising the input layer
 							
 		// cycling overt the rest of the layers initialising them
 		for(int index=1; index < this.LAYERS.length; index++){
-			this.LAYERS[index].layerInit(OPT.OPT, prevLayer.getNodes());// initialising the layer
-			prevLayer = this.LAYERS[index];								// updating the previous layer
+			this.LAYERS[index].layerInit(OPT.OPT, prevLayer.getNodes());	// initialising the layer
+			prevLayer = this.LAYERS[index];									// updating the previous layer
 		}
 	}
 

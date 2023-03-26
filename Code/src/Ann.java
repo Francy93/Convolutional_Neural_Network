@@ -62,7 +62,7 @@ public class Ann{
 		final DataSet ORIGINAL	= dataTrain.clone();		// used to determine if the model is overfitting
 		double bestAccuracy		= MODEL.getAccuracy();		// used to determine if the model is overfitting
 		final double HALF_NS = NOISE_STEP/2d;				// half of the noise step
-		double noise			= 9;						// used to determine if the model is overfitting
+		double noise			= 5;						// used to determine if the model is overfitting
 
 		for(int e = 1; e <= EPOCHS; e++){														// looping through the epochs
 			dataTrain = ORIGINAL.clone();														// resetting the training dataset
@@ -72,7 +72,7 @@ public class Ann{
 
 			if (MODEL.getAccuracy() < 95){
 				if(OVERFITTING>0 && noise>2) noise -= noise==(int)noise? NOISE_STEP: HALF_NS; 	// reducing the noise if the model is overfitting
-				else if(OVERFITTING+5<0 && noise+HALF_NS<10) noise += HALF_NS;					// increasing the noise if the model is underfitting
+				else if(OVERFITTING+5 < 0 && noise+HALF_NS < 10) noise += HALF_NS;				// increasing the noise if the model is underfitting
 
 				dataTrain.setDataSet(dataTrain.adversarialSampling(1, noise));					// replacing the training dataset with noise
 				message	= "Validating noise (" + noise + ") at epoch: " + e;					// validation message"

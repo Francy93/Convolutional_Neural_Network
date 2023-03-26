@@ -379,7 +379,11 @@ public abstract class Layer {
         }catch(NullPointerException e){}
     }
 
-    // calculating the derivative of a single output
+	/**
+	 * Calculating the derivative of a single output
+	 * @param NODE_SINGLE_OUT
+	 * @return
+	 */
     private double calculateDerivative(final Node.Relation NODE_SINGLE_OUT){
 	    this.ACTIVATION.derivative(NODE_SINGLE_OUT, this);	// calculating the derivative of the activation function
         NODE_SINGLE_OUT.derivAndCRS_sum();					// calculating the derivative of the non-linear to linear operation
@@ -427,15 +431,23 @@ public abstract class Layer {
 
 	/**
 	 * Initialising this layer
-	 * @param INPUTS
+	 * @param OPT		Optimizer of this layer
+	 * @param INPUTS	Inputs of this layer
 	 */
 	public abstract void layerInit(final lib.Optimizer OPT, final Node ... INPUTS);
 	/**
 	 * Initialising the first layer
-	 * @param SMAPLE
+	 * @param OPT		Optimizer of this layer
+	 * @param SMAPLE	Sample to be loaded
 	 */
     public abstract void firstLayerInit(final lib.Optimizer OPT, final Sample SMAPLE);
 
+	/**
+	 * Initialising the first layer
+	 * @param SHAPE_Y	size y of the input
+	 * @param SHAPE_X	size x of the input	
+	 * @param CHANNELS	channels of the input
+	 */
 	public abstract void firstLayerInit(final lib.Optimizer OPT, final int SHAPE_Y, final int SHAPE_X, final int CHANNELS);
 
 	/**
