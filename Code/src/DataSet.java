@@ -14,6 +14,8 @@ public class DataSet {
     private Sample[]		samples;		// samples collection
 	private double			max;			// max value of the dataset
 	private double			min;			// min value of the dataset
+	private double			secondMax;			// max value of the dataset
+	private double			secondMin;			// min value of the dataset
 
 	/**
 	 * Dataset constructor from a file
@@ -28,6 +30,7 @@ public class DataSet {
 
 		this.CLASSES		= this.labelClasses();	// getting an array of labels
 		this.CLASS_AMOUNT	= this.classAmount();	// getting the amount of samples per class
+		System.out.println();
 		this.classesToSamples();					// equipping every sample with a one-hot array
 		this.minmaxUpdate();						// updating the max and min values of the dataset
     }
@@ -71,8 +74,6 @@ public class DataSet {
 				.collect(Collectors.toList())
 				.toArray(Sample[]::new);									// collecting the samples into a list
 		} catch (IOException e) { throw new FileNotFoundException(); }		// if the file is not found, throw an exception
-
-		// updating the max and min values of the dataset
 	}
 
 
@@ -81,30 +82,29 @@ public class DataSet {
 	 * @return label classes
 	 */
 	private double[] labelClasses(){
-		return Arrays.stream(samples)	// converting the samples array to a stream
+		return Arrays.stream(samples)					// converting the samples array to a stream
             .mapToDouble(Sample::getLabel)				// getting the label of each sample
             .distinct()									// removing duplicates
             .sorted()									// sorting the labels
             .toArray();									// converting the stream to an array
 	}
 
-	private int[] classAmount(){
-		int[] classCount = new int[CLASSES.length];					// creating an array to store the amount of samples per class
-
-		Arrays.stream(this.samples).parallel().forEach(S -> {		// cycling through the samples
-			int index = Arrays.binarySearch(CLASSES, S.getLabel());	// getting the class index
-			if (index >= 0)  classCount[index]++;					// incrementing the class count
-		});
-		return classCount;
+	private int[] classAmount() {
+		return Arrays.stream(this.CLASSES)							// converting the classes array to a stream
+			.mapToInt(CLASS -> (int) Arrays.stream(this.samples)	// converting the samples array to a stream
+				.parallel()
+				.filter(sample -> sample.getLabel() == CLASS)		// filtering out the samples that are not of the current class
+				.count())											// counting the samples
+			.toArray();												// converting the stream to an array
 	}
 
 	// providing every sample with a one-hot array
 	public void classesToSamples(){
-		Arrays.stream(this.samples).parallel().forEach(SAMPLE -> {				// cycling through the samples
-			double[] labelLocation = IntStream.range(0, CLASSES.length)			// creating a stream of indexes
-                .mapToDouble(i -> SAMPLE.getLabel() == CLASSES[i] ? 1.0 : 0.0)	// creating a one-hot array
-                .toArray();														// converting the stream to an array
-			SAMPLE.setClassLocation(labelLocation);								// setting the one-hot array
+		Arrays.stream(this.samples).parallel().forEach(SAMPLE -> {					// cycling through the samples
+			SAMPLE.setClassLocation(IntStream.range(0, this.CLASSES.length)			// creating a stream of indexes
+                .mapToDouble(i -> SAMPLE.getLabel() == this.CLASSES[i] ? 1.0 : 0.0)	// creating a one-hot array
+                .toArray()															// converting the stream to an array
+			);
 		});
 	}
 
@@ -116,8 +116,14 @@ public class DataSet {
 		// getting the max and min values of the samples
 		Arrays.stream(this.samples).parallel().forEach(SAMPLE -> {	// cycling through the samples	
 			for(final double FEATURE: SAMPLE.getFeature1D()){		// cycling through the features
-				if(FEATURE > this.max) this.max = FEATURE;			// updating the max value
-				if(FEATURE < this.min) this.min = FEATURE;			// updating the min value
+				if(FEATURE > this.max){
+					this.secondMax = this.max;	// updating the second max value
+					this.max = FEATURE;			// updating the max value
+				}
+				if(FEATURE < this.min){
+					this.secondMin = this.min;	// updating the second min value
+					this.min = FEATURE;			// updating the min value
+				}
 			}
 		});
 	}
@@ -168,8 +174,8 @@ public class DataSet {
 		this.minmaxUpdate(); // updating the max and min values of the dataset
 		
 		// avoiding division by zero
-		final double MIN = this.min == 0?	-1d/this.max:	this.min;
-		final double MAX = this.max == 0?	1d/this.min:	this.max;
+		final double MIN = this.min == 0?	this.secondMin/-2d:	this.min;
+		final double MAX = this.max == 0?	this.secondMax/-2d:	this.max;
 
 		// normalizing the samples
 		this.samples = Arrays.stream(this.samples).parallel().map(sample -> {

@@ -7,7 +7,7 @@ public class Ann{
 	private static final	String	VALIDATE_FILE	= "cw2DataSet2.csv";	//	file name of the validation dataset
 	private static			DataSet dataTrain;								//	dataset used to perform the training		
 	private static			DataSet dataValid;								//	detaset used to perform the validation
-	private static final	double	NOISE_STEP		= 1;					//	number of samples processed before updating the weights
+	private static final	double	NOISE_STEP		= 1;					// 	noise step used to determine if the model is overfitting
 	private static final	int		BATCH_SIZE		= 8;					//	number of samples processed before updating the weights
 	public	static final	int		EPOCHS			= 100;					//	number of dataset cycles
 	private static final	double	LEARNING_RATE	= 0.0001;				//	learning rate suggested is about 0.001
@@ -56,13 +56,14 @@ public class Ann{
 	}
 
 
-	// running tests and validations
+	// running training and testing
 	public static void trainAndTest(){
 		final AnsiColours COLOR = new AnsiColours();		// used to colour the output
-		final DataSet ORIGINAL	= dataTrain.clone();		// used to determine if the model is overfitting
-		double bestAccuracy		= MODEL.getAccuracy();		// used to determine if the model is overfitting
-		final double HALF_NS = NOISE_STEP/2d;				// half of the noise step
-		double noise			= 5;						// used to determine if the model is overfitting
+		final DataSet ORIGINAL	= dataTrain.clone();		// original training dataset
+		final double HALF_NS	= NOISE_STEP/2d;			// half of the noise step
+
+		double bestAccuracy		= MODEL.getAccuracy();		// highest accuracy used to determine if the model is overfitting
+		double noise			= 5;						// noise used to augment the training dataset
 
 		for(int e = 1; e <= EPOCHS; e++){														// looping through the epochs
 			System.out.println("Training..");
