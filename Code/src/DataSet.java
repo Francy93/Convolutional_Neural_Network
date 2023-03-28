@@ -14,8 +14,6 @@ public class DataSet {
     private Sample[]		samples;		// samples collection
 	private double			max;			// max value of the dataset
 	private double			min;			// min value of the dataset
-	private double			secondMax;			// max value of the dataset
-	private double			secondMin;			// min value of the dataset
 
 	/**
 	 * Dataset constructor from a file
@@ -114,14 +112,12 @@ public class DataSet {
 		this.min =	Double.MAX_VALUE;	// min value of the samples
 
 		// getting the max and min values of the samples
-		Arrays.stream(this.samples).parallel().forEach(SAMPLE -> {	// cycling through the samples	
+		Arrays.stream(this.samples).forEach(SAMPLE -> {	// cycling through the samples	
 			for(final double FEATURE: SAMPLE.getFeature1D()){		// cycling through the features
 				if(FEATURE > this.max){
-					this.secondMax = this.max;	// updating the second max value
 					this.max = FEATURE;			// updating the max value
 				}
 				if(FEATURE < this.min){
-					this.secondMin = this.min;	// updating the second min value
 					this.min = FEATURE;			// updating the min value
 				}
 			}
@@ -173,22 +169,18 @@ public class DataSet {
 	public void normalize(){
 		this.minmaxUpdate(); // updating the max and min values of the dataset
 		
-		// avoiding division by zero
-		final double MIN = this.min == 0?	this.secondMin/-2d:	this.min;
-		final double MAX = this.max == 0?	this.secondMax/-2d:	this.max;
-
 		// normalizing the samples
 		this.samples = Arrays.stream(this.samples).parallel().map(sample -> {
 			final Sample SAMPLE = new Sample(sample.getFeature1D(), sample.getLabel() );
 			for(int i = 0; i < SAMPLE.getFeature1D().length; i++){
-				SAMPLE.setToken(i, this.normalization(SAMPLE.getToken1D(i), MIN, MAX));
+				SAMPLE.setToken(i, this.normalization(SAMPLE.getToken1D(i), this.min, this.max));
 			}
 			SAMPLE.setClassLocation(sample.getOneHot().clone());// setting the one-hot array
 			return SAMPLE;										// returning the sample
 		}).toArray(Sample[]::new);								// converting the stream to an array
+
 		// updating the max and min values of the dataset
 		this.minmaxUpdate();
-
 	}
 
 	/**
