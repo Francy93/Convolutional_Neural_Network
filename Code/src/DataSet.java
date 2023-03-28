@@ -28,7 +28,6 @@ public class DataSet {
 
 		this.CLASSES		= this.labelClasses();	// getting an array of labels
 		this.CLASS_AMOUNT	= this.classAmount();	// getting the amount of samples per class
-		System.out.println();
 		this.classesToSamples();					// equipping every sample with a one-hot array
 		this.minmaxUpdate();						// updating the max and min values of the dataset
     }
@@ -69,8 +68,8 @@ public class DataSet {
 					}catch (Exception e) { return null; }					// if the line is not a sample, return null
 				})
 				.filter(sample -> sample != null)							// filtering out the null samples
-				.collect(Collectors.toList())
-				.toArray(Sample[]::new);									// collecting the samples into a list
+				.collect(Collectors.toList())								// collecting the samples into a list
+				.toArray(Sample[]::new);									// converting the list to an array
 		} catch (IOException e) { throw new FileNotFoundException(); }		// if the file is not found, throw an exception
 	}
 
@@ -90,7 +89,7 @@ public class DataSet {
 	private int[] classAmount() {
 		return Arrays.stream(this.CLASSES)							// converting the classes array to a stream
 			.mapToInt(CLASS -> (int) Arrays.stream(this.samples)	// converting the samples array to a stream
-				.parallel()
+				.parallel()											// using parallel processing
 				.filter(sample -> sample.getLabel() == CLASS)		// filtering out the samples that are not of the current class
 				.count())											// counting the samples
 			.toArray();												// converting the stream to an array
@@ -112,14 +111,10 @@ public class DataSet {
 		this.min =	Double.MAX_VALUE;	// min value of the samples
 
 		// getting the max and min values of the samples
-		Arrays.stream(this.samples).forEach(SAMPLE -> {	// cycling through the samples	
-			for(final double FEATURE: SAMPLE.getFeature1D()){		// cycling through the features
-				if(FEATURE > this.max){
-					this.max = FEATURE;			// updating the max value
-				}
-				if(FEATURE < this.min){
-					this.min = FEATURE;			// updating the min value
-				}
+		Arrays.stream(this.samples).forEach(SAMPLE -> {			// cycling through the samples	
+			for(final double FEATURE: SAMPLE.getFeature1D()){	// cycling through the features
+				if(FEATURE > this.max) this.max = FEATURE;		// updating the max value
+				if(FEATURE < this.min) this.min = FEATURE;		// updating the min value
 			}
 		});
 	}
@@ -157,11 +152,11 @@ public class DataSet {
 		final int RANGE = this.samples.length-1;
 
 		for (int old_index=0; old_index<=RANGE; old_index++) {
-			final int NEW_INDEX		= (int) Math.round(Util.rangeRandom(0, RANGE));
+			final int NEW_INDEX		= (int) Math.round(Util.rangeRandom(0, RANGE));	// getting a random index
 
-			final Sample TEMP		= this.samples[old_index];
-			this.samples[old_index]	= this.samples[NEW_INDEX];
-			this.samples[NEW_INDEX]	= TEMP;
+			final Sample TEMP		= this.samples[old_index];						// storing temporary the second sample
+			this.samples[old_index]	= this.samples[NEW_INDEX];						// swapping the first sample
+			this.samples[NEW_INDEX]	= TEMP;											// swapping the second sample
 		}
 	}
 
@@ -204,7 +199,7 @@ public class DataSet {
 							if(Math.random() < E) return range*10;		// adding noise to the sample
 							else return Math.min(Math.max(TOKEN+range, this.min), this.max);
 						}).toArray(),									// converting the stream to an array
-						sample.getLabel()
+						sample.getLabel()								// setting the label
 					);
 					SAMPLE.setClassLocation(sample.getOneHot().clone());// setting the one-hot array
 					return SAMPLE;										// returning the sample
