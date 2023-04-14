@@ -315,7 +315,7 @@ public abstract class Layer {
     // the back propagation method
     public void backPropagating(){
         // cycling overall the nodes
-        Arrays.stream(this.NODES).parallel().forEach( NODE -> {
+        Arrays.stream(this.NODES).forEach( NODE -> {
             final Node.Relation[][] NODE_OUTPUT		= NODE.getOutput();
             int						strideCounter	= 0;
 

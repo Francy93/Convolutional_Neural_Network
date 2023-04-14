@@ -21,6 +21,7 @@ public class Model {
 
 		// variables
 		private final lib.Loss LOSS;					// loss function
+		public double error = 0.0;					// loss value
 
 		// constructor
 		private Loss(final lib.Loss LOSS){ this.LOSS = LOSS; }
@@ -36,7 +37,7 @@ public class Model {
 		}
 
 		/**
-		 * Loss function derivative
+		 * Loss derivative
 		 * @param LAYER	layer object
 		 * @param SAMPLE Sample object
 		 */
@@ -48,6 +49,23 @@ public class Model {
 				// setting the result into the node
 				this.setIntoNode(this.LOSS.derivative(FLAT_OUTPUT[classs].getOutput(), ONE_HOT[classs]), FLAT_OUTPUT[classs]);
 			}
+		}
+
+		/**
+		 * Loss function
+		 * @param OUTPUT output of the layer
+		 * @param LABEL label of the sample
+		 * @return loss
+		 */
+		public void function(final Layer LAYER, final Sample SAMPLE){
+			final Node.Relation[] FLAT_OUTPUT	= LAYER.getFlatOutput();		// getting the output of the layer	
+			final double[] ONE_HOT				= SAMPLE.getOneHot();			// getting the label of the sample
+			double sum = 0.0;
+
+            for(int index = 0 ; index < FLAT_OUTPUT.length; index++){
+				sum += this.LOSS.function(FLAT_OUTPUT[index].getOutput(), ONE_HOT[index]);
+			}
+            this.error += sum / FLAT_OUTPUT.length;
 		}
 	}
 
@@ -140,7 +158,8 @@ public class Model {
 	 * Performing the back propagation to every layer
 	 */
 	private void backPropagate(){
-		this.loss.derivative(LAYERS[this.LAYERS.length-1], this.sample);									// getting the loss function derivative
+		this.loss.function(LAYERS[this.LAYERS.length-1], this.sample);										// getting the loss
+		this.loss.derivative(LAYERS[this.LAYERS.length-1], this.sample);									// getting the loss derivative
 		for(int layer = this.LAYERS.length-1; layer >= 0; layer--)	this.LAYERS[layer].backPropagating();	// cycling over the layers
 	}
 
@@ -159,23 +178,27 @@ public class Model {
 	/**
 	 * Model training
 	 * @param DATA dataset
-	 * @param BATCH mini batch size
+	 * @param batch mini batch size
 	 * @param EPOCHS cicles of entire dataset
 	 * @param LEARNING_RATE learning rate
 	 */
 	public void train(final DataSet DATA, int batch, final int EPOCHS, final double LEARNING_RATE){
-		final int BATCH = Math.max(batch, 1);									// setting the batch size to 1 if it is less than 1
+		batch = Math.max(batch, 1);												// setting the batch size to 1 if it is less than 1
 		final lib.Util.Loading BAR = new lib.Util.Loading(DATA.size()-1);		// loading bar
-		this.optimizer.OPT.setParam(LEARNING_RATE, BATCH);						// setting the learning rate and the batch size
+		this.optimizer.OPT.setParam(LEARNING_RATE, batch);						// setting the learning rate and the batch size
 		
 		//cicling over the dataset samples for "EPOCHS" times
 		for(int epoch = 1; epoch <= EPOCHS; epoch++){
-			BAR.message("Epoch: " + epoch + " / " + EPOCHS, "blue");			// printing the epoch number
 			DATA.shuffle();														// shuffeling the samples
-
+			String epochMessage = "";											// epoch message
+			if(EPOCHS > 1){
+				epochMessage = "Epoch: " + epoch + " / " + EPOCHS;				// generate epoch message
+				BAR.message(epochMessage, "blue");								// printing the epoch number
+			}
+			
 			// cycling over the samples
-			for(int startBatch = 0; startBatch < DATA.size(); startBatch += BATCH){
-				final int END_BATCH = Math.min(startBatch+BATCH,DATA.size());	// getting the end of the batch
+			for(int startBatch = 0; startBatch < DATA.size(); startBatch += batch){
+				final int END_BATCH = Math.min(startBatch+batch,DATA.size());	// getting the end of the batch
 
 				for(int sampleIndex=startBatch; sampleIndex < END_BATCH; sampleIndex++){
 					this.sample = DATA.getSample(sampleIndex);					// getting the sample
@@ -185,7 +208,9 @@ public class Model {
 					this.backPropagate();										// performing back propagation for all the layers
 				}
 				this.weightsUpdate();											// updating the weights
+				BAR.message(epochMessage + " | Loss: " + this.loss.error/END_BATCH, "blue");
 			}
+			this.loss.error = 0.0;												// resetting the loss error
 		}
 	}
 

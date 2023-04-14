@@ -31,7 +31,7 @@ public enum Optimizer {
 			grad		/= this.batchSize; // batch size average
 
 			// colculating the momentum
-			MOMENTUM[0] = (MOMENTUM[0] * this.BETA1) + ((1.0 - this.BETA1) * grad * grad);
+			MOMENTUM[0] = (MOMENTUM[0] * this.BETA1) + (this.BETA1_MINUS * grad * grad);
 
 			return (this.learningRate / Math.sqrt(MOMENTUM[0] + this.EPSILON)) * grad;
 		}
@@ -45,7 +45,7 @@ public enum Optimizer {
 			// colculating the momentum
 			MOMENTUM[0] = (MOMENTUM[0] * this.BETA1) + (this.learningRate * grad); 
 
-			return (this.BETA1 * MOMENTUM[0]) + ((1.0 - this.BETA1) * this.learningRate * grad);
+			return (this.BETA1 * MOMENTUM[0]) + (this.BETA1_MINUS * this.learningRate * grad);
 		}
 	},
 	ADAGRAD{
@@ -73,7 +73,7 @@ public enum Optimizer {
 			final double OPT_GRAD 	= (Math.sqrt(MOMENTUM[1] + this.EPSILON) / Math.sqrt(MOMENTUM[0] + this.EPSILON)) * grad;
 
 			// storing the updated second moment value
-			MOMENTUM[1] = (MOMENTUM[1] * this.BETA1) + ((1.0 - this.BETA1) * OPT_GRAD * OPT_GRAD);
+			MOMENTUM[1] = (MOMENTUM[1] * this.BETA1) + (this.BETA1_MINUS * OPT_GRAD * OPT_GRAD);
 
 			return OPT_GRAD;
 		}
