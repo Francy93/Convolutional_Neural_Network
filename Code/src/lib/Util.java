@@ -1,7 +1,7 @@
 package lib;
 
 
-import java.util.Scanner;
+import java.io.Console;
 import java.util.ArrayList;
 
 /**
@@ -408,8 +408,7 @@ public class Util{
 
 
 	public static class Navigator{
-
-		private 		Scanner		scanner	= new Scanner(System.in);
+		// ANSI colours
 		private final	AnsiColours	COLOURS	= new AnsiColours();
 
 		// constructor
@@ -418,11 +417,11 @@ public class Util{
 
 		// getting console input
 		public String cinln(){
-			String input = "";
-			try{ input = scanner.nextLine(); }
-			catch(Exception e){ this.scanner= new Scanner(System.in);}
-			System.out.println();
-			return input;
+			Console console = System.console();
+			if (console == null) {
+				throw new UnsupportedOperationException("Console not available");
+			}
+			return console.readLine();
 		}
 
 		/**

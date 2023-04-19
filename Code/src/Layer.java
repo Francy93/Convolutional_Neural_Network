@@ -1,5 +1,6 @@
 
-import java.util.Arrays;				// used to convert the array to a list
+import java.util.Arrays;				// used to execute in parallel
+import java.util.ArrayList;				// used to convert the array to a list
 
 
 public abstract class Layer {
@@ -17,8 +18,10 @@ public abstract class Layer {
 	protected			int     	KERNEL_X;				//	Size X of this layer kernel
 	private	Node.Relation[]			flat_output;			//	array of nodes outputs
 	private	Node.Relation[][][][] 	kernelRelations;		//	array of relations between this layer weigths and inputs
+	protected			DotProd[]	forwardSequence;		//	sequence of nodes forward propagation
+	protected			DotProd[]	backwardSequence;		//	sequence of nodes backward propagation
+	protected			DotProd[]	derivativeSequence;		//	sequence of nodes backward propagation
 	protected		lib.Optimizer	optimizer;				//	learning optimizer
-
 	
 	// collection of activation functions
 	public static enum Activation{
@@ -144,7 +147,86 @@ public abstract class Layer {
 		return new Dense(NODES_AMOUNT, ACTIVATION);
 	}
 
+	// DotProd class
+	public abstract class DotProd{
+		protected Node.Relation[]	inputs;	// input node relations
+		protected Node.Parameter[]	param;	// node weights
 
+
+		public abstract void dotProd();
+		public abstract Node.Relation getOutput();
+		public abstract Node.Parameter getBias();	
+	}
+	// Forward class
+	public class Forward extends DotProd{
+		private final Node.Relation 	OUTPUT;	// output node relation
+		private final Node.Parameter	BIAS;	// node bias
+
+		public Forward(final Node.Relation OUTPUT, final Node.Relation[] INPUTS, final Node.Parameter[] PARAM, final Node.Parameter BIAS){
+			this.OUTPUT		= OUTPUT;	// output node relation
+			super.inputs	= INPUTS;	// input node relations
+			super.param		= PARAM;	// node weights
+			this.BIAS		= BIAS;		// node bias
+		}
+
+		@Override
+		public void dotProd(){
+			for(int i=0; i < super.inputs.length; i++){
+				this.OUTPUT.addToLinearOutput(super.inputs[i].getOutput() * super.param[i].getWeight());
+			}
+			OUTPUT.addToLinearOutput(this.BIAS.getWeight());	// add bias
+		}
+
+		@Override
+		public Node.Relation getOutput(){ return this.OUTPUT; }
+		@Override
+		public Node.Parameter getBias(){ return this.BIAS; }
+	}
+	// Backward class
+	public class Backward extends DotProd{
+		private final Node.Relation[] 	OUTPUTS;	// output node relation
+
+		public Backward(final Node.Relation[] OUTPUTS, final Node.Relation[] INPUTS, final Node.Parameter[] PARAM){
+			this.OUTPUTS	= OUTPUTS;	// output node relationss
+			super.inputs	= INPUTS;	// input node relations
+			super.param		= PARAM;	// node weights
+		}
+
+		@Override
+		public void dotProd(){
+			
+			for(int i=0; i < super.inputs.length; i++){
+				// --------- BACK PROPAGATION OPERATION
+				super.inputs[i].addToChainRuleSum(this.OUTPUTS[i].getDerivativeSum() * super.param[i].getWeight());
+
+				// --------- GRADIENT DESCENT OPERATION
+				super.param[i].addGradient(this.OUTPUTS[i].getDerivativeSum() * super.inputs[i].getOutput());
+			}
+		}
+		
+		@Override
+		public Node.Relation getOutput(){ return null; }
+		@Override
+		public Node.Parameter getBias(){ return null; }
+	}
+	// Derivative class
+	public class Derivative extends DotProd{
+		private final Node.Relation 	OUTPUT;	// output node relation
+		private final Node.Parameter	BIAS;	// node bias
+
+		public Derivative(final Node.Relation OUTPUT, final Node.Parameter PARAM){
+			this.OUTPUT	= OUTPUT;	// output node relationss
+			this.BIAS	= PARAM;	// node weights
+		}
+
+		@Override
+		public void dotProd(){ }
+		
+		@Override
+		public Node.Relation getOutput(){ return this.OUTPUT; }
+		@Override
+		public Node.Parameter getBias(){ return this.BIAS; }
+	}
 
 
 
@@ -231,10 +313,10 @@ public abstract class Layer {
 
                     // cycling over the kernal weights
                     for(int kernel_y=0; kernel_y < this.KERNEL_Y; kernel_y++){
-                        for(int kernel_X=0; kernel_X < this.KERNEL_X; kernel_X++){
+                        for(int kernel_x=0; kernel_x < this.KERNEL_X; kernel_x++){
 
                             try{	// storing the relations between weigths and inputs
-                                this.kernelRelations[channel][kernel_y][kernel_X][relation] = INPUT_NODE[image_y+kernel_y][image_x+kernel_X];
+                                this.kernelRelations[channel][kernel_y][kernel_x][relation] = INPUT_NODE[image_y+kernel_y][image_x+kernel_x];
                             }catch(ArrayIndexOutOfBoundsException e){}
                         }
 
@@ -244,6 +326,117 @@ public abstract class Layer {
             }
         }
     }
+
+	// initialising the array of relations between weights and inputs
+	public void forwardSequence(){
+		final int OUTPUT_SIZE =	this.outputSizeY*this.outputSizeX;
+		// cycling over all this layer nodes
+		for(int nodeIndex=0; nodeIndex < this.NODES_AMOUNT; nodeIndex++){
+			final Node NODE = this.NODES[nodeIndex];
+		
+			int strideCounter = 0;
+			
+			// cycling over all the "pixels" of the output matrix
+			for(int map_y=0; map_y < this.outputSizeY; map_y++){
+				for(int map_x=0; map_x < this.outputSizeX; map_x++){
+					// getting the output of this activation map index
+					final ArrayList<Node.Relation> INPUTS = new ArrayList<>();
+					final ArrayList<Node.Parameter> PARAM = new ArrayList<>();
+					// cycling over the all the kernel weights
+					for(int channel=0; channel < this.inputs.length; channel++){
+
+						// cycling over this entire channel
+						for(int kernel_y=0; kernel_y < this.KERNEL_Y; kernel_y++){
+							for(int kernel_x=0; kernel_x < this.KERNEL_X; kernel_x++){
+
+								try{
+									INPUTS.add(this.kernelRelations[channel][kernel_y][kernel_x][strideCounter]);
+									PARAM.add(NODE.getWeight(channel, kernel_y, kernel_x));
+								}catch(NullPointerException e){}
+							}
+						}						
+					}
+					// storing the sequence of relations
+					this.forwardSequence[nodeIndex*OUTPUT_SIZE+strideCounter++] = new Forward(
+						NODE.getOutput()[map_y][map_x],
+						INPUTS.toArray(new Node.Relation[INPUTS.size()]),
+						PARAM.toArray(new Node.Parameter[PARAM.size()]),
+						NODE.getBias(map_y, map_x)
+					);
+				}
+			}
+		}
+	}
+	
+	// initialising the array of derivatives and relations between weights and inputs
+	public void backwardSequence(){
+		// storing the sequence of derivatives
+		this.derivativeSequence = Arrays.stream(this.NODES)
+			.map(node -> {
+				final Derivative[] DERIVATIVE = new Derivative[this.outputSizeY*this.outputSizeX];
+				for(int map_y=0; map_y < this.outputSizeY; map_y++){
+					for(int map_x=0; map_x < this.outputSizeX; map_x++){
+						DERIVATIVE[map_y*this.outputSizeY+map_x] = new Derivative(node.getOutput()[map_y][map_x], node.getBias(map_y, map_x));
+					}
+				}
+				return DERIVATIVE;
+			}).flatMap(Arrays::stream).toArray(Derivative[]::new);
+
+		int counter = 0;
+		// cycling over all the channels
+		for(int channel=0; channel < this.inputs.length; channel++){
+			// cycling over the all the kernel weights
+			for(int kernel_y=0; kernel_y < this.KERNEL_Y; kernel_y++){
+				for(int kernel_x=0; kernel_x < this.KERNEL_X; kernel_x++){
+
+					final ArrayList<Node.Relation> INPUTS = new ArrayList<>();	// inputs
+					final ArrayList<Node.Relation> OUTPUTS = new ArrayList<>();	// output
+					final ArrayList<Node.Parameter> PARAM = new ArrayList<>();	// weight
+
+					// cycling overall the nodes
+					for(int nodeIndex=0; nodeIndex < this.NODES_AMOUNT; nodeIndex++){
+						final Node NODE = this.NODES[nodeIndex];
+						int	strideCounter	= 0;
+						
+						
+						// cycling over all the "pixels" of the output matrix
+						for(int map_y=0; map_y < this.outputSizeY; map_y++){
+							for(int map_x=0; map_x < this.outputSizeX; map_x++){
+
+								try{
+									// collecting the relations and parameters for the dot product
+									INPUTS.add(this.kernelRelations[channel][kernel_y][kernel_x][strideCounter]);	// inputs	
+									OUTPUTS.add(NODE.getOutput()[map_y][map_x]);									// output
+									PARAM.add(NODE.getWeight(channel, kernel_y, kernel_x));							// weight
+
+
+								}catch(NullPointerException e){}
+															
+							}
+						}
+						strideCounter++;
+					}
+					// storing the sequence of relations
+					this.backwardSequence[counter++] = new Backward(
+						OUTPUTS.toArray(new Node.Relation[OUTPUTS.size()]),	// output
+						INPUTS.toArray(new Node.Relation[INPUTS.size()]),	// inputs
+						PARAM.toArray(new Node.Parameter[PARAM.size()])		// weight
+					);
+				}
+			}
+		}
+	}
+
+	// initialising the array of sequences of relations
+	protected void sequencesInit(){
+		final int FORWARD_SIZE	= this.NODES_AMOUNT * this.outputSizeY * this.outputSizeX;
+		final int BACKWARD_SIZE	= this.inputs.length * this.KERNEL_Y * this.KERNEL_X;
+		this.forwardSequence	= new DotProd[FORWARD_SIZE];	// storing the Forward sequence
+		this.backwardSequence	= new DotProd[BACKWARD_SIZE];	// storing the Backward sequence
+
+		this.forwardSequence();									// initialising the forward sequence
+		this.backwardSequence();								// initialising the backward sequence
+	}
 
 
 
@@ -270,114 +463,31 @@ public abstract class Layer {
 
     // --------------------- feed forward -------------------------
 
-    public void feedForward(){
+	public void feedForward(){
+
 		// cycling over all this layer nodes
-		Arrays.stream(this.NODES).parallel().forEach( NODE -> {
-			int strideCounter = 0;
-			
-			 // cycling over all the "pixels" of the output matrix
-			 for(int map_y=0; map_y < this.outputSizeY; map_y++){
-                for(int map_x=0; map_x < this.outputSizeX; map_x++){
-					// getting the output of this activation map index
-					final Node.Relation SINGLE_OUTPUT = NODE.getOutput()[map_y][map_x];
-                   
-                    // cycling over the all the kernel weights
-                    for(int channel=0; channel < this.inputs.length; channel++){
-
-						// cycling over this entire channel
-                        for(int kernel_y=0; kernel_y < this.KERNEL_Y; kernel_y++){
-                            for(int kernel_x=0; kernel_x < this.KERNEL_X; kernel_x++){
-
-								try{	// summing the input times the weight
-									SINGLE_OUTPUT.addToLinearOutput(
-										NODE.getWeight(channel, kernel_y, kernel_x) * this.kernelRelations[channel][kernel_y][kernel_x][strideCounter].getOutput()
-									);
-								}catch(NullPointerException e){}
-                            }
-                        }						
-                    }
-					// summing the bias
-					SINGLE_OUTPUT.addToLinearOutput(NODE.getBias(map_y, map_x));
-					// performing the activation function for this output / feature-map "pixel"
-					this.ACTIVATION.function(SINGLE_OUTPUT, this);
-                    strideCounter++;
-                }
-            }
+		Arrays.stream(this.forwardSequence).parallel().forEach( DP -> {
+			DP.dotProd();									// calculating the dot product
+			this.ACTIVATION.function(DP.getOutput(), this);	// calculating the activation function
 		});
-    }
 
+	}
 
+	
+	// --------------------- back propagation -------------------------
 
+	public void backPropagating(){
+		// cycling over this layer nodes
+		Arrays.stream(this.derivativeSequence).parallel().forEach( DP -> {
+			DP.getBias().addGradient(this.calculateDerivative(DP.getOutput()));	// calculating the derivative
+		});
+		// cycling over the output nodes
+		Arrays.stream(this.backwardSequence).parallel().forEach( DP -> {
+			DP.dotProd();	// calculating the dot product
+		});
+	}	
 
-
-    // --------------------- back propagation -------------------------
-
-    // the back propagation method
-    public void backPropagating(){
-        // cycling overall the nodes
-        Arrays.stream(this.NODES).forEach( NODE -> {
-            final Node.Relation[][] NODE_OUTPUT		= NODE.getOutput();
-            int						strideCounter	= 0;
-
-            // cycling over all the "pixels" of the output matrix
-            for(int map_y=0; map_y < this.outputSizeY; map_y++){
-                for(int map_x=0; map_x < this.outputSizeX; map_x++){
-
-                    // calculationthe derivative of the non-linear to linear operation
-                    final double DERIV_SUM = this.calculateDerivative(NODE_OUTPUT[map_y][map_x]);
-                    // storing the biases gradients
-                    NODE.addBiasGradients(DERIV_SUM, map_y, map_x);
-
-                    // cycling over the all the kernel weights
-                    for(int channel=0; channel < this.inputs.length; channel++){
-                        for(int kernel_y=0; kernel_y < this.KERNEL_Y; kernel_y++){
-                            for(int kernel_x=0; kernel_x < this.KERNEL_X; kernel_x++){
-
-								// performing the chain runle operations
-                                this.gradientAndPropagate(NODE, DERIV_SUM, channel, kernel_y, kernel_x, strideCounter);
-                                                            
-                            }
-                        }
-                    }
-                    strideCounter++;
-                }
-            }
-        });
-    }
-
-	/**
-	 * main chain runle operations
-	 * @param NODE Current node to be processed
-	 * @param DERIV_SUM Sum of current activation map derivative
-	 * @param CHANNEL Current channel to be processed
-	 * @param KERNEL_Y Kenrel y position
-	 * @param KERNEL_X kernel x position
-	 * @param STRIDE Kernel movement
-	 */
-    private void gradientAndPropagate(final Node NODE, final double DERIV_SUM, final int CHANNEL, final int KERNEL_Y, final int KERNEL_X, final int STRIDE){
-        try{
-            // --------- GRADIENT DESCENT OPERATION
-
-            // storing the gradient into this layer node
-            NODE.addToKernelGradients(
-                // summing this output pixel derivative times all its inputs (find new weight gradient)
-                DERIV_SUM * this.kernelRelations[CHANNEL][KERNEL_Y][KERNEL_X][STRIDE].getOutput(), 
-                CHANNEL,
-                KERNEL_Y,
-                KERNEL_X
-            );
-
-
-            // --------- BACK PROPAGATION OPERATION
-            
-            // storing the sum into the next layer node in back propagation way
-            this.kernelRelations[CHANNEL][KERNEL_Y][KERNEL_X][STRIDE].addToChainRuleSum(
-                // summing this output pixel derivative times all its weights (find new input gradient)
-                DERIV_SUM * NODE.getWeight(CHANNEL, KERNEL_Y, KERNEL_X)
-            );
-
-        }catch(NullPointerException e){}
-    }
+   	
 
 	/**
 	 * Calculating the derivative of a single output

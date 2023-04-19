@@ -27,6 +27,7 @@
         super.weightsInit();			// initialising all this layer weights
         super.flatOutInit();			// flattening the output
         super.kernelRelationsInit();	// initialising this layer kernel relations
+		super.sequencesInit();			// initialising this layer sequences
     }
 
 	/**

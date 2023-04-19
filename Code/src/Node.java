@@ -3,14 +3,9 @@ public class Node {
 
     // Node's attributes
 	private	final	Relation[][]	OUTPUT;				// Matrix output also known as activation map in CNNs
-	private	final	double[][]		BIAS;				// Storage of biases assigned to avery index of the activation map matrix
-	private			double[][]		biasGradients;		// Gradient accumulation for the biases
-    private final	double[][][]	KERNEL;				// Kernel matrix
-	private			double[][][]	kernelGradients;	// Gradient accumulation for the Kernel
-	private	final	double[][][][]	KERNEL_MOMENTUM;	// Histoy of kernel gradients (momentum) for the Adam optimizer
-	private	final	double[][][]	BIAS_MOMENTUM;		// Histoy of biases gradients (momentum) for the Adam optimizer
+	private	final	Parameter[][]	BIAS;				// Storage of biases assigned to avery index of the activation map matrix
+    private final	Parameter[][][]	KERNEL;				// Kernel matrix
 	private			lib.Optimizer	OPTIMIZER;			// gradients optimizer
-	
 	
 	// Kernel sizes
 	private final	int				CHANNEL_AMOUNT;		// Number of kernel channel
@@ -27,20 +22,16 @@ public class Node {
 	 * @param OPT optimizer
 	 */
     public Node(final int CA, final int KY, final int KX, final int OUTPUT_Y, final int OUTPUT_X, final lib.Optimizer OPT){
-		final int MOMENTUM_AMOUNT	= OPT.momentNumber();	// numbers of momentums for the optimizators
-
 		this.CHANNEL_AMOUNT	= CA;
 		this.KERNEL_Y		= KY;
 		this.KERNEL_X		= KX;
 		this.OPTIMIZER		= OPT;
-        this.KERNEL			= new double[CA][KY][KX];
 		this.OUTPUT			= this.outputInit(OUTPUT_Y, OUTPUT_X);
-		this.BIAS			= new double[OUTPUT_Y][OUTPUT_X];
-		this.kernelGradients= new double[CA][KY][KX];
-		this.biasGradients	= new double[OUTPUT_Y][OUTPUT_X];
-		this.KERNEL_MOMENTUM= new double[CA][KY][KX][MOMENTUM_AMOUNT];
-		this.BIAS_MOMENTUM	= new double[OUTPUT_Y][OUTPUT_X][MOMENTUM_AMOUNT];
-    }
+        this.KERNEL			= new Parameter[CA][KY][KX];
+		this.BIAS			= new Parameter[OUTPUT_Y][OUTPUT_X];
+		this.kernelInit(OPT.momentNumber());
+		this.biasInit(OPT.momentNumber());
+	}
 	// constructor for convnet first layer
 	public Node(final double[][] INPUT, final lib.Optimizer OPT){
         this(1, INPUT.length, INPUT[0].length, INPUT.length, INPUT[0].length, OPT);
@@ -56,6 +47,34 @@ public class Node {
 		this(CHANNELS, SY, SX, SY, SX, OPT);
 	}
     
+	// Parameter class
+	public class Parameter{
+		private double weight	= 0;
+		private double gradient	= 0;
+		final public double[] MOMENTUM;
+
+		public Parameter(final double WEIGHT, final double GRADIENT, final double[] MOMENTUM){
+			this.weight		= WEIGHT;
+			this.gradient	= GRADIENT;
+			this.MOMENTUM	= MOMENTUM;
+		}
+		public Parameter(final int NUM_MOMENTUM){
+			this.MOMENTUM	= new double[NUM_MOMENTUM];
+		}
+
+
+		// ------------ setters ------------------
+		public void setWeight(final double WEIGHT){ this.weight = WEIGHT; }
+		public void addWeight(final double WEIGHT){ this.weight += WEIGHT; }
+		public void subWeight(final double WEIGHT){ this.weight -= WEIGHT; }
+		public void setGradient(final double GRADIENT){ this.gradient = GRADIENT; }
+		public void addGradient(final double GRADIENT){ this.gradient += GRADIENT; }
+		public void subGradient(final double GRADIENT){ this.gradient -= GRADIENT; }
+
+		// ------------ getters ------------------
+		public double getWeight(){ return this.weight; }
+		public double getGradient(){ return this.gradient; }
+	}	
 
 	// activation map "pixels"
     public class Relation{
@@ -137,6 +156,32 @@ public class Node {
 
     }
 
+	/**
+	 * initializes the kernel
+	 * @param MOMENTUM_AMOUNT
+	 */
+	private void kernelInit(final int MOMENTUM_AMOUNT){
+		for(final Parameter[][] CH : this.KERNEL){
+			for(final Parameter[] Y : CH){
+				for(int x=0; x < Y.length; x++){
+					Y[x] = new Parameter(MOMENTUM_AMOUNT);
+				}
+			}
+		}
+	}
+
+	/**
+	 * initializes the bias
+	 * @param MOMENTUM_AMOUNT
+	 */
+	private void biasInit(final int MOMENTUM_AMOUNT){
+		for(final Parameter[] Y : this.BIAS){
+			for(int x=0; x < Y.length; x++){
+				Y[x] = new Parameter(MOMENTUM_AMOUNT);
+			}
+		}
+	}
+
 
 	// fills the output with the values in "INPUT"
 	private void fillOutput(final double[] ... INPUT){
@@ -173,8 +218,7 @@ public class Node {
 	 * @param WEIGHT
 	 */
 	public void setWeight(final int CHANNEL, final int Y, final int X, final double WEIGHT){
-
-		KERNEL[CHANNEL][Y][X] = WEIGHT;
+		this.KERNEL[CHANNEL][Y][X].setWeight(WEIGHT);
 	}
 
 	/**
@@ -183,8 +227,8 @@ public class Node {
 	 * @param Y
 	 * @param X
 	 */
-	public void addBiasGradients(final double GRADIENT, final int Y, final int X){
-		this.biasGradients[Y][X] += GRADIENT;
+	public void addToBiasGradients(final int Y, final int X){
+		this.BIAS[Y][X].addGradient(this.OUTPUT[Y][X].getDerivativeSum());
 	}
 
 	/**
@@ -195,7 +239,7 @@ public class Node {
 	 * @param X
 	 */
 	public void addToKernelGradients(final double GRADIENT, final int CHANNEL, final int Y, final int X){
-		this.kernelGradients[CHANNEL][Y][X] += GRADIENT;
+		this.KERNEL[CHANNEL][Y][X].addGradient(GRADIENT);
 	}
 
 	/**
@@ -223,13 +267,15 @@ public class Node {
 				for(int kernel_x=0; kernel_x < this.KERNEL_X; kernel_x++){
 					
 					// updating every single weight dividing it by the mini batch to find its average
-					this.KERNEL[channel][kernel_y][kernel_x] -= this.OPTIMIZER.optimize(this.KERNEL_MOMENTUM[channel][kernel_y][kernel_x], this.kernelGradients[channel][kernel_y][kernel_x]);
+					this.KERNEL[channel][kernel_y][kernel_x].subWeight(this.OPTIMIZER.optimize(
+						this.KERNEL[channel][kernel_y][kernel_x].MOMENTUM, 
+						this.KERNEL[channel][kernel_y][kernel_x].getGradient()
+					));
+					// resetting the gradient
+					this.KERNEL[channel][kernel_y][kernel_x].setGradient(0);
 				}
 			}
 		}
-
-		// resetting the gradinets storage
-		this.kernelGradients = new double[this.CHANNEL_AMOUNT][this.KERNEL_Y][this.KERNEL_X];
 	}
 
 	// Biases update
@@ -240,12 +286,14 @@ public class Node {
 			for(int bias_x=0; bias_x <  this.BIAS[0].length; bias_x++){
 
 				// updating every single weight dividing it by the mini batch to find its average
-				this.BIAS[bias_y][bias_x] -= this.OPTIMIZER.optimize(this.BIAS_MOMENTUM[bias_y][bias_x], this.biasGradients[bias_y][bias_x]);
+				this.BIAS[bias_y][bias_x].subWeight(this.OPTIMIZER.optimize(
+					this.BIAS[bias_y][bias_x].MOMENTUM, 
+					this.BIAS[bias_y][bias_x].getGradient()
+				));
+				// resetting the gradient
+				this.BIAS[bias_y][bias_x].setGradient(0);
 			}
 		}
-
-		// resetting the gradinets storage
-		this.biasGradients = new double[this.BIAS.length][this.BIAS[0].length];
 	}
 
 
@@ -264,7 +312,7 @@ public class Node {
 	 * @param X
 	 * @return weight
 	 */
-	public double getWeight(final int CHANNEL, final int Y, final int X){
+	public Parameter getWeight(final int CHANNEL, final int Y, final int X){
 		return KERNEL[CHANNEL][Y][X];
 	}
 
@@ -279,7 +327,7 @@ public class Node {
 	 * @param ACT_MAP_X
 	 * @return bias of a specific index
 	 */
-	public double getBias(final int ACT_MAP_Y, final int ACT_MAP_X){
+	public Parameter getBias(final int ACT_MAP_Y, final int ACT_MAP_X){
 		return this.BIAS[ACT_MAP_Y][ACT_MAP_X];
 	}
 

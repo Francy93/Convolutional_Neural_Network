@@ -21,7 +21,7 @@ public class Model {
 
 		// variables
 		private final lib.Loss LOSS;					// loss function
-		public double error = 0.0;					// loss value
+		public double error = 0.0;						// loss value
 
 		// constructor
 		private Loss(final lib.Loss LOSS){ this.LOSS = LOSS; }
@@ -55,7 +55,6 @@ public class Model {
 		 * Loss function
 		 * @param OUTPUT output of the layer
 		 * @param LABEL label of the sample
-		 * @return loss
 		 */
 		public void function(final Layer LAYER, final Sample SAMPLE){
 			final Node.Relation[] FLAT_OUTPUT	= LAYER.getFlatOutput();		// getting the output of the layer	

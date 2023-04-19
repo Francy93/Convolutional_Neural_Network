@@ -102,8 +102,8 @@ public enum Loss {
 		 */
         public double function(final double PRED, final double TARGET){
             final double DIFF = Loss.MAE.function(PRED, TARGET);
-            if(DIFF <= delta)	return 0.5 * Math.pow(DIFF, 2.0);
-            else				return delta * DIFF - 0.5 * Math.pow(delta, 2.0);
+            if(DIFF <= this.delta)	return 0.5 * Math.pow(DIFF, 2.0);
+            else				return this.delta * DIFF - 0.5 * Math.pow(this.delta, 2.0);
         }
         public double function(final double[] PRED, final double[] TARGET){
             double sum = 0.0;
@@ -119,7 +119,7 @@ public enum Loss {
          */
         public double derivative(final double P, final double T) {
             final double DIFF = T - P;
-            return Math.abs(DIFF) <= delta? DIFF: (DIFF > 0? -delta: delta);
+            return Math.abs(DIFF) <= this.delta? DIFF: (DIFF > 0? -this.delta: this.delta);
         }
         public double derivative(final double[] P, final double[] T){ 
             double sum = 0.0;
