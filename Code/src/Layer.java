@@ -20,6 +20,7 @@ public abstract class Layer {
 	private	Node.Relation[][][][] 	kernelRelations;		//	array of relations between this layer weigths and inputs
 	protected			DotProd[]	forwardSequence;		//	sequence of nodes forward propagation
 	protected			DotProd[]	backwardSequence;		//	sequence of nodes backward propagation
+	protected			DotProd[]	gradientSequence;		//	sequence of nodes backward propagation
 	protected			DotProd[]	derivativeSequence;		//	sequence of nodes backward propagation
 	protected		lib.Optimizer	optimizer;				//	learning optimizer
 	
@@ -147,6 +148,7 @@ public abstract class Layer {
 		return new Dense(NODES_AMOUNT, ACTIVATION);
 	}
 
+
 	// DotProd class
 	public abstract class DotProd{
 		protected Node.Relation[]	inputs;	// input node relations
@@ -194,13 +196,9 @@ public abstract class Layer {
 
 		@Override
 		public void dotProd(){
-			
 			for(int i=0; i < super.inputs.length; i++){
 				// --------- BACK PROPAGATION OPERATION
 				super.inputs[i].addToChainRuleSum(this.OUTPUTS[i].getDerivativeSum() * super.param[i].getWeight());
-
-				// --------- GRADIENT DESCENT OPERATION
-				super.param[i].addGradient(this.OUTPUTS[i].getDerivativeSum() * super.inputs[i].getOutput());
 			}
 		}
 		
@@ -208,6 +206,19 @@ public abstract class Layer {
 		public Node.Relation getOutput(){ return null; }
 		@Override
 		public Node.Parameter getBias(){ return null; }
+	}
+	public class Gradient extends Backward{
+		public Gradient(final Node.Relation[] OUTPUTS, final Node.Relation[] INPUTS, final Node.Parameter[] PARAM){
+			super(OUTPUTS, INPUTS, PARAM);
+		}
+		
+		@Override
+		public void dotProd(){
+			for(int i=0; i < super.inputs.length; i++){
+				// --------- GRADIENT DESCENT OPERATION
+				super.param[i].addGradient(super.OUTPUTS[i].getDerivativeSum() * super.inputs[i].getOutput());
+			}
+		}
 	}
 	// Derivative class
 	public class Derivative extends DotProd{
@@ -350,6 +361,8 @@ public abstract class Layer {
 							for(int kernel_x=0; kernel_x < this.KERNEL_X; kernel_x++){
 
 								try{
+									if (this.kernelRelations[channel][kernel_y][kernel_x][strideCounter] == null) continue;
+									// collecting the relations and parameters for the dot product
 									INPUTS.add(this.kernelRelations[channel][kernel_y][kernel_x][strideCounter]);
 									PARAM.add(NODE.getWeight(channel, kernel_y, kernel_x));
 								}catch(NullPointerException e){}
@@ -382,16 +395,58 @@ public abstract class Layer {
 				return DERIVATIVE;
 			}).flatMap(Arrays::stream).toArray(Derivative[]::new);
 
+		// getting the gradient descent sequence
+		for(int nodeIndex=0; nodeIndex < this.NODES_AMOUNT; nodeIndex++){
+			final Node NODE = this.NODES[nodeIndex];
+			int	strideCounter	= 0;
+			final ArrayList<Node.Relation> INPUTS	= new ArrayList<>();	// inputs
+			final ArrayList<Node.Relation> OUTPUTS	= new ArrayList<>();	// output
+			final ArrayList<Node.Parameter> PARAM	= new ArrayList<>();	// weight
+
+			// cycling over all the "pixels" of the output matrix
+			for(int map_y=0; map_y < this.outputSizeY; map_y++){
+			  	for(int map_x=0; map_x < this.outputSizeX; map_x++){
+	
+					// cycling over the all the kernel weights
+					for(int channel=0; channel < this.inputs.length; channel++){
+						for(int kernel_y=0; kernel_y < this.KERNEL_Y; kernel_y++){
+							for(int kernel_x=0; kernel_x < this.KERNEL_X; kernel_x++){
+			
+							try{
+								// --------- GRADIENT DESCENT OPERATION
+						
+								if (this.kernelRelations[channel][kernel_y][kernel_x][strideCounter] == null) continue;
+								// collecting the relations and parameters for the dot product
+								INPUTS.add(this.kernelRelations[channel][kernel_y][kernel_x][strideCounter]);	// inputs	
+								OUTPUTS.add(NODE.getOutput()[map_y][map_x]);									// output
+								PARAM.add(NODE.getWeight(channel, kernel_y, kernel_x));							// weight
+							}catch(NullPointerException e){}
+											
+							}
+						}
+					}
+					strideCounter++;
+				}
+			}
+			// storing the sequence of relations
+			this.gradientSequence[nodeIndex] = new Gradient(
+				OUTPUTS.toArray(new Node.Relation[OUTPUTS.size()]),	// output
+				INPUTS.toArray(new Node.Relation[INPUTS.size()]),	// inputs
+				PARAM.toArray(new Node.Parameter[PARAM.size()])		// weight
+		  	);
+		}
+
+
 		int counter = 0;
-		// cycling over all the channels
+		// getting the bakward sequence
 		for(int channel=0; channel < this.inputs.length; channel++){
 			// cycling over the all the kernel weights
 			for(int kernel_y=0; kernel_y < this.KERNEL_Y; kernel_y++){
 				for(int kernel_x=0; kernel_x < this.KERNEL_X; kernel_x++){
 
-					final ArrayList<Node.Relation> INPUTS = new ArrayList<>();	// inputs
-					final ArrayList<Node.Relation> OUTPUTS = new ArrayList<>();	// output
-					final ArrayList<Node.Parameter> PARAM = new ArrayList<>();	// weight
+					final ArrayList<Node.Relation> INPUTS	= new ArrayList<>();	// inputs
+					final ArrayList<Node.Relation> OUTPUTS	= new ArrayList<>();	// output
+					final ArrayList<Node.Parameter> PARAM	= new ArrayList<>();	// weight
 
 					// cycling overall the nodes
 					for(int nodeIndex=0; nodeIndex < this.NODES_AMOUNT; nodeIndex++){
@@ -404,11 +459,11 @@ public abstract class Layer {
 							for(int map_x=0; map_x < this.outputSizeX; map_x++){
 
 								try{
+									if (this.kernelRelations[channel][kernel_y][kernel_x][strideCounter] == null) continue;
 									// collecting the relations and parameters for the dot product
 									INPUTS.add(this.kernelRelations[channel][kernel_y][kernel_x][strideCounter]);	// inputs	
 									OUTPUTS.add(NODE.getOutput()[map_y][map_x]);									// output
 									PARAM.add(NODE.getWeight(channel, kernel_y, kernel_x));							// weight
-
 
 								}catch(NullPointerException e){}
 															
@@ -431,11 +486,12 @@ public abstract class Layer {
 	protected void sequencesInit(){
 		final int FORWARD_SIZE	= this.NODES_AMOUNT * this.outputSizeY * this.outputSizeX;
 		final int BACKWARD_SIZE	= this.inputs.length * this.KERNEL_Y * this.KERNEL_X;
-		this.forwardSequence	= new DotProd[FORWARD_SIZE];	// storing the Forward sequence
-		this.backwardSequence	= new DotProd[BACKWARD_SIZE];	// storing the Backward sequence
+		this.forwardSequence	= new DotProd[FORWARD_SIZE];		// storing the Forward sequence
+		this.backwardSequence	= new DotProd[BACKWARD_SIZE];		// storing the Backward sequence
+		this.gradientSequence	= new DotProd[this.NODES_AMOUNT];	// storing the Gradient sequence
 
-		this.forwardSequence();									// initialising the forward sequence
-		this.backwardSequence();								// initialising the backward sequence
+		this.forwardSequence();										// initialising the forward sequence
+		this.backwardSequence();									// initialising the backward sequence
 	}
 
 
@@ -477,12 +533,16 @@ public abstract class Layer {
 	// --------------------- back propagation -------------------------
 
 	public void backPropagating(){
-		// cycling over this layer nodes
+		// cycling over this layer outputs
 		Arrays.stream(this.derivativeSequence).parallel().forEach( DP -> {
 			DP.getBias().addGradient(this.calculateDerivative(DP.getOutput()));	// calculating the derivative
 		});
-		// cycling over the output nodes
+		// cycling over the inputs relations
 		Arrays.stream(this.backwardSequence).parallel().forEach( DP -> {
+			DP.dotProd();	// calculating the dot product
+		});
+		// cycling over this layer nodes
+		Arrays.stream(this.gradientSequence).parallel().forEach( DP -> {
 			DP.dotProd();	// calculating the dot product
 		});
 	}	
