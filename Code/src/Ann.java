@@ -60,7 +60,6 @@ public class Ann{
 	public static void trainAndTest(){
 		final AnsiColours COLOR = new AnsiColours();		// used to colour the output
 		final DataSet ORIGINAL	= dataTrain.clone();		// original training dataset
-
 		double bestAccuracy		= MODEL.getAccuracy();		// highest accuracy used to determine if the model is overfitting
 
 		for(int epoch = 1; epoch <= EPOCHS; epoch++){											// looping through the epochs
