@@ -1,6 +1,7 @@
 import java.util.stream.IntStream;		// used to convert the array to a stream
 import java.util.stream.Collectors;		// used to convert the stream to a list
 import java.io.BufferedReader;			// used to read the file
+import java.io.File;
 import java.io.FileReader;				// used to read the file
 import java.io.IOException;				// used to throw an exception
 import java.io.FileNotFoundException;	// used to throw an exception
@@ -23,7 +24,7 @@ public class DataSet {
 	 */
     public DataSet(final String F_N, final String D) throws FileNotFoundException{
 		// file reader to initialsize the sample collection
-        try {  this.samples	= this.fileReader(F_N, D);  }
+        try {  this.samples	= this.fileReader(this.findFile(F_N), D);  }
 		catch(IOException e) { throw new FileNotFoundException(); }
 
 		this.CLASSES		= this.labelClasses();	// getting an array of labels
@@ -71,6 +72,26 @@ public class DataSet {
 				.collect(Collectors.toList())								// collecting the samples into a list
 				.toArray(Sample[]::new);									// converting the list to an array
 		} catch (IOException e) { throw new FileNotFoundException(); }		// if the file is not found, throw an exception
+	}
+
+	/**
+	 * Finding a file
+	 * @param FILE_NAME file name
+	 * @param dirs directories to search in
+	 * @return file path
+	 */
+	private String findFile(final String FILE_NAME, File ... dirs) {
+		dirs = dirs.length == 0 ? new File[] { new File(".") } : dirs;				// if no directories are provided, use the current directory
+		final ArrayList<File> SUB_DIRS = new ArrayList<>();							// list of sub directories
+
+		for(final File DIR: dirs){													// for each directory
+			final File[] FILES =  DIR.listFiles((d, n) -> n.matches(FILE_NAME));	// getting the files that match the file name
+			if(FILES.length > 0) return FILES[0].getPath();							// if a file is found, return it
+			else SUB_DIRS.addAll(Arrays.asList(DIR.listFiles(File::isDirectory)));	// if no file is found, add the sub directories to the list
+		}
+		// if no file is found, search in the sub directories
+		if(SUB_DIRS.size() > 0) return this.findFile(FILE_NAME, SUB_DIRS.toArray(new File[SUB_DIRS.size()]));
+		else					return FILE_NAME;									// if no file is found, return the original file name
 	}
 
 
