@@ -417,11 +417,11 @@ public class Util{
 
 		// getting console input
 		public String cinln(){
-			Console console = System.console();
-			if (console == null) {
-				throw new UnsupportedOperationException("Console not available");
-			}
-			return console.readLine();
+			Console console = System.console();			// getting console
+			if(console == null) throw new UnsupportedOperationException("Console not available");
+			final String INPUT = console.readLine();	// getting input
+			System.out.println();						// new line
+			return INPUT;								// returning input
 		}
 
 		/**

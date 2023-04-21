@@ -75,7 +75,7 @@ public class DataSet {
 	}
 
 	/**
-	 * Finding a file
+	 * Finding a file Breadth First Search way (BFS)
 	 * @param FILE_NAME file name
 	 * @param dirs directories to search in
 	 * @return file path
@@ -278,18 +278,6 @@ public class DataSet {
 		return this.CLASS_AMOUNT[this.getLabelIndex(LABEL)];
 	}
 
-	public double[] getClasses(){
-		return this.CLASSES;
-	}
-
-	public int classesAmount(){
-		return this.CLASSES.length;
-	}
-
-	public int size(){
-		return this.samples.length;
-	}
-
 	/**
 	 * Get a sample from the dataset
 	 * @param INDEX	index of the sample
@@ -298,13 +286,12 @@ public class DataSet {
 	public Sample getSample(final int INDEX){
 		return this.samples[INDEX];
 	}
-
-	public Sample[] getDataSet(){
-		return this.samples.clone();
-	}
-
-	// clone dataset
-	public DataSet clone(){
-		return new DataSet(this);
-	}
+	
+	public DataSet	clone()			{ return new DataSet(this);		}	// clone dataset
+	public Sample[] getDataSet()	{ return this.samples.clone();	}	// get dataset
+	public double[] getClasses()	{ return this.CLASSES; 			}	// get the classes
+	public int		classesAmount()	{ return this.CLASSES.length;	}	// get the amount of classes
+	public int		size()			{ return this.samples.length;	}	// get dataset size
+	public double	getMin()		{ return this.min; 				}	// get dataset min value
+	public double	getMax()		{ return this.max; 				}	// get dataset max value
 }

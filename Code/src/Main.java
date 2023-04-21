@@ -28,12 +28,22 @@ public class Main {
 
 
 	// main menu
-	public static int menu(){
+	public static int menu(){ return menu(2); }
+	public static int menu(final int MAX){
 		System.out.println(COLOURS.colourText("MAIN MENU", "magenta"));
 
-		switch(NAV.navChoice(5,"Perform a training")){
-			case EXIT: return EXIT;
-			case BACK: return BACK;
+		final String[] OPTIONS = new String[]{"Perform a training","Print "+Ann.missclassified.length+" misclassified"};
+		final String[] MAX_OPT = new String[Math.min(MAX, OPTIONS.length)];
+		
+		for(int i = 0; i<MAX; i++) MAX_OPT[i] = OPTIONS[i];
+
+		switch(NAV.navChoice(5,MAX_OPT)){
+			case EXIT : return EXIT;
+			case BACK : return BACK;
+			case AHEAD: Ann.trainAndTest();
+				return AHEAD;
+			case	2 : Ann.printMisclassified();
+				return 2;
 		}
 		return AHEAD;
 	}
@@ -57,13 +67,17 @@ public class Main {
 
 
 		// main loop
-		for(int nav = envSet(), iter = 1;	nav!=EXIT;	nav = nav!=BACK? nav: envSet(), iter++){
-			nav = nav==BACK? nav: menu();
+		for(int nav = envSet(), iter = 1, opt = 1;	nav!=EXIT;	nav = nav!=BACK? nav: envSet(), iter++){
+			nav = nav==BACK? nav: menu(opt);
 
 			// Perform the training and validation
-			if(nav == AHEAD){
-				Ann.trainAndTest();
-				System.out.println("Epochs completed: " + Ann.EPOCHS * iter + "\r\n");
+			switch(nav){
+				case 1: System.out.println("Epochs completed: " + Ann.EPOCHS * iter + "\r\n");
+					opt = 2;
+					break;
+				case 2: System.out.println("Samples missclassified: " + Ann.missclassified.length + "\r\n");
+					iter--;
+					opt = 1;
 			}
 		}
 

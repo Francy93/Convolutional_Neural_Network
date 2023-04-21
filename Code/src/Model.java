@@ -231,10 +231,12 @@ public class Model {
 			this.sample = SAMPLE;										// loading the sample
 
 			this.feedForward();											// performing forward propagation for all the layers
-			if (this.sample.getLabel() == this.getPredClass(DATA)){		// checking if the prediction is correct
-				TP[DATA.getLabelIndex(this.getPredClass(DATA))]++;		// getting true positives
+			SAMPLE.setPred(this.getPredClass(DATA));					// getting the prediction
+			final int L_INDEX = DATA.getLabelIndex(SAMPLE.getPred());	// getting the label index
+			if (this.sample.getLabel() == SAMPLE.getPred()){			// checking if the prediction is correct
+				TP[L_INDEX]++;											// getting true positives
 				correct++;												// correct counter
-			}else	FP[DATA.getLabelIndex(this.getPredClass(DATA))]++;	// getting false positives
+			}else	FP[L_INDEX]++;										// getting false positives
 		}
 
 		// storing the outcome data

@@ -2,11 +2,12 @@ import java.io.FileNotFoundException;
 import lib.Util.AnsiColours;
 
 public class Ann{
+	public static 			Sample[] missclassified = new Sample[0];		// missclassified samples
+	private static			DataSet dataTrain;								//	dataset used to perform the training		
+	private static			DataSet dataValid;								//	detaset used to perform the validation
 
     private static final	String	TRAINING_FILE	= "cw2DataSet1.csv";	//	file name of the training dataset
 	private static final	String	VALIDATE_FILE	= "cw2DataSet2.csv";	//	file name of the validation dataset
-	private static			DataSet dataTrain;								//	dataset used to perform the training		
-	private static			DataSet dataValid;								//	detaset used to perform the validation
 	private static final	double	NOISE_STEP		= 0;					// 	noise step used to determine if the model is overfitting
 	private static final	int		BATCH_SIZE		= 8;					//	number of samples processed before updating the weights
 	public	static final	int		EPOCHS			= 100;					//	number of dataset cycles
@@ -58,29 +59,31 @@ public class Ann{
 
 	// running training and testing
 	public static void trainAndTest(){
-		final AnsiColours COLOR = new AnsiColours();		// used to colour the output
-		final DataSet ORIGINAL	= dataTrain.clone();		// original training dataset
-		double bestAccuracy		= MODEL.getAccuracy();		// highest accuracy used to determine if the model is overfitting
+		final AnsiColours COLOR = new AnsiColours();	// used to colour the output
+		final DataSet ORIGINAL	= dataTrain.clone();	// original training dataset
+		double bestAccuracy		= MODEL.getAccuracy();	// highest accuracy used to determine if the model is overfitting
+		double overfitting		= 0;					// used to determine if the model is overfitting
 
-		for(int epoch = 1; epoch <= EPOCHS; epoch++){											// looping through the epochs
-			System.out.println("Training..");													// training message
-			String message				= "Validating epoch ";									// validation message
+		for(int epoch = 1; epoch <= EPOCHS; epoch++){										// looping through the epochs
+			System.out.println("Training..");												// training message
+			String message	= "Validating epoch ";											// validation message
 			
-			dataTrain = ORIGINAL.clone();														// resetting the training dataset
-			final double OVERFITTING	= bestAccuracy - MODEL.getAccuracy();					// used to determine if the model is overfitting
-			bestAccuracy				= Math.max(MODEL.getAccuracy(), bestAccuracy);			// storing the highest accuracy
-
-			message = fullNoise(OVERFITTING, NOISE_STEP, message);								// performing the noise augmentation
-			message = adversarial(OVERFITTING, message) + epoch;								// performing the adversarial augmentation
+			dataTrain 		= ORIGINAL.clone();												// resetting the training dataset
+			message			= fullNoise(overfitting, NOISE_STEP, message);					// performing the noise augmentation
+			message			= adversarial(overfitting, message) + epoch;					// performing the adversarial augmentation
 			
 			// trainig the model
-			MODEL.train(dataTrain, BATCH_SIZE, 1, LEARNING_RATE);								// performing the training
+			MODEL.train(dataTrain, BATCH_SIZE, 1, LEARNING_RATE);							// performing the training
 			
-			System.out.println(COLOR.colourText("\r\n"+message+" ...","yellow"));				// validation message
-			MODEL.validate(dataValid);															// performing the validation
-			printMetrics();																		// printing the metrics
+			System.out.println(COLOR.colourText("\r\n"+message+" ...","yellow"));			// validation message
+			MODEL.validate(dataValid);														// performing the validation
+			printMetrics();																	// printing the metrics
+			
+			overfitting		= bestAccuracy - MODEL.getAccuracy();							// used to determine if the model is overfitting
+			bestAccuracy	= Math.max(MODEL.getAccuracy(), bestAccuracy);					// storing the highest accuracy
+			if(overfitting < 0) getMissclassified(dataValid);								// storing the missclassified samples if any improvement
 		}
-		System.out.println(COLOR.colourText("\nHighest Accuracy: "+ bestAccuracy,"cyan"));		// printing the highest accuracy
+		System.out.println(COLOR.colourText("\nHighest Accuracy: "+ bestAccuracy,"cyan"));	// printing the highest accuracy
 	}
 
 	/**
@@ -90,8 +93,8 @@ public class Ann{
 	 * @return message
 	 */
 	private static String fullNoise(final double OVERFITTING, final double NOISE_STEP, final String MESSAGE){
-		final double HALF_NS	= NOISE_STEP/2d;			// half of the noise step
-		double noise			= 5;						// noise used to augment the training dataset
+		final double HALF_NS	= NOISE_STEP/2d;	// half of the noise step
+		double noise			= 5;				// noise used to augment the training dataset
 
 		if(NOISE_STEP == 0) return MESSAGE;
 		else if (MODEL.getAccuracy() < 95){
@@ -136,5 +139,30 @@ public class Ann{
 		System.out.println("Recall:\t\t"	+ COLOURS.colourText(MODEL.getRecall()		+ "%"	, RECALL_COLOUR		));
 		System.out.println("F1Score:\t"		+ COLOURS.colourText(MODEL.getF1Score()		+ "%\n"	, F1_COLOUR			));
 	}
+
+
+	// storing the missclassified samples
+	private static void getMissclassified(final DataSet DATASET){
+		final Sample[] SAMPLES = new Sample[DATASET.size()];				// used to store the missclassified samples
+		
+		int missed = 0;
+		for(final Sample SAMPLE: DATASET.getDataSet()){						// cycling through the samples
+			if(!SAMPLE.isPredCorrect()) SAMPLES[missed++] = SAMPLE;			// storing the missclassified samples
+		}
+		
+		final Sample[] MISSCLASSIFIED = new Sample[missed];					// resizing the array
+		for(int i=0; i<missed; i++) MISSCLASSIFIED[i] = SAMPLES[i].clone();	// copying the missclassified samples
+
+		missclassified = MISSCLASSIFIED;									// storing the missclassified samples
+	}
+
+
+	// printing the misclassified samples
+	public static void printMisclassified(){
+		for(final Sample SAMPLE: missclassified){
+			SAMPLE.print2D(dataValid.getMax(), 23, 1);
+			System.out.println("Sample label: " + SAMPLE.getLabel() + "\tPrediction label: " + SAMPLE.getPred() + "\n\n");
+		}
+	}	
 
 }
