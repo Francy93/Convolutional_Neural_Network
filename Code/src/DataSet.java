@@ -119,7 +119,7 @@ public class DataSet {
 	// providing every sample with a one-hot array
 	public void classesToSamples(){
 		Arrays.stream(this.samples).parallel().forEach(SAMPLE -> {					// cycling through the samples
-			SAMPLE.setClassLocation(IntStream.range(0, this.CLASSES.length)			// creating a stream of indexes
+			SAMPLE.setOneHot(IntStream.range(0, this.CLASSES.length)			// creating a stream of indexes
                 .mapToDouble(i -> SAMPLE.getLabel() == this.CLASSES[i] ? 1.0 : 0.0)	// creating a one-hot array
                 .toArray()															// converting the stream to an array
 			);
@@ -191,7 +191,7 @@ public class DataSet {
 			for(int i = 0; i < SAMPLE.getFeature1D().length; i++){
 				SAMPLE.setToken(i, this.normalization(SAMPLE.getToken1D(i), this.min, this.max));
 			}
-			SAMPLE.setClassLocation(sample.getOneHot().clone());// setting the one-hot array
+			SAMPLE.setOneHot(sample.getOneHot().clone());// setting the one-hot array
 			return SAMPLE;										// returning the sample
 		}).toArray(Sample[]::new);								// converting the stream to an array
 
@@ -222,7 +222,7 @@ public class DataSet {
 						}).toArray(),									// converting the stream to an array
 						sample.getLabel()								// setting the label
 					);
-					SAMPLE.setClassLocation(sample.getOneHot().clone());// setting the one-hot array
+					SAMPLE.setOneHot(sample.getOneHot().clone());// setting the one-hot array
 					return SAMPLE;										// returning the sample
 				})
 			).toList()													// converting the stream to a list

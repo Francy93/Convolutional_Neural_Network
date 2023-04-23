@@ -7,7 +7,7 @@ public class Sample {
 	private final 	double[][]	MATRIX;			// array2D of sample data/input
     private final 	double		LABEL;			// class of sample
     private 	 	double		pred;			// class of sample
-	private			double[]	labelLocation;	// to store the class location
+	private			double[]	oneHot;			// to store the class location
 
 	/**
 	 * Sample constructor
@@ -36,7 +36,7 @@ public class Sample {
 		this.LABEL	= SAMPLE.getLabel();		// extract this sample label only
 		this.MATRIX	= SAMPLE.getFeature2D();	// initialising this sample image matrix
 		this.pred	= SAMPLE.getPred();			// initialising this sample image matrix
-		this.labelLocation = SAMPLE.getOneHot();// initialising this sample image matrix
+		this.oneHot = SAMPLE.getOneHot();// initialising this sample image matrix
     }
 
 
@@ -102,8 +102,8 @@ public class Sample {
 	 * Setting the "one-hot" encoder array
 	 * @param LABEL_LOCATION
 	 */
-	public void setClassLocation(final double[] LABEL_LOCATION){
-		this.labelLocation = LABEL_LOCATION;
+	public void setOneHot(final double[] LABEL_LOCATION){
+		this.oneHot = LABEL_LOCATION;
 	}
 
 	/**
@@ -187,7 +187,7 @@ public class Sample {
 
 	// getting the one-hot array
 	public double[] getOneHot(){
-		return this.labelLocation;
+		return this.oneHot;
 	}
 
 	// getting the prediction

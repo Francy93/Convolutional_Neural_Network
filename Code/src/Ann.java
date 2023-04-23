@@ -19,13 +19,14 @@ public class Ann{
 	// Model definition
 	private static final Model MODEL = Model.Sequential(
 		// starting the convolutional layers
-		Layer.Conv2D(32,	2, 2,	Layer.Activation.MISH),	// convolutional layer of 32 filters with a kernal of 2X2
-		Layer.Conv2D(64,	2, 2,	Layer.Activation.MISH),	// convolutional layer of 64 filters with a kernal of 2X2
-		Layer.Conv2D(128,	3, 3,	Layer.Activation.MISH),	// convolutional layer of 128 filters with a kernal of 3X3
-		Layer.Conv2D(256,	3, 3,	Layer.Activation.MISH),	// convolutional layer of 256 filters with a kernal of 3X3
+		Layer.Conv2D(8	,	1, 1,	Layer.Activation.MISH),
+		Layer.Conv2D(32	,	2, 2,	Layer.Activation.MISH),		// convolutional layer of 32 filters with a kernal of 2X2
+		Layer.Conv2D(64	,	2, 2,	Layer.Activation.MISH),		// convolutional layer of 64 filters with a kernal of 2X2
+		Layer.Conv2D(128,	3, 3,	Layer.Activation.MISH),		// convolutional layer of 128 filters with a kernal of 3X3
+		Layer.Conv2D(256,	3, 3,	Layer.Activation.MISH),		// convolutional layer of 256 filters with a kernal of 3X3
 		// starting the fully connected layers
-		//Layer.Dense(128,		Layer.Activation.MISH),		// dense layer of 128 nodes
-		Layer.Dense(10 ,		Layer.Activation.SOFTMAX)	// output layer of 10 classifications
+		//Layer.Dense(128	,			Layer.Activation.MISH),		// dense layer of 128 nodes
+		Layer.Dense(10	,			Layer.Activation.SOFTMAX)	// output layer of 10 classifications
     );
 
 
@@ -126,7 +127,7 @@ public class Ann{
 		final lib.Util.AnsiColours COLOURS = new AnsiColours();									// used to colour the output
 		
 		// setting the colours according to the metrics
-		final float	 ONE_THIRD 			= 100f/3f, 	TWO_THIRDS 	= 100f/1.5f;					// used to determine the output colour
+		final float	 ONE_THIRD 			= 1f/3f, 	TWO_THIRDS 	= 1f/1.5f;						// used to determine the output colour
 		final String RED 				= "red",	YELLOW 		= "yellow", GREEN = "green";	// colours for the output
 		final String ACCURACY_COLOUR	= MODEL.getAccuracy()	<= ONE_THIRD? RED: MODEL.getAccuracy()	<= TWO_THIRDS? YELLOW: GREEN;
 		final String PRECISION_COLOUR	= MODEL.getPrecision()	<= ONE_THIRD? RED: MODEL.getPrecision()	<= TWO_THIRDS? YELLOW: GREEN;
@@ -134,10 +135,10 @@ public class Ann{
 		final String F1_COLOUR			= MODEL.getF1Score()	<= ONE_THIRD? RED: MODEL.getF1Score()	<= TWO_THIRDS? YELLOW: GREEN;
 		
 		// printing the metrics
-		System.out.println("Accuracy:\t"	+ COLOURS.colourText(MODEL.getAccuracy()	+ "%"	, ACCURACY_COLOUR	));
-		System.out.println("Precision:\t"	+ COLOURS.colourText(MODEL.getPrecision()	+ "%"	, PRECISION_COLOUR	));
-		System.out.println("Recall:\t\t"	+ COLOURS.colourText(MODEL.getRecall()		+ "%"	, RECALL_COLOUR		));
-		System.out.println("F1Score:\t"		+ COLOURS.colourText(MODEL.getF1Score()		+ "%\n"	, F1_COLOUR			));
+		System.out.println("Accuracy:\t"	+ COLOURS.colourText(lib.Util.round(MODEL.getAccuracy()		*100d, 2)	+ " %"	, ACCURACY_COLOUR	));
+		System.out.println("Precision:\t"	+ COLOURS.colourText(lib.Util.round(MODEL.getPrecision()	*100d, 2)	+ " %"	, PRECISION_COLOUR	));
+		System.out.println("Recall:\t\t"	+ COLOURS.colourText(lib.Util.round(MODEL.getRecall()		*100d, 2)	+ " %"	, RECALL_COLOUR		));
+		System.out.println("F1Score:\t"		+ COLOURS.colourText(lib.Util.round(MODEL.getF1Score()		*100d, 2)	+ " %\n", F1_COLOUR			));
 	}
 
 

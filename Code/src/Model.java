@@ -1,6 +1,7 @@
 
 public class Model {
-
+	
+	private			double		error 		= 0;	// to store the loss result
 	private			double		accuracy 	= 0;	// to store the accuracy result
 	private			double		precision	= 0;	// to store the precision result
 	private			double		recall		= 0;	// to store the recall result
@@ -21,7 +22,8 @@ public class Model {
 
 		// variables
 		private final lib.Loss LOSS;					// loss function
-		public double error = 0.0;						// loss value
+		public double accuracy	= 0;					// accuracy
+		public double error		= 0;					// loss value
 
 		// constructor
 		private Loss(final lib.Loss LOSS){ this.LOSS = LOSS; }
@@ -56,15 +58,23 @@ public class Model {
 		 * @param OUTPUT output of the layer
 		 * @param LABEL label of the sample
 		 */
-		public void function(final Layer LAYER, final Sample SAMPLE){
+		public int function(final Layer LAYER, final Sample SAMPLE){
 			final Node.Relation[] FLAT_OUTPUT	= LAYER.getFlatOutput();		// getting the output of the layer	
 			final double[] ONE_HOT				= SAMPLE.getOneHot();			// getting the label of the sample
-			double sum = 0.0;
+			double sum		= 0, prevMax = 0;
+			int maxIndex	= 0;
 
-            for(int index = 0 ; index < FLAT_OUTPUT.length; index++){
+
+            for(int index = 0; index < FLAT_OUTPUT.length; index++){
+				if(FLAT_OUTPUT[index].getOutput() > prevMax){
+					prevMax = FLAT_OUTPUT[index].getOutput();
+					maxIndex = index;
+				}
 				sum += this.LOSS.function(FLAT_OUTPUT[index].getOutput(), ONE_HOT[index]);
 			}
-            this.error += sum / FLAT_OUTPUT.length;
+			this.accuracy	+= ONE_HOT[maxIndex];
+            this.error		+= sum / FLAT_OUTPUT.length;
+			return maxIndex;
 		}
 	}
 
@@ -141,13 +151,14 @@ public class Model {
 	/**
 	 * Feed forward through every layer
 	 */
-	private void feedForward(){
+	private int feedForward(){
 		// loading the sample
 		try{ this.LAYERS[0].sampleLoader(this.sample); }								// loading the sample into the input layer
 		catch(Exception e){ System.err.println("Sample loaded into the wrong layer"); }	// error handling
 
 		// cycling over the layers
 		for(final Layer LAYER: this.LAYERS)	LAYER.feedForward();
+		return this.loss.function(LAYERS[this.LAYERS.length-1], this.sample);			// get the loss and return the predicted class
 	}
 
 
@@ -157,7 +168,6 @@ public class Model {
 	 * Performing the back propagation to every layer
 	 */
 	private void backPropagate(){
-		this.loss.function(LAYERS[this.LAYERS.length-1], this.sample);										// getting the loss
 		this.loss.derivative(LAYERS[this.LAYERS.length-1], this.sample);									// getting the loss derivative
 		for(int layer = this.LAYERS.length-1; layer >= 0; layer--)	this.LAYERS[layer].backPropagating();	// cycling over the layers
 	}
@@ -207,9 +217,16 @@ public class Model {
 					this.backPropagate();										// performing back propagation for all the layers
 				}
 				this.weightsUpdate();											// updating the weights
-				BAR.message(epochMessage + " | Loss: " + this.loss.error/END_BATCH, "blue");
+				BAR.message(
+					epochMessage + 
+					" | Loss: "		+	this.loss.error		/ (double)END_BATCH	+ 
+					" | Accuracy: " +	this.loss.accuracy	/ (double)END_BATCH, "blue"
+				);
 			}
-			this.loss.error = 0.0;												// resetting the loss error
+			this.error			= this.loss.error		/ (double)DATA.size();	// setting this epoch error
+			this.accuracy		= this.loss.accuracy	/ (double)DATA.size();	// setting this epoch accuracy
+			this.loss.error		= 0;											// resetting the loss error
+			this.loss.accuracy	= 0;											// resetting the accuracy
 		}
 	}
 
@@ -219,53 +236,32 @@ public class Model {
 	 * @param DATA dataset
 	 * @return accuracy
 	 */
-    public double validate(final DataSet DATA){
+    public void validate(final DataSet DATA){
 		final int[] FP	= new int[DATA.getClasses().length];			// false positives
 		final int[] TP	= new int[DATA.getClasses().length];			// true positives
-		int correct = 0;												// correct counter
 
 		DATA.shuffle();													// shuffeling the samples
 
 		// cycling over the samples
 		for(final Sample SAMPLE: DATA.getDataSet()){
-			this.sample = SAMPLE;										// loading the sample
+			this.sample = SAMPLE;											// loading the sample
 
-			this.feedForward();											// performing forward propagation for all the layers
-			SAMPLE.setPred(this.getPredClass(DATA));					// getting the prediction
-			final int L_INDEX = DATA.getLabelIndex(SAMPLE.getPred());	// getting the label index
-			if (this.sample.getLabel() == SAMPLE.getPred()){			// checking if the prediction is correct
-				TP[L_INDEX]++;											// getting true positives
-				correct++;												// correct counter
-			}else	FP[L_INDEX]++;										// getting false positives
+			final int PREDICTED = this.feedForward();						// performing forward propagation for all the layers
+			this.sample.setPred(DATA.getClasses()[PREDICTED]);				// getting the prediction
+			final int L_INDEX = DATA.getLabelIndex(this.sample.getPred());	// getting the label index
+			if (this.sample.getLabel() == this.sample.getPred()){			// checking if the prediction is correct
+				TP[L_INDEX]++;												// getting true positives
+			}else	FP[L_INDEX]++;											// getting false positives
 		}
 
 		// storing the outcome data
-		this.accuracy	= (double)correct * 100.00 / (double)DATA.size();	// accuracy
-		this.precision	= this.getPrecision(TP, FP) * 100;					// precision
-		this.recall		= this.getRecall(TP, FP, DATA) * 100;				// recall
-		this.f1Score	= this.getF1Score(this.precision, this.recall);		// f1Score
-		
-		return this.accuracy;
-	}
+		this.accuracy	= this.loss.accuracy / (double)DATA.size();		// accuracy
+		this.precision	= this.getPrecision(TP, FP);					// precision
+		this.recall		= this.getRecall(TP, FP, DATA);					// recall
+		this.f1Score	= this.getF1Score(this.precision, this.recall);	// f1Score
 
-
-	/**
-	 * Getting the predicted class
-	 * @param DATA dataset
-	 * @return predicted class
-	 */
-	private double getPredClass(final DataSet DATA){
-		Node.Relation[] NODES = this.LAYERS[this.LAYERS.length-1].getFlatOutput();
-
-		int answerIndex		= 0;						// index of the answer
-		double valHolder	= 0; 						// value holder
-		for(int node=0; node < NODES.length; node++){	// cycling over the nodes
-			if(NODES[node].getOutput() > valHolder){	// checking if the node output is greater than the value holder
-				answerIndex = node;						// setting the answer index
-				valHolder	= NODES[node].getOutput();	// setting the value holder
-			}
-		}
-		return DATA.getClasses()[answerIndex];
+		this.loss.error		= 0;										// resetting the loss error
+		this.loss.accuracy	= 0;										// resetting the accuracy
 	}
 
 
@@ -316,22 +312,27 @@ public class Model {
 	
 	// getting the model accuracy
 	public double getAccuracy(){
-		return lib.Util.round(this.accuracy, 2);
+		return this.accuracy;
 	}
 
 	// getting the model precision
 	public double getPrecision(){
-		return lib.Util.round(this.precision, 2);
+		return this.precision;
 	}
 
 	// getting the model recall
 	public double getRecall(){
-		return lib.Util.round(this.recall, 2);
+		return this.recall;
 	}
 
 	// getting the model F1Score
 	public double getF1Score(){
-		return lib.Util.round(this.f1Score, 2);
+		return this.f1Score;
+	}
+
+	// getting the model error
+	public double getError(){
+		return this.error;
 	}
 
 
