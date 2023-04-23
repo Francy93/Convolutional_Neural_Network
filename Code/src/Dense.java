@@ -79,8 +79,8 @@
 		if(!super.isFirstLayer) throw new Exception("SampleLoader() can only be used with the first layer");
 
 		// cycling over this layer inputs array
-		for(int node=0; node < this.inputs.length; node++){
-			Node.Relation[][] OUTPUT = this.inputs[node].getOutput();
+		for(int node=0; node < super.inputs.length; node++){
+			Node.Relation[][] OUTPUT = super.inputs[node].getOutput();
 			int sample1D_iterator = 0;
 
 			// cycling over the activation map of this layer nodes

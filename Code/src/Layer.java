@@ -114,7 +114,7 @@ public abstract class Layer {
 	 * @param KX KERNEL_X
 	 */
     protected Layer(final int N, final Activation A, final int KY, final int KX){
-        this.NODES_AMOUNT	= N;
+		this.NODES_AMOUNT	= N;
         this.ACTIVATION		= A;
 		this.KERNEL_Y		= KY < 1? 1: KY;
         this.KERNEL_X		= KX < 1? 1: KX;
@@ -152,49 +152,44 @@ public abstract class Layer {
 	public abstract class DotProd{
 		protected Node.Relation[]	inputs;	// input node relations
 		protected Node.Parameter[]	param;	// node weights
-
-
-		public abstract void dotProd();
-		public abstract Node.Relation getOutput();
-		public abstract Node.Parameter getBias();	
+		protected Layer				layer;	// layer object
+		public abstract void propagate();	// update the parameters
 	}
 	// Forward class
 	public class Forward extends DotProd{
 		private final Node.Relation 	OUTPUT;	// output node relation
 		private final Node.Parameter	BIAS;	// node bias
 
-		public Forward(final Node.Relation OUTPUT, final Node.Relation[] INPUTS, final Node.Parameter[] PARAM, final Node.Parameter BIAS){
+		public Forward(final Node.Relation OUTPUT, final Node.Relation[] INPUTS, final Node.Parameter[] PARAM, final Node.Parameter BIAS, final Layer LAYER){
 			this.OUTPUT		= OUTPUT;	// output node relation
 			super.inputs	= INPUTS;	// input node relations
 			super.param		= PARAM;	// node weights
 			this.BIAS		= BIAS;		// node bias
+			super.layer		= LAYER;	// layer object
 		}
 
 		@Override
-		public void dotProd(){
+		public void propagate(){
 			for(int i=0; i < super.inputs.length; i++){
 				this.OUTPUT.addToLinearOutput(super.inputs[i].getOutput() * super.param[i].getWeight());
 			}
-			OUTPUT.addToLinearOutput(this.BIAS.getWeight());	// add bias
+			this.OUTPUT.addToLinearOutput(this.BIAS.getWeight());		// add bias
+			super.layer.ACTIVATION.function(this.OUTPUT, super.layer);	// calculating the activation function
 		}
-
-		@Override
-		public Node.Relation getOutput(){ return this.OUTPUT; }
-		@Override
-		public Node.Parameter getBias(){ return this.BIAS; }
 	}
 	// Backward class
 	public class Backward extends DotProd{
 		private final Node.Relation[] 	OUTPUTS;	// output node relation
 
-		public Backward(final Node.Relation[] OUTPUTS, final Node.Relation[] INPUTS, final Node.Parameter[] PARAM){
-			this.OUTPUTS	= OUTPUTS;	// output node relationss
+		public Backward(final Node.Relation[] OUTPUTS, final Node.Relation[] INPUTS, final Node.Parameter[] PARAM, final Layer LAYER){
+			this.OUTPUTS	= OUTPUTS;	// output node relations
 			super.inputs	= INPUTS;	// input node relations
 			super.param		= PARAM;	// node weights
+			super.layer		= LAYER;	// layer object
 		}
 
 		@Override
-		public void dotProd(){
+		public void propagate(){
 			for(int i=0; i < super.inputs.length; i++){
 				// --------- BACK PROPAGATION OPERATION
 				super.inputs[i].addToChainRuleSum(this.OUTPUTS[i].getDerivativeSum() * super.param[i].getWeight());
@@ -202,29 +197,34 @@ public abstract class Layer {
 				super.param[i].addGradient(this.OUTPUTS[i].getDerivativeSum() * super.inputs[i].getOutput());
 			}
 		}
-		
-		@Override
-		public Node.Relation getOutput(){ return null; }
-		@Override
-		public Node.Parameter getBias(){ return null; }
 	}
 	// Derivative class
 	public class Derivative extends DotProd{
 		private final Node.Relation 	OUTPUT;	// output node relation
 		private final Node.Parameter	BIAS;	// node bias
 
-		public Derivative(final Node.Relation OUTPUT, final Node.Parameter PARAM){
+		public Derivative(final Node.Relation OUTPUT, final Node.Parameter PARAM, final Layer LAYER){
 			this.OUTPUT	= OUTPUT;	// output node relationss
 			this.BIAS	= PARAM;	// node weights
+			super.layer	= LAYER;	// layer object
 		}
 
 		@Override
-		public void dotProd(){ }
-		
-		@Override
-		public Node.Relation getOutput(){ return this.OUTPUT; }
-		@Override
-		public Node.Parameter getBias(){ return this.BIAS; }
+		public void propagate(){ 
+			this.BIAS.addGradient(this.calculateDerivative(this.OUTPUT));
+		}
+
+		/**
+		 * Calculating the derivative of a single output
+		 * @param NODE_SINGLE_OUT 	the output to calculate the derivative of
+		 * @return the derivative of the output
+		 */
+		private double calculateDerivative(final Node.Relation NODE_SINGLE_OUT){
+			super.layer.ACTIVATION.derivative(NODE_SINGLE_OUT, super.layer);	// calculating the derivative of the activation function
+			NODE_SINGLE_OUT.derivAndCRS_sum();									// calculating the derivative of the non-linear to linear operation
+
+			return NODE_SINGLE_OUT.getDerivativeSum();
+		}
 	}
 
 
@@ -359,7 +359,8 @@ public abstract class Layer {
 						NODE.getOutput()[map_y][map_x],
 						INPUTS.toArray(new Node.Relation[INPUTS.size()]),
 						PARAM.toArray(new Node.Parameter[PARAM.size()]),
-						NODE.getBias(map_y, map_x)
+						NODE.getBias(map_y, map_x),
+						this
 					);
 				}
 			}
@@ -373,7 +374,7 @@ public abstract class Layer {
 				final Derivative[] DERIVATIVE = new Derivative[this.outputSizeY*this.outputSizeX];
 				for(int map_y=0; map_y < this.outputSizeY; map_y++){
 					for(int map_x=0; map_x < this.outputSizeX; map_x++){
-						DERIVATIVE[map_y*this.outputSizeY+map_x] = new Derivative(node.getOutput()[map_y][map_x], node.getBias(map_y, map_x));
+						DERIVATIVE[map_y*this.outputSizeY+map_x] = new Derivative(node.getOutput()[map_y][map_x], node.getBias(map_y, map_x), this);
 					}
 				}return DERIVATIVE;
 			}).flatMap(Arrays::stream).toArray(Derivative[]::new);
@@ -411,7 +412,8 @@ public abstract class Layer {
 			this.backwardSequence[nodeIndex] = new Backward(
 				OUTPUTS.toArray(new Node.Relation[OUTPUTS.size()]),	// output
 				INPUTS.toArray(new Node.Relation[INPUTS.size()]),	// inputs
-				PARAM.toArray(new Node.Parameter[PARAM.size()])		// weight
+				PARAM.toArray(new Node.Parameter[PARAM.size()]),	// weight
+				this												// layer
 		  	);
 		}
 	}
@@ -453,13 +455,8 @@ public abstract class Layer {
     // --------------------- feed forward -------------------------
 
 	public void feedForward(){
-
 		// cycling over all this layer nodes
-		Arrays.stream(this.forwardSequence).parallel().forEach( DP -> {
-			DP.dotProd();									// calculating the dot product
-			this.ACTIVATION.function(DP.getOutput(), this);	// calculating the activation function
-		});
-
+		Arrays.stream(this.forwardSequence).parallel().forEach(DotProd::propagate);		// calculating the dot product
 	}
 
 	
@@ -467,13 +464,9 @@ public abstract class Layer {
 
 	public void backPropagating(){
 		// cycling over this layer outputs
-		Arrays.stream(this.derivativeSequence).parallel().forEach( DP -> {
-			DP.getBias().addGradient(this.calculateDerivative(DP.getOutput()));	// calculating the derivative
-		});
+		Arrays.stream(this.derivativeSequence).parallel().forEach(DotProd::propagate);	// calculating the derivative
 		// cycling over the inputs relations
-		Arrays.stream(this.backwardSequence).parallel().forEach( DP -> {
-			DP.dotProd();	// calculating the dot product
-		});
+		Arrays.stream(this.backwardSequence).parallel().forEach(DotProd::propagate);	// calculating the dot product
 	}	
 
 	
@@ -482,22 +475,12 @@ public abstract class Layer {
 	// updating the weights and biases
 	public void updateWeights(){
 		// cycling over all the nodes
-		Arrays.stream(this.NODES).parallel().forEach(Node::update); // updating both weights and biases
+		Arrays.stream(this.NODES).parallel().forEach(Node::update);						// updating both weights and biases
 	}
 
 
 
-	/**
-	 * Calculating the derivative of a single output
-	 * @param NODE_SINGLE_OUT 	the output to calculate the derivative of
-	 * @return the derivative of the output
-	 */
-    private double calculateDerivative(final Node.Relation NODE_SINGLE_OUT){
-	    this.ACTIVATION.derivative(NODE_SINGLE_OUT, this);	// calculating the derivative of the activation function
-        NODE_SINGLE_OUT.derivAndCRS_sum();					// calculating the derivative of the non-linear to linear operation
-
-        return NODE_SINGLE_OUT.getDerivativeSum();
-    }
+	
 
 
 

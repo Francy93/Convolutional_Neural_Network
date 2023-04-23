@@ -35,7 +35,7 @@ public class Main {
 		final String[] OPTIONS = new String[]{"Perform a training","Print "+Ann.missclassified.length+" misclassified"};
 		final String[] MAX_OPT = new String[Math.min(MAX, OPTIONS.length)];
 		
-		for(int i = 0; i<MAX; i++) MAX_OPT[i] = OPTIONS[i];
+		for(int i=0; i<MAX_OPT.length; i++) MAX_OPT[i] = OPTIONS[i];
 
 		switch(NAV.navChoice(5,MAX_OPT)){
 			case EXIT : return EXIT;
