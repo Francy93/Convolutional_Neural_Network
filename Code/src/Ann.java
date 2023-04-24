@@ -79,7 +79,7 @@ public class Ann{
 			MODEL.train(dataTrain, BATCH_SIZE, 1, LEARNING_RATE);								// performing the training
 			trainCompare	= trainError - MODEL.getError();									// check confidence improvements
 			trainError		= MODEL.getError();													// storing the current error rate
-			System.out.println("Accuracy:\t"+MODEL.getAccuracy()+"\nLoss:\t"+MODEL.getError());	// printing the metrics
+			System.out.println("Accuracy:\t"+MODEL.getAccuracy()+"\nLoss:    \t"+MODEL.getError());	// printing the metrics
 			
 			// validate the model
 			System.out.println(COLOR.colourText("\r\n"+message+" ...","yellow"));				// validation message
