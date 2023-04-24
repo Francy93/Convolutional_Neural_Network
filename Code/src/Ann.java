@@ -64,27 +64,36 @@ public class Ann{
 		final DataSet ORIGINAL	= dataTrain.clone();	// original training dataset
 		double bestAccuracy		= MODEL.getAccuracy();	// highest accuracy used to determine if the model is overfitting
 		double overfitting		= 0;					// used to determine if the model is overfitting
+		double trainCompare		= 0, trainError = 0;
+		double validCompare		= 0, validError	= 0;
 
-		for(int epoch = 1; epoch <= EPOCHS; epoch++){										// looping through the epochs
-			System.out.println("Training..");												// training message
-			String message	= "Validating epoch ";											// validation message
+		for(int epoch = 1; epoch <= EPOCHS; epoch++){											// looping through the epochs
+			String message	= "Validating epoch ";												// validation message
 			
-			dataTrain 		= ORIGINAL.clone();												// resetting the training dataset
-			message			= fullNoise(overfitting, NOISE_STEP, message);					// performing the noise augmentation
-			message			= adversarial(overfitting, message) + epoch;					// performing the adversarial augmentation
+			dataTrain 		= ORIGINAL.clone();													// resetting the training dataset
+			message			= fullNoise(overfitting, NOISE_STEP, message);						// performing the noise augmentation
+			message			= adversarial(overfitting, message) + epoch;						// performing the adversarial augmentation
 			
 			// trainig the model
-			MODEL.train(dataTrain, BATCH_SIZE, 1, LEARNING_RATE);							// performing the training
+			System.out.println("Training epoch "+epoch+" ...");									// training message
+			MODEL.train(dataTrain, BATCH_SIZE, 1, LEARNING_RATE);								// performing the training
+			trainCompare	= trainError - MODEL.getError();									// check confidence improvements
+			trainError		= MODEL.getError();													// storing the current error rate
+			System.out.println("Accuracy:\t"+MODEL.getAccuracy()+"\nLoss:\t"+MODEL.getError());	// printing the metrics
 			
-			System.out.println(COLOR.colourText("\r\n"+message+" ...","yellow"));			// validation message
-			MODEL.validate(dataValid);														// performing the validation
-			printMetrics();																	// printing the metrics
+			// validate the model
+			System.out.println(COLOR.colourText("\r\n"+message+" ...","yellow"));				// validation message
+			MODEL.validate(dataValid);															// performing the validation
+			validCompare	= validError - MODEL.getError();									// check confidence improvements
+			validError		= MODEL.getError();													// storing the current error rate
+			printMetrics();																		// printing the metrics
+
+			overfitting		= trainCompare>0 && validCompare<0? bestAccuracy - MODEL.getAccuracy(): 0;// used to determine if the model is overfitting
 			
-			overfitting		= bestAccuracy - MODEL.getAccuracy();							// used to determine if the model is overfitting
-			bestAccuracy	= Math.max(MODEL.getAccuracy(), bestAccuracy);					// storing the highest accuracy
-			if(overfitting < 0) getMissclassified(dataValid);								// storing the missclassified samples if any improvement
+			if(MODEL.getAccuracy() > bestAccuracy) getMissclassified(dataValid);				// storing the missclassified samples if any improvement
+			bestAccuracy	= Math.max(MODEL.getAccuracy(), bestAccuracy);						// storing the highest accuracy
 		}
-		System.out.println(COLOR.colourText("\nHighest Accuracy: "+ bestAccuracy,"cyan"));	// printing the highest accuracy
+		System.out.println(COLOR.colourText("\nHighest Accuracy: "+ bestAccuracy*100,"cyan"));	// printing the highest accuracy
 	}
 
 	/**
@@ -94,11 +103,12 @@ public class Ann{
 	 * @return message
 	 */
 	private static String fullNoise(final double OVERFITTING, final double NOISE_STEP, final String MESSAGE){
-		final double HALF_NS	= NOISE_STEP/2d;	// half of the noise step
-		double noise			= 5;				// noise used to augment the training dataset
-
 		if(NOISE_STEP == 0) return MESSAGE;
-		else if (MODEL.getAccuracy() < 95){
+		else if (MODEL.getAccuracy() < 0.95){
+
+			final double HALF_NS	= NOISE_STEP/2d;	// half of the noise step
+			double noise			= 5;				// noise used to augment the training dataset
+
 			if(OVERFITTING>0 && noise>2) noise -= noise==(int)noise? NOISE_STEP: HALF_NS; 	// reducing the noise if the model is overfitting
 			else if(OVERFITTING+5 < 0 && noise+HALF_NS < 10) noise += HALF_NS;				// increasing the noise if the model is underfitting
 
@@ -114,7 +124,7 @@ public class Ann{
 	  * @return message
 	  */
 	private static String adversarial(final double OVERFITTING, final String MESSAGE){
-		if((OVERFITTING >= 1) || (OVERFITTING <= 0.40 && OVERFITTING >= 0.10)){				// if the model is overfitting
+		if((OVERFITTING >= 0.01) || (OVERFITTING <= 0.004 && OVERFITTING >= 0.001)){		// if the model is overfitting
 			dataTrain.adversarialSampling(1, OVERFITTING);									// augmenting the training dataset with noise
 			return "Validating FIX (" +lib.Util.round(dataTrain.normalization(OVERFITTING),2)*100 + "%) at epoch: ";	// validation message																			// reducing the epochs counter
 		}

@@ -255,10 +255,11 @@ public class Model {
 		}
 
 		// storing the outcome data
-		this.accuracy	= this.loss.accuracy / (double)DATA.size();		// accuracy
-		this.precision	= this.getPrecision(TP, FP);					// precision
-		this.recall		= this.getRecall(TP, FP, DATA);					// recall
-		this.f1Score	= this.getF1Score(this.precision, this.recall);	// f1Score
+		this.error		= this.loss.error		/ (double)DATA.size();	// setting error
+		this.accuracy	= this.loss.accuracy	/ (double)DATA.size();	// setting accuracy
+		this.precision	= this.getPrecision(TP, FP);					// setting precision
+		this.recall		= this.getRecall(TP, FP, DATA);					// setting recall
+		this.f1Score	= this.getF1Score(this.precision, this.recall);	// setting f1Score
 
 		this.loss.error		= 0;										// resetting the loss error
 		this.loss.accuracy	= 0;										// resetting the accuracy
@@ -334,6 +335,5 @@ public class Model {
 	public double getError(){
 		return this.error;
 	}
-
 
 }
