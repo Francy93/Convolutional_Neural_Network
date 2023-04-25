@@ -2,16 +2,16 @@ import java.io.FileNotFoundException;
 import lib.Util.AnsiColours;
 
 public class Ann{
+	private static			DataSet dataTrain;								// dataset used to perform the training		
+	private static			DataSet dataValid;								// detaset used to perform the validation
 	public static 			Sample[] missclassified = new Sample[0];		// missclassified samples
-	private static			DataSet dataTrain;								//	dataset used to perform the training		
-	private static			DataSet dataValid;								//	detaset used to perform the validation
 
-    private static final	String	TRAINING_FILE	= "cw2DataSet1.csv";	//	file name of the training dataset
-	private static final	String	VALIDATE_FILE	= "cw2DataSet2.csv";	//	file name of the validation dataset
-	private static final	double	NOISE_STEP		= 0;					// 	noise step used to determine if the model is overfitting
-	private static final	int		BATCH_SIZE		= 8;					//	number of samples processed before updating the weights
-	public	static final	int		EPOCHS			= 100;					//	number of dataset cycles
-	private static final	double	LEARNING_RATE	= 0.0001;				//	learning rate suggested is about 0.001
+    private static final	String	TRAINING_FILE	= "cw2DataSet1.csv";	// file name of the training dataset
+	private static final	String	VALIDATE_FILE	= "cw2DataSet2.csv";	// file name of the validation dataset
+	private static final	double	NOISE			= 50;					// initial noise
+	private static final	int		BATCH_SIZE		= 8;					// number of samples processed before updating the weights
+	public	static final	int		EPOCHS			= 100;					// number of dataset cycles
+	private static final	double	LEARNING_RATE	= 0.0001;				// learning rate suggested is about 0.001
 	
 
 
@@ -19,11 +19,12 @@ public class Ann{
 	// Model definition
 	private static final Model MODEL = Model.Sequential(
 		// starting the convolutional layers
-		Layer.Conv2D(8	,	1, 1,	Layer.Activation.MISH),
+		Layer.Conv2D(8	,	1, 1,	Layer.Activation.MISH),		// convolutional layer of 8  filters with a kernal of 1X1
+		Layer.Conv2D(16	,	1, 1,	Layer.Activation.MISH),		// convolutional layer of 16 filters with a kernal of 1X1
 		Layer.Conv2D(32	,	2, 2,	Layer.Activation.MISH),		// convolutional layer of 32 filters with a kernal of 2X2
-		Layer.Conv2D(64	,	2, 2,	Layer.Activation.MISH),		// convolutional layer of 64 filters with a kernal of 2X2
-		Layer.Conv2D(128,	3, 3,	Layer.Activation.MISH),		// convolutional layer of 128 filters with a kernal of 3X3
-		Layer.Conv2D(256,	3, 3,	Layer.Activation.MISH),		// convolutional layer of 256 filters with a kernal of 3X3
+		Layer.Conv2D(64	,	2, 2,	Layer.Activation.MISH),		// convolutional layer of 32 filters with a kernal of 2X2
+		Layer.Conv2D(128,	3, 3,	Layer.Activation.MISH),		// convolutional layer of 64 filters with a kernal of 3X3
+		Layer.Conv2D(254,	3, 3,	Layer.Activation.MISH),		// convolutional layer of 64 filters with a kernal of 3X3
 		// starting the fully connected layers
 		//Layer.Dense(128	,			Layer.Activation.MISH),		// dense layer of 128 nodes
 		Layer.Dense(10	,			Layer.Activation.SOFTMAX)	// output layer of 10 classifications
@@ -59,98 +60,77 @@ public class Ann{
 
 
 	// running training and testing
-	public static void trainAndTest(){
-		final AnsiColours COLOR = new AnsiColours();	// used to colour the output
-		final DataSet ORIGINAL	= dataTrain.clone();	// original training dataset
-		double bestAccuracy		= MODEL.getAccuracy();	// highest accuracy used to determine if the model is overfitting
-		double overfitting		= 0;					// used to determine if the model is overfitting
-		double trainCompare		= 0, trainError = 0;
-		double validCompare		= 0, validError	= 0;
+	public static void trainAndTest(final int ITER){
+		final String[] TITLES	= new String[]{"Accuracy", "Precision", "Recall", "F1Score"};
+		double[] metrics		= new double[]{MODEL.getAccuracy(), MODEL.getPrecision(), MODEL.getRecall(), MODEL.getF1Score()};
+		final AnsiColours COLOR = new AnsiColours();		// used to colour the output
+		final DataSet ORIGINAL	= dataTrain.clone();		// original training dataset
+		double bestAccuracy		= MODEL.getAccuracy();		// highest accuracy used to determine if the model is overfitting
 
-		for(int epoch = 1; epoch <= EPOCHS; epoch++){											// looping through the epochs
-			String message	= "Validating epoch ";												// validation message
+		double trainCompare		= 0, trainError	= 0;		// training loss
+		double validCompare		= 0, validError	= 0;		// testing loss
+		double validPrevAcc		= 0, noise		= ITER > 1? 0: NOISE/100d;		// noise
+
+		for(int epoch = 1+(ITER-1)*EPOCHS; epoch <= EPOCHS*ITER; epoch++){		// looping through the epochs
+			String message	= "";												// validation message
 			
-			dataTrain 		= ORIGINAL.clone();													// resetting the training dataset
-			message			= fullNoise(overfitting, NOISE_STEP, message);						// performing the noise augmentation
-			message			= adversarial(overfitting, message) + epoch;						// performing the adversarial augmentation
+			if(NOISE > 0){
+				dataTrain 	= ORIGINAL.clone();									// resetting the training dataset
+				message		= adversarial(trainCompare>0 && validCompare<0? validPrevAcc - MODEL.getAccuracy(): 0);	// augmentation
+				noise		= message == ""? fullNoise(validError - trainError, noise): noise;	// altering the training dataset with noise
+				message		= message == "" && noise > 0? " noisiness (" + lib.Util.round(noise*100d, 2) + "%)": message;	// setting the message
+				validPrevAcc= MODEL.getAccuracy();								// storing the current accuracy
+			}								
 			
+			System.out.println(COLOR.colourText("\n\nEPOCH " +epoch+ message + "\n", "magenta"));	// printing the epoch number
+
 			// trainig the model
-			System.out.println("Training epoch "+epoch+" ...");									// training message
-			MODEL.train(dataTrain, BATCH_SIZE, 1, LEARNING_RATE);								// performing the training
-			trainCompare	= trainError - MODEL.getError();									// check confidence improvements
-			trainError		= MODEL.getError();													// storing the current error rate
-			System.out.println("Accuracy:\t"+MODEL.getAccuracy()+"\nLoss:    \t"+MODEL.getError());	// printing the metrics
+			System.out.println(COLOR.colourText(" Training ...","blue"));		// training message
+			MODEL.train(dataTrain, BATCH_SIZE, 1, LEARNING_RATE);				// performing the training
+			trainCompare	= trainError - MODEL.getError();					// check confidence improvements
+			trainError		= MODEL.getError();									// storing the current error rate
+			printMetrics(MODEL);												// printing the metrics
 			
 			// validate the model
-			System.out.println(COLOR.colourText("\r\n"+message+" ...","yellow"));				// validation message
-			MODEL.validate(dataValid);															// performing the validation
-			validCompare	= validError - MODEL.getError();									// check confidence improvements
-			validError		= MODEL.getError();													// storing the current error rate
-			printMetrics();																		// printing the metrics
+			System.out.println(COLOR.colourText(" Validating ...","yellow"));	// validation message
+			MODEL.validate(dataValid);											// performing the validation
+			validCompare	= validError - MODEL.getError();					// check confidence improvements
+			validError		= MODEL.getError();									// storing the current error rate
+			printMetrics(MODEL);												// printing the metrics																	
 
-			overfitting		= trainCompare>0 && validCompare<0? bestAccuracy - MODEL.getAccuracy(): 0;// used to determine if the model is overfitting
 			
-			if(MODEL.getAccuracy() > bestAccuracy) getMissclassified(dataValid);				// storing the missclassified samples if any improvement
+			if(MODEL.getAccuracy() > bestAccuracy){			// determining if this epoch has the best accruacy
+				getMissclassified(dataValid);				// storing the missclassified samples if any improvement
+				metrics		= new double[]{MODEL.getAccuracy(), MODEL.getPrecision(), MODEL.getRecall(), MODEL.getF1Score()};
+			}
 			bestAccuracy	= Math.max(MODEL.getAccuracy(), bestAccuracy);						// storing the highest accuracy
 		}
-		System.out.println(COLOR.colourText("\nHighest Accuracy: "+ bestAccuracy*100,"cyan"));	// printing the highest accuracy
+		System.out.println(COLOR.colourText("\nHighest Accuracy: "+ bestAccuracy*100d,"cyan"));	// printing the highest accuracy
+		printScores(TITLES, metrics);
 	}
 
 	/**
 	 * Full noise data augmentation
 	 * @param OVERFITTING
-	 * @param MESSAGE
-	 * @return message
+	 * @param noise
+	 * @return noise ammount
 	 */
-	private static String fullNoise(final double OVERFITTING, final double NOISE_STEP, final String MESSAGE){
-		if(NOISE_STEP == 0) return MESSAGE;
-		else if (MODEL.getAccuracy() < 0.95){
-
-			final double HALF_NS	= NOISE_STEP/2d;	// half of the noise step
-			double noise			= 5;				// noise used to augment the training dataset
-
-			if(OVERFITTING>0 && noise>2) noise -= noise==(int)noise? NOISE_STEP: HALF_NS; 	// reducing the noise if the model is overfitting
-			else if(OVERFITTING+5 < 0 && noise+HALF_NS < 10) noise += HALF_NS;				// increasing the noise if the model is underfitting
-
-			dataTrain.setDataSet(dataTrain.adversarialSampling(1, noise));					// replacing the training dataset with noise
-			return "Validating noise (" + lib.Util.round(dataTrain.normalization(noise),2)*100 + "%) at epoch: ";	// validation message
-		}
-		return MESSAGE;
+	private static double fullNoise(final double OVERFITTING, double noise){
+		noise = Math.min(Math.max(noise + OVERFITTING, 0), 1);							// prevents noise to be negative
+		if(noise > 0) dataTrain.setDataSet(dataTrain.adversarialSampling(1, noise));	// replacing the training dataset with noise
+		return noise;
 	}
 	 /**
 	  * Adversarial data augmentation
 	  * @param OVERFITTING
-	  * @param MESSAGE
 	  * @return message
 	  */
-	private static String adversarial(final double OVERFITTING, final String MESSAGE){
-		if((OVERFITTING >= 0.01) || (OVERFITTING <= 0.004 && OVERFITTING >= 0.001)){		// if the model is overfitting
-			dataTrain.adversarialSampling(1, OVERFITTING);									// augmenting the training dataset with noise
-			return "Validating FIX (" +lib.Util.round(dataTrain.normalization(OVERFITTING),2)*100 + "%) at epoch: ";	// validation message																			// reducing the epochs counter
-		}
-		return MESSAGE;
+	private static String adversarial(final double OVERFITTING){
+		if(OVERFITTING < 0.0001) return "";										// if the model is overfitting
+		dataTrain.adversarialSampling(1,  Math.min(OVERFITTING, 0.004)*100d);	// augmenting the training dataset with noise
+		return "FIX (" +lib.Util.round(OVERFITTING*1000d,2) + "%)";				// message	
 	}
-
-
-	// printing the metrics
-	private static void printMetrics(){
-		final lib.Util.AnsiColours COLOURS = new AnsiColours();									// used to colour the output
-		
-		// setting the colours according to the metrics
-		final float	 ONE_THIRD 			= 1f/3f, 	TWO_THIRDS 	= 1f/1.5f;						// used to determine the output colour
-		final String RED 				= "red",	YELLOW 		= "yellow", GREEN = "green";	// colours for the output
-		final String ACCURACY_COLOUR	= MODEL.getAccuracy()	<= ONE_THIRD? RED: MODEL.getAccuracy()	<= TWO_THIRDS? YELLOW: GREEN;
-		final String PRECISION_COLOUR	= MODEL.getPrecision()	<= ONE_THIRD? RED: MODEL.getPrecision()	<= TWO_THIRDS? YELLOW: GREEN;
-		final String RECALL_COLOUR		= MODEL.getRecall()		<= ONE_THIRD? RED: MODEL.getRecall()	<= TWO_THIRDS? YELLOW: GREEN;
-		final String F1_COLOUR			= MODEL.getF1Score()	<= ONE_THIRD? RED: MODEL.getF1Score()	<= TWO_THIRDS? YELLOW: GREEN;
-		
-		// printing the metrics
-		System.out.println("Accuracy:\t"	+ COLOURS.colourText(lib.Util.round(MODEL.getAccuracy()		*100d, 2)	+ " %"	, ACCURACY_COLOUR	));
-		System.out.println("Precision:\t"	+ COLOURS.colourText(lib.Util.round(MODEL.getPrecision()	*100d, 2)	+ " %"	, PRECISION_COLOUR	));
-		System.out.println("Recall:\t\t"	+ COLOURS.colourText(lib.Util.round(MODEL.getRecall()		*100d, 2)	+ " %"	, RECALL_COLOUR		));
-		System.out.println("F1Score:\t"		+ COLOURS.colourText(lib.Util.round(MODEL.getF1Score()		*100d, 2)	+ " %\n", F1_COLOUR			));
-	}
-
+	
 
 	// storing the missclassified samples
 	private static void getMissclassified(final DataSet DATASET){
@@ -165,6 +145,35 @@ public class Ann{
 		for(int i=0; i<missed; i++) MISSCLASSIFIED[i] = SAMPLES[i].clone();	// copying the missclassified samples
 
 		missclassified = MISSCLASSIFIED;									// storing the missclassified samples
+	}
+	
+	
+	// printing the metrics
+	private static void printScores(final String[] TITLES, final double[] METRICS){
+		final lib.Util.AnsiColours COLOURS = new AnsiColours();							// used to colour the output
+		
+		final float		ONE_THIRD 	= 1f/3f, 	TWO_THIRDS 	= 1f/1.5f;					// used to determine the output colour
+		final String	RED 		= "red",	YELLOW 		= "yellow", GREEN = "green";// colours for the output
+		final int		DATA		= Math.min(TITLES.length, METRICS.length);			// used to determine the number of metrics to print
+
+		for(int i = 0; i < DATA; i++){
+			final String COLOUR	= METRICS[i] <= ONE_THIRD || Double.isNaN(METRICS[i])? RED: METRICS[i] <= TWO_THIRDS? YELLOW: GREEN;
+			System.out.println(TITLES[i] +" :\t"+ COLOURS.colourText(lib.Util.round(METRICS[i]*100d, 2) +"%", COLOUR));
+		}
+		System.out.println();
+	}
+
+	// printing the metrics
+	private static void printMetrics(final Model MODEL){ printMetrics(MODEL.getAccuracy(), MODEL.getError()); }
+	private static void printMetrics(final double ACCURACY, final double LOSS){
+		final lib.Util.AnsiColours COLOURS = new AnsiColours();							// used to colour the output
+		final float	 ONE_THIRD 	= 1f/3f, 	TWO_THIRDS 	= 1f/1.5f;						// used to determine the output colour
+		final String RED 		= "red",	YELLOW 		= "yellow", GREEN = "green";	// colours for the output
+
+		final String A_COLOUR	= ACCURACY	<=	ONE_THIRD	|| Double.isNaN(ACCURACY)	? RED: ACCURACY	<= TWO_THIRDS?	YELLOW: GREEN;
+		final String L_COLOUR	= LOSS 		>=	TWO_THIRDS	|| Double.isNaN(LOSS)		? RED: LOSS		>= ONE_THIRD?	YELLOW: GREEN;
+		System.out.println("  Accuracy:\t" + COLOURS.colourText(lib.Util.round(ACCURACY*100d, 3)	+ " %", A_COLOUR));
+		System.out.println("  Loss:    \t" + COLOURS.colourText(lib.Util.round(LOSS*100d, 	3)	+ " %", L_COLOUR));
 	}
 
 

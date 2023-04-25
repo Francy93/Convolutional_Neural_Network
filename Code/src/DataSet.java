@@ -191,9 +191,9 @@ public class DataSet {
 			for(int i = 0; i < SAMPLE.getFeature1D().length; i++){
 				SAMPLE.setToken(i, this.normalization(SAMPLE.getToken1D(i), this.min, this.max));
 			}
-			SAMPLE.setOneHot(sample.getOneHot().clone());// setting the one-hot array
-			return SAMPLE;										// returning the sample
-		}).toArray(Sample[]::new);								// converting the stream to an array
+			SAMPLE.setOneHot(sample.getOneHot().clone());	// setting the one-hot array
+			return SAMPLE;									// returning the sample
+		}).toArray(Sample[]::new);							// converting the stream to an array
 
 		// updating the max and min values of the dataset
 		this.minmaxUpdate();
@@ -207,17 +207,15 @@ public class DataSet {
 	public Sample[] adversarialSampling(){ return this.adversarialSampling(1); }
 	public Sample[] adversarialSampling(final int AMOUNT){ return this.adversarialSampling(AMOUNT, 1d/3d); }
 	public Sample[] adversarialSampling(final int AMOUNT, final double EPSILON){
-		this.minmaxUpdate();											// updating the max and min values of the dataset
-		final double E = normalization(EPSILON);						// normalizing the epsilon value
 	
 		final ArrayList<Sample> ADVERSARIAL = new ArrayList<>(Arrays.stream(this.samples).parallel()
 			.flatMap(sample -> IntStream.range(0, AMOUNT)				// creating a stream of indexes
 				.mapToObj(i -> {										// creating a stream of samples
 					final Sample SAMPLE = new Sample(Arrays.stream(sample.getFeature1D())
 						.map(TOKEN -> {									// creating a stream of features
-							double range = E * this.max;				// calculating the range
+							double range = EPSILON * this.max;			// calculating the range
 							range = Util.rangeRandom(-range, range);	// getting a random number in the range
-							if(Math.random() < E) return range*10;		// adding noise to the sample
+							if(Math.random() < EPSILON) return range*10;// adding noise to the sample
 							else return Math.min(Math.max(TOKEN+range, this.min), this.max);
 						}).toArray(),									// converting the stream to an array
 						sample.getLabel()								// setting the label
@@ -230,7 +228,7 @@ public class DataSet {
 		// creating an array list to store the adversarial samples
 		final ArrayList<Sample> JOINT = new ArrayList<>(Arrays.asList(this.samples));	
 		JOINT.addAll(ADVERSARIAL);										// adding the adversarial samples to the array list
-		this.samples = JOINT.toArray(Sample[]::new);					// converting the array list to an array
+		this.setDataSet(JOINT.toArray(Sample[]::new));					// converting the array list to an array
 		return ADVERSARIAL.toArray(Sample[]::new);						// returning the adversarial samples
 	}
 

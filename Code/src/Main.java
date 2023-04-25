@@ -28,8 +28,8 @@ public class Main {
 
 
 	// main menu
-	public static int menu(){ return menu(2); }
-	public static int menu(final int MAX){
+	public static int menu(final int ITER){ return menu(2, ITER); }
+	public static int menu(final int MAX, final int ITER){
 		System.out.println(COLOURS.colourText("MAIN MENU", "magenta"));
 
 		final String[] OPTIONS = new String[]{"Perform a training","Print "+Ann.missclassified.length+" misclassified"};
@@ -40,7 +40,7 @@ public class Main {
 		switch(NAV.navChoice(5,MAX_OPT)){
 			case EXIT : return EXIT;
 			case BACK : return BACK;
-			case AHEAD: Ann.trainAndTest();
+			case AHEAD: Ann.trainAndTest(ITER);
 				return AHEAD;
 			case	2 : Ann.printMisclassified();
 				return 2;
@@ -68,7 +68,7 @@ public class Main {
 
 		// main loop
 		for(int nav = envSet(), iter = 1, opt = 1;	nav!=EXIT;	nav = nav!=BACK? nav: envSet(), iter++){
-			nav = nav==BACK? nav: menu(opt);
+			nav = nav==BACK? nav: menu(opt, iter);
 
 			// Perform the training and validation
 			switch(nav){
