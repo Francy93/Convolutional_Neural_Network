@@ -19,12 +19,12 @@ public class Ann{
 	// Model definition
 	private static final Model MODEL = Model.Sequential(
 		// starting the convolutional layers
-		Layer.Conv2D(16	,	1, 1,	Layer.Activation.MISH),		// convolutional layer of 8  filters with a kernal of 1X1
-		Layer.Conv2D(23	,	2, 2,	Layer.Activation.MISH),		// convolutional layer of 16 filters with a kernal of 1X1
-		Layer.Conv2D(64	,	3, 3,	Layer.Activation.MISH),		// convolutional layer of 32 filters with a kernal of 2X2
-		Layer.Conv2D(128,	4, 4,	Layer.Activation.MISH),		// convolutional layer of 32 filters with a kernal of 2X2
-		/* Layer.Conv2D(128,	3, 3,	Layer.Activation.MISH),		// convolutional layer of 64 filters with a kernal of 3X3
-		Layer.Conv2D(254,	3, 3,	Layer.Activation.MISH), */		// convolutional layer of 64 filters with a kernal of 3X3
+		Layer.Conv2D(8	,	1, 1,	Layer.Activation.MISH),		// convolutional layer of 8   filters with a kernal of 1X1
+		Layer.Conv2D(16	,	1, 1,	Layer.Activation.MISH),		// convolutional layer of 16  filters with a kernal of 1X1
+		Layer.Conv2D(32	,	2, 2,	Layer.Activation.MISH),		// convolutional layer of 32  filters with a kernal of 2X2
+		Layer.Conv2D(64,	2, 2,	Layer.Activation.MISH),		// convolutional layer of 64  filters with a kernal of 2X2
+		Layer.Conv2D(128,	3, 3,	Layer.Activation.MISH),		// convolutional layer of 128 filters with a kernal of 3X3
+		Layer.Conv2D(254,	3, 3,	Layer.Activation.MISH),		// convolutional layer of 254 filters with a kernal of 3X3
 		// starting the fully connected layers
 		//Layer.Dense(128	,			Layer.Activation.MISH),		// dense layer of 128 nodes
 		Layer.Dense(10	,			Layer.Activation.SOFTMAX)	// output layer of 10 classifications
@@ -77,7 +77,7 @@ public class Ann{
 			if(NOISE > 0){
 				dataTrain 	= ORIGINAL.clone();									// resetting the training dataset
 				message		= adversarial(trainCompare>0 && validCompare<0? validPrevAcc - MODEL.getAccuracy(): 0);			// augmentation
-				noise		= message == ""? fullNoise(trainAccuracy - validAccuracy, (1-trainError) - (1-validError), noise): noise;	// altering the training dataset with noise
+				noise		= message == ""? fullNoise(trainAccuracy-validAccuracy, (1-trainError)-(1-validError), noise): noise;	// altering the training dataset with noise
 				message		= message == "" && noise > 0? " noisiness (" + lib.Util.round(noise*100d, 2) + "%)": message;	// setting the message
 				validPrevAcc= MODEL.getAccuracy();								// storing the current accuracy
 			}								
@@ -89,7 +89,7 @@ public class Ann{
 			MODEL.train(dataTrain, BATCH_SIZE, 1, LEARNING_RATE);				// performing the training
 			trainCompare	= trainError - MODEL.getError();					// check confidence improvements
 			trainError		= MODEL.getError();									// storing the current error rate
-			trainAccuracy	= MODEL.getAccuracy();			// storing the current accuracy
+			trainAccuracy	= MODEL.getAccuracy();								// storing the current accuracy
 			printMetrics(MODEL);												// printing the metrics
 			
 			// validate the model
@@ -97,7 +97,7 @@ public class Ann{
 			MODEL.validate(dataValid);											// performing the validation
 			validCompare	= validError - MODEL.getError();					// check confidence improvements
 			validError		= MODEL.getError();									// storing the current error rate
-			validAccuracy	= MODEL.getAccuracy();			// storing the current accuracy
+			validAccuracy	= MODEL.getAccuracy();								// storing the current accuracy
 			printMetrics(MODEL);												// printing the metrics																	
 
 			
@@ -105,7 +105,7 @@ public class Ann{
 				missclassified	= getMissclassified(dataValid);	// storing the missclassified samples if any improvement
 				metrics			= new double[]{MODEL.getAccuracy(), MODEL.getPrecision(), MODEL.getRecall(), MODEL.getF1Score()};
 			}
-			bestAccuracy		= Math.max(MODEL.getAccuracy(), bestAccuracy);						// storing the highest accuracy
+			bestAccuracy		= Math.max(MODEL.getAccuracy(), bestAccuracy);					// storing the highest accuracy
 		}
 		System.out.println(COLOR.colourText("\nHighest Accuracy: "+ bestAccuracy*100d,"cyan"));	// printing the highest accuracy
 		printScores(TITLES, metrics);
@@ -150,7 +150,7 @@ public class Ann{
 		final Sample[] MISSCLASSIFIED = new Sample[missed];					// resizing the array
 		for(int i=0; i<missed; i++) MISSCLASSIFIED[i] = SAMPLES[i].clone();	// copying the missclassified samples
 
-		return MISSCLASSIFIED;									// storing the missclassified samples
+		return MISSCLASSIFIED;												// storing the missclassified samples
 	}
 	
 	
