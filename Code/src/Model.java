@@ -6,6 +6,7 @@ public class Model {
 	private			double		precision	= 0;	// to store the precision result
 	private			double		recall		= 0;	// to store the recall result
 	private			double		f1Score		= 0;	// to store the f1score result
+	private			int			paramAmount	= 0;	// to store the f1score result
 	private	final	Layer[]		LAYERS;				// array containing all the layers
 	private			Sample		sample;				// index of the current iterated sample
 	private			Loss		loss;				// loss operations
@@ -132,16 +133,18 @@ public class Model {
 	 * @param L
 	 */
 	public void buildStructure(final int SHAPE_Y, final int SHAPE_X, final int CHANNELS, final Optimizer OPT, final Loss L){
-		this.loss			= L;			// loss function
-		this.optimizer		= OPT;			// optimizer
+		this.loss			= L;											// loss function
+		this.optimizer		= OPT;											// optimizer
 
-		Layer prevLayer = this.LAYERS[0];									// previous layer
+		Layer prevLayer		= this.LAYERS[0];								// previous layer
 		prevLayer.firstLayerInit(OPT.OPT, SHAPE_Y, SHAPE_X, CHANNELS);		// initialising the input layer
+		this.paramAmount	+= prevLayer.getParamAmount();					// updating the parameter amount
 							
 		// cycling overt the rest of the layers initialising them
 		for(int index=1; index < this.LAYERS.length; index++){
 			this.LAYERS[index].layerInit(OPT.OPT, prevLayer.getNodes());	// initialising the layer
-			prevLayer = this.LAYERS[index];									// updating the previous layer
+			this.paramAmount+= this.LAYERS[index].getParamAmount();			// updating the parameter amount
+			prevLayer		= this.LAYERS[index];							// updating the previous layer
 		}
 	}
 
@@ -343,12 +346,7 @@ public class Model {
 
 	// getting the number of parameters
 	public int getParametersAmount(){
-		int parameters = 0;
-		for(final Node INPUT: this.LAYERS[0].getInputs()){
-			parameters += INPUT.getOutput().length * INPUT.getOutput()[0].length;
-		}
-		for(final Layer LAYER: this.LAYERS)	parameters += LAYER.getFlatOutput().length;
-		return parameters;
+		return this.paramAmount;
 	}
 
 }

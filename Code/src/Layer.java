@@ -371,12 +371,12 @@ public abstract class Layer {
 	public void backwardSequence(){
 		// storing the sequence of derivatives
 		this.derivativeSequence = Arrays.stream(this.NODES).map(node -> {
-				final Derivative[] DERIVATIVE = new Derivative[this.outputSizeY*this.outputSizeX];
+				final ArrayList<Derivative> DERIVATIVE = new ArrayList<>();
 				for(int map_y=0; map_y < this.outputSizeY; map_y++){
 					for(int map_x=0; map_x < this.outputSizeX; map_x++){
-						DERIVATIVE[map_y*this.outputSizeY+map_x] = new Derivative(node.getOutput()[map_y][map_x], node.getBias(map_y, map_x), this);
+						DERIVATIVE.add(new Derivative(node.getOutput()[map_y][map_x], node.getBias(map_y, map_x), this));
 					}
-				}return DERIVATIVE;
+				}return DERIVATIVE.toArray(Derivative[]::new);
 			}).flatMap(Arrays::stream).toArray(Derivative[]::new);
 
 		// getting the gradient descent sequence
@@ -497,8 +497,8 @@ public abstract class Layer {
 	public Node[] getNodes(){ return this.NODES; }
 	// getting the flattened output
 	public Node.Relation[] getFlatOutput(){ return this.flat_output; }
-	// getting inputs
-	public Node[] getInputs(){ return this.inputs; }
+	// getting parameters amount
+	public int getParamAmount(){ return this.KERNEL_Y*this.KERNEL_X*this.inputs.length*this.NODES_AMOUNT; }	
 
 
 

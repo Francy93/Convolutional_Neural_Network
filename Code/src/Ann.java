@@ -21,10 +21,10 @@ public class Ann{
 		// starting the convolutional layers
 		Layer.Conv2D(8	,	1, 1,	Layer.Activation.MISH),		// convolutional layer of 8   filters with a kernal of 1X1
 		Layer.Conv2D(16	,	1, 1,	Layer.Activation.MISH),		// convolutional layer of 16  filters with a kernal of 1X1
-		Layer.Conv2D(32	,	2, 2,	Layer.Activation.MISH),		// convolutional layer of 32  filters with a kernal of 2X2
-		Layer.Conv2D(64,	2, 2,	Layer.Activation.MISH),		// convolutional layer of 64  filters with a kernal of 2X2
-		Layer.Conv2D(128,	3, 3,	Layer.Activation.MISH),		// convolutional layer of 128 filters with a kernal of 3X3
-		Layer.Conv2D(254,	3, 3,	Layer.Activation.MISH),		// convolutional layer of 254 filters with a kernal of 3X3
+		Layer.Conv2D(32	,	2, 2,	Layer.Activation.MISH),		// convolutional layer of 128 filters with a kernal of 2X2
+		Layer.Conv2D(64	,	2, 2,	Layer.Activation.MISH),		// convolutional layer of 254 filters with a kernal of 2X2
+		Layer.Conv2D(128,	3, 3,	Layer.Activation.MISH),		// convolutional layer of 254 filters with a kernal of 3X3
+		Layer.Conv2D(256,	3, 3,	Layer.Activation.MISH),		// convolutional layer of 254 filters with a kernal of 3X3
 		// starting the fully connected layers
 		//Layer.Dense(128	,			Layer.Activation.MISH),		// dense layer of 128 nodes
 		Layer.Dense(10	,			Layer.Activation.SOFTMAX)	// output layer of 10 classifications
