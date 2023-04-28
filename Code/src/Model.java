@@ -7,6 +7,7 @@ public class Model {
 	private			double		recall		= 0;	// to store the recall result
 	private			double		f1Score		= 0;	// to store the f1score result
 	private			int			paramAmount	= 0;	// to store the f1score result
+	private			int			neuralAmount= 0;	// to store the f1score result
 	private	final	Layer[]		LAYERS;				// array containing all the layers
 	private			Sample		sample;				// index of the current iterated sample
 	private			Loss		loss;				// loss operations
@@ -139,11 +140,13 @@ public class Model {
 		Layer prevLayer		= this.LAYERS[0];								// previous layer
 		prevLayer.firstLayerInit(OPT.OPT, SHAPE_Y, SHAPE_X, CHANNELS);		// initialising the input layer
 		this.paramAmount	+= prevLayer.getParamAmount();					// updating the parameter amount
+		this.neuralAmount	+= this.LAYERS[0].getFlatOutput().length;		// updating the neuron amount
 							
 		// cycling overt the rest of the layers initialising them
 		for(int index=1; index < this.LAYERS.length; index++){
 			this.LAYERS[index].layerInit(OPT.OPT, prevLayer.getNodes());	// initialising the layer
 			this.paramAmount+= this.LAYERS[index].getParamAmount();			// updating the parameter amount
+			this.neuralAmount+= this.LAYERS[index].getFlatOutput().length;	// updating the neuron amount
 			prevLayer		= this.LAYERS[index];							// updating the previous layer
 		}
 	}
@@ -347,6 +350,11 @@ public class Model {
 	// getting the number of parameters
 	public int getParametersAmount(){
 		return this.paramAmount;
+	}
+
+	// getting the number of parameters
+	public int getNeuronsAmount(){
+		return this.neuralAmount;
 	}
 
 }

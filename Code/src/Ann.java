@@ -59,7 +59,7 @@ public class Ann{
 			Model.Optimizer.ADAM,		// optimizer
 			Model.Loss.CROSS_ENTROPY	// loss function
 		);
-		System.out.println(" - Built "+(MODEL.getModelDepth()+1)+" layers and "+MODEL.getParametersAmount()+" parameters\n\n");
+		System.out.println(" - Built "+(MODEL.getModelDepth()+1)+" layers, "+MODEL.getNeuronsAmount()+" neurons and "+MODEL.getParametersAmount()+" parameters\n\n");
 	}
 
 
