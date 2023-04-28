@@ -117,13 +117,13 @@ public class Ann{
 			printMetrics(MODEL, validAccPrev, validErrPrev);					// printing the metrics
 
 			
-			if(MODEL.getAccuracy() > bestAccuracy){				// determining if this epoch has the best accruacy
-				missclassified	= getMissclassified(dataValid);	// storing the missclassified samples if any improvement
+			if(MODEL.getAccuracy() > bestAccuracy){								// determining if this epoch has the best accruacy
+				missclassified	= getMissclassified(dataValid);					// storing the missclassified samples if any improvement
 				metrics			= new double[]{MODEL.getAccuracy(), MODEL.getPrecision(), MODEL.getRecall(), MODEL.getF1Score()};
 			}
-			bestAccuracy		= Math.max(MODEL.getAccuracy(), bestAccuracy);					// storing the highest accuracy
+			bestAccuracy		= Math.max(MODEL.getAccuracy(), bestAccuracy);	// storing the highest accuracy
 		}
-		noise += MAKE_NOISE && noise==0? 0.001: 0;												// grantee next loop noise is made
+		noise += MAKE_NOISE && noise==0? 0.001: 0;								// grantee next loop noise is made
 		System.out.println(COLOR.colourText("\nHighest Accuracy: "+ bestAccuracy*100d,"cyan"));	// printing the highest accuracy
 		printScores(TITLES, metrics);
 	}

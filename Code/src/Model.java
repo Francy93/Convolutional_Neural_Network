@@ -243,14 +243,17 @@ public class Model {
 	 * @return accuracy
 	 */
     public void validate(final DataSet DATA){
-		final int[] FP	= new int[DATA.getClasses().length];			// false positives
-		final int[] TP	= new int[DATA.getClasses().length];			// true positives
+		final lib.Util.Loading BAR = new lib.Util.Loading(DATA.size()-1);	// loading bar
+		final int[] FP	= new int[DATA.getClasses().length];				// false positives
+		final int[] TP	= new int[DATA.getClasses().length];				// true positives
 
-		DATA.shuffle();													// shuffeling the samples
+		DATA.shuffle();														// shuffeling the samples
 
 		// cycling over the samples
-		for(final Sample SAMPLE: DATA.getDataSet()){
+		for(int index=0; index < DATA.size(); index++){
+			final Sample SAMPLE = DATA.getDataSet()[index];					// getting the sample
 			this.sample = SAMPLE;											// loading the sample
+			BAR.printNewBar();												// printing the loading bar
 
 			final int PREDICTED = this.feedForward();						// performing forward propagation for all the layers
 			this.sample.setPred(DATA.getClasses()[PREDICTED]);				// getting the prediction
@@ -258,6 +261,11 @@ public class Model {
 			if (this.sample.getLabel() == this.sample.getPred()){			// checking if the prediction is correct
 				TP[L_INDEX]++;												// getting true positives
 			}else	FP[L_INDEX]++;											// getting false positives
+
+			BAR.message(
+				" | Loss: "		+	this.loss.error		/ (double)index	+ 
+				" | Accuracy: " +	this.loss.accuracy	/ (double)index, "blue"
+			);
 		}
 
 		// storing the outcome data
