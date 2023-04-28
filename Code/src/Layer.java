@@ -497,6 +497,8 @@ public abstract class Layer {
 	public Node[] getNodes(){ return this.NODES; }
 	// getting the flattened output
 	public Node.Relation[] getFlatOutput(){ return this.flat_output; }
+	// getting inputs
+	public Node[] getInputs(){ return this.inputs; }
 
 
 

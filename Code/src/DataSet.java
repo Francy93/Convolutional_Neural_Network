@@ -85,7 +85,7 @@ public class DataSet {
 		final ArrayList<File> SUB_DIRS = new ArrayList<>();							// list of sub directories
 
 		for(final File DIR: dirs){													// for each directory
-			final File[] FILES =  DIR.listFiles((d, n) -> n.matches(FILE_NAME));	// getting the files that match the file name
+			final File[] FILES = DIR.listFiles((d, n) -> n.matches(FILE_NAME));		// getting the files that match the file name
 			if(FILES.length > 0) return FILES[0].getPath();							// if a file is found, return it
 			else SUB_DIRS.addAll(Arrays.asList(DIR.listFiles(File::isDirectory)));	// if no file is found, add the sub directories to the list
 		}
@@ -119,7 +119,7 @@ public class DataSet {
 	// providing every sample with a one-hot array
 	public void classesToSamples(){
 		Arrays.stream(this.samples).parallel().forEach(SAMPLE -> {					// cycling through the samples
-			SAMPLE.setOneHot(IntStream.range(0, this.CLASSES.length)			// creating a stream of indexes
+			SAMPLE.setOneHot(IntStream.range(0, this.CLASSES.length)				// creating a stream of indexes
                 .mapToDouble(i -> SAMPLE.getLabel() == this.CLASSES[i] ? 1.0 : 0.0)	// creating a one-hot array
                 .toArray()															// converting the stream to an array
 			);
@@ -140,7 +140,7 @@ public class DataSet {
 		});
 	}
 
-	/*
+	/**
 	 * Normalization function
 	 * @param VAl value to be normalized
 	 * @param MIN min value of the dataset

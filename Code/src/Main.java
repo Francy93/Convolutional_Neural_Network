@@ -16,7 +16,7 @@ public class Main {
 	public static int envSet(){
 		System.out.println(COLOURS.colourText("Environment setting", "magenta"));
 
-		switch(NAV.navChoice(5,"Colors ON  (VScode)","Colors OFF (Eclipse)")){
+		switch(NAV.navChoice(5,"Colors ON  (Terminal)","Colors OFF (IDE)")){
 			case EXIT: return EXIT;
 			case BACK: return BACK;
 			case	1: Util.AnsiColours.setGlobalState(true);
@@ -55,10 +55,14 @@ public class Main {
 	// The main
 	public static void main(String[] args){
 		Util.AnsiColours.setGlobalState(false); // starting a gray scale terminal
-		System.out.println(COLOURS.colourText("\r\n\r\nWelcome to Digit recognition challenge\r\n","cyan"));
+		final String TITLE	= "WELCOME TO THE DIGIT RECOGNITION CHALLENGE";
+		final String BOXING = Util.stringRepeat("-", TITLE.length()+4);
+		System.out.println("\r\n\r\n" + BOXING);
+		System.out.println("| " + COLOURS.colourText(TITLE,"cyan") + " |");
+		System.out.println(BOXING + "\r\n");
 
 		// initialising the model
-		System.out.println(COLOURS.colourText("Loading Dataset and model...\r\n", "cyan"));
+		System.out.println(COLOURS.colourText("Loading dataset and model...\r\n", "cyan"));
 		try{ Ann.loadAndBuild(); }
 		catch(FileNotFoundException e){
 			System.out.println("Error. File not found");

@@ -336,4 +336,19 @@ public class Model {
 		return this.error;
 	}
 
+	// getting the model size
+	public int getModelDepth(){
+		return this.LAYERS.length;
+	}
+
+	// getting the number of parameters
+	public int getParametersAmount(){
+		int parameters = 0;
+		for(final Node INPUT: this.LAYERS[0].getInputs()){
+			parameters += INPUT.getOutput().length * INPUT.getOutput()[0].length;
+		}
+		for(final Layer LAYER: this.LAYERS)	parameters += LAYER.getFlatOutput().length;
+		return parameters;
+	}
+
 }
