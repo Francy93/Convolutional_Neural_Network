@@ -700,7 +700,7 @@ public class Util{
 				this.linesUp		= stringRepeat(this.GO_LINE_UP, strMatch(this.message, this.NL));
 				this.messageUpdate	= false;
 			}
-			return this.CR + this.ERASE_BELOW + OUTCOME + this.linesUp + this.CR;
+			return this.CR + this.ERASE_BELOW + OUTCOME + this.linesUp;
 		}
 
 

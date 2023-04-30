@@ -142,7 +142,7 @@ public class DataSet {
 
 	/**
 	 * Normalization function
-	 * @param VAl value to be normalized
+	 * @param VAL value to be normalized
 	 * @param MIN min value of the dataset
 	 * @param MAX max value of the dataset
 	 * @return normalized value
@@ -150,8 +150,8 @@ public class DataSet {
 	public double normalization(final double VAL){
 		return VAL == 0? 0: VAL / Math.pow(10d, (Math.floor(Math.log10(Math.abs(VAL))) + 1d));
 	}
-	private double normalization(final double VAl, final double MIN, final double MAX){
-		return (VAl - MIN) / (MAX - MIN);	// normalization formula
+	private double normalization(final double VAL, final double MIN, final double MAX){
+		return (VAL - MIN) / (MAX - MIN);	// normalization formula
 	}
 
 
@@ -215,7 +215,7 @@ public class DataSet {
 						.map(TOKEN -> {									// creating a stream of features
 							double range = EPSILON * this.max;			// calculating the range
 							range = Util.rangeRandom(-range, range);	// getting a random number in the range
-							if(Math.random() < EPSILON) return range*10;// adding noise to the sample
+							if(Math.random() < EPSILON)return range*10d;// adding noise to the sample
 							else return Math.min(Math.max(TOKEN+range, this.min), this.max);
 						}).toArray(),									// converting the stream to an array
 						sample.getLabel()								// setting the label
