@@ -8,7 +8,7 @@ public class Ann{
 
 	private static final	String	TRAINING_FILE	= "cw2DataSet1.csv";	// file name of the training dataset
 	private static final	String	VALIDATE_FILE	= "cw2DataSet2.csv";	// file name of the validation dataset
-	private static 			double	noise			= 0;					// dynamic noise (as a regularizator)
+	private static 			double	noise			= 60;					// dynamic noise (as a regularizator)
 	private static final	int		BATCH_SIZE		= 8;					// number of samples processed before updating the weights
 	public	static final	int		EPOCHS			= 100;					// number of dataset cycles
 	private static final	double	LEARNING_RATE	= 0.0001;				// learning rate suggested is about 0.001
