@@ -13,11 +13,11 @@ public class Util{
 	 * Lambda function with just a parameter
 	 */ 
 	public static interface Lambda1<T, V>{
-        public V op(T a);
-    }
+		public V op(T a);
+	}
 	public static interface Lambda2<T, V>{
-        public V op(V a, T b);
-    }
+		public V op(V a, T b);
+	}
 
 
 
@@ -94,18 +94,18 @@ public class Util{
 
 
 	/**
-     * Checking whether a number exists already in the array
-     * @param ARRAY of integers
-     * @param B integer to be found
-     * @return number of times it has been found
-     */
-    public static long contains(final int[] ARRAY, final int B){
+	 * Checking whether a number exists already in the array
+	 * @param ARRAY of integers
+	 * @param B integer to be found
+	 * @return number of times it has been found
+	 */
+	public static long contains(final int[] ARRAY, final int B){
 		long occurrence = 0;
-        for(final int A: ARRAY){
-            if(A==B) occurrence++;
-        }
-        return occurrence;
-    }
+		for(final int A: ARRAY){
+			if(A==B) occurrence++;
+		}
+		return occurrence;
+	}
 
 	/**
 	 * Check how many times a pattern match in a given string
@@ -114,32 +114,32 @@ public class Util{
 	 * @return how many times the pattern has occurred
 	 */
 	public static long strMatch(final String STRING, final String MATCH){
-        if(STRING.length() < MATCH.length()) return 0;
+		if(STRING.length() < MATCH.length()) return 0;
 
 		final long MATCH_LAST = MATCH.length()-1;
 		long occurrence = 0;
 
-        for(int i=0; i<STRING.length(); i++){
-            for(int j=0; j<=MATCH_LAST; j++){
+		for(int i=0; i<STRING.length(); i++){
+			for(int j=0; j<=MATCH_LAST; j++){
 				
-                try{
-    				if(MATCH.charAt(j) == STRING.charAt(i+j)){ if(j==MATCH_LAST) occurrence++; }
+				try{
+					if(MATCH.charAt(j) == STRING.charAt(i+j)){ if(j==MATCH_LAST) occurrence++; }
 					else break;
 				}catch(IndexOutOfBoundsException e) { return occurrence; }
 			}
-        }
-        return occurrence;
-    }
+		}
+		return occurrence;
+	}
 
 	/**
-     * Generate an integer within a range
-     * @param min
-     * @param max
-     * @return random double with a given range
-     */
-    public static double rangeRandom(double min, double max){
-        return (Math.random() * (max - min)) + min;
-    }
+	 * Generate an integer within a range
+	 * @param min
+	 * @param max
+	 * @return random double with a given range
+	 */
+	public static double rangeRandom(double min, double max){
+		return (Math.random() * (max - min)) + min;
+	}
 
 	// merge arrays
 	public static <T> T[] merge(final T[] A, final T[] B) {
@@ -222,12 +222,12 @@ public class Util{
 
 
 	/**
-     * (QuickSort) sorting elements according to their specific values
-     * @see https://bit.ly/3GGQU4W
-     * @param arr
-     * @param mode (SortMode)
-     * @return City[]
-     */
+	 * (QuickSort) sorting elements according to their specific values
+	 * @see https://bit.ly/3GGQU4W
+	 * @param arr
+	 * @param mode (SortMode)
+	 * @return City[]
+	 */
 	public static class QuickSort<T, V extends Comparable<V>>{
 
 		private final boolean MODE;				// this is the direction the array get sorted
@@ -236,11 +236,11 @@ public class Util{
 
 		/**
 		 * (QuickSort) sorting elements according to their specific values
-     	 * @see https://bit.ly/3GGQU4W
-		 * @param A array
-		 * @param M mode
-		 * @param C lambda method
-		 */
+		 * @see https://bit.ly/3GGQU4W
+		* @param A array
+		* @param M mode
+		* @param C lambda method
+		*/
 		private QuickSort(final T[] A, final boolean M, final Lambda1<T, V> C){
 			ARRAY	= A;
 			MODE	= M;
@@ -538,7 +538,7 @@ public class Util{
 		private final	String	BLOCK			= "█"		,	DOTTED		= "░"		,	TAB			= "	";		//	bar components
 		private final	String	ERASE_BELOW		= "\033[0J"	,	GO_LINE_UP	= "\033[A"	,	NL	= "\n"	,	CR		= "\r"; // ERASE_LINE = "\033[2K"
 		private			String	messageColour	= "blue"	,	message 	= ""		,	linesUp		= ""		,	bar	= ""	,	output	= ""  ;
-        private			short	counter 		= -1		,	barLength	= 50		,	percent		= 0;		//	bar parameters
+		private			short	counter 		= -1		,	barLength	= 50		,	percent		= 0;		//	bar parameters
 		private			int		barState 		= 0			,	updates		= this.barLength;						//	calculating loading bar
 		private			double	nextUpdate 		= 0			,	coloursIndex= (double)this.barColours.length / (double)(this.MAX_PERCENT+0.1);
 		private			boolean	messageUpdate	= false		;														//	notes if message has updated
@@ -546,7 +546,7 @@ public class Util{
 		private			long	ciclesAmount				;														//	total amount of cicles
 
 
-        /**
+		/**
 		 * Constructor Method
 		 * @param CA CICLES_AMOUNT
 		 * @param BL BAR_LENGTH
@@ -558,7 +558,7 @@ public class Util{
 			this.barLength(BL);
 			this.updates(U);
 			this.message(M, this.messageColour);
-        }
+		}
 		public Loading(final long CA){ this(CA, (short)50, 50, ""); }
 
 
@@ -686,7 +686,7 @@ public class Util{
 			}
 
 			this.bar = this.COLOURS.colourText(STATUS_FULL, color)+STATUS_VOID+" "+this.COLOURS.colourText(this.percent+"%", color);
-        }
+		}
 
 
 		/**
@@ -740,8 +740,8 @@ public class Util{
 
 
 		/*
-		 * Print the Loading Bar
-		 */
+		* Print the Loading Bar
+		*/
 		public void printNewBar(){
 			if(this.coreUpdated())	System.out.print(this.output);
 		}
@@ -753,5 +753,5 @@ public class Util{
 		public String getNewBar(){
 			return this.output;
 		}
-    }
+	}
 }

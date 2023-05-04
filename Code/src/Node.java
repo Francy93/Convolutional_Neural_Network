@@ -1,10 +1,10 @@
 
 public class Node {
 
-    // Node's attributes
+	// Node's attributes
 	private	final	Relation[][]	OUTPUT;				// Matrix output also known as activation map in CNNs
 	private	final	Parameter[][]	BIAS;				// Storage of biases assigned to avery index of the activation map matrix
-    private final	Parameter[][][]	KERNEL;				// Kernel matrix
+	private final	Parameter[][][]	KERNEL;				// Kernel matrix
 	private			lib.Optimizer	OPTIMIZER;			// gradients optimizer
 	
 	// Kernel sizes
@@ -21,32 +21,32 @@ public class Node {
 	 * @param OUTPUT_X Activation map X size
 	 * @param OPT optimizer
 	 */
-    public Node(final int CA, final int KY, final int KX, final int OUTPUT_Y, final int OUTPUT_X, final lib.Optimizer OPT){
+	public Node(final int CA, final int KY, final int KX, final int OUTPUT_Y, final int OUTPUT_X, final lib.Optimizer OPT){
 		this.CHANNEL_AMOUNT	= CA;
 		this.KERNEL_Y		= KY;
 		this.KERNEL_X		= KX;
 		this.OPTIMIZER		= OPT;
 		this.OUTPUT			= this.outputInit(OUTPUT_Y, OUTPUT_X);
-        this.KERNEL			= new Parameter[CA][KY][KX];
+		this.KERNEL			= new Parameter[CA][KY][KX];
 		this.BIAS			= new Parameter[OUTPUT_Y][OUTPUT_X];
 		this.kernelInit(OPT.momentNumber());
 		this.biasInit(OPT.momentNumber());
 	}
 	// constructor for convnet first layer
 	public Node(final double[][] INPUT, final lib.Optimizer OPT){
-        this(1, INPUT.length, INPUT[0].length, INPUT.length, INPUT[0].length, OPT);
+		this(1, INPUT.length, INPUT[0].length, INPUT.length, INPUT[0].length, OPT);
 		fillOutput(INPUT);
-    }
+	}
 	// constructor for densenet first layer
 	public Node(final double[] INPUT, final lib.Optimizer OPT){
-        this(1, 1, INPUT.length, 1, INPUT.length, OPT);
+		this(1, 1, INPUT.length, 1, INPUT.length, OPT);
 		fillOutput(INPUT);
-    }
+	}
 	// constructor for all the first layers
 	public Node(final int SY, final int SX, final int CHANNELS, final lib.Optimizer OPT){
 		this(CHANNELS, SY, SX, SY, SX, OPT);
 	}
-    
+	
 	// Parameter class
 	public class Parameter{
 		private double weight	= 0;
@@ -77,7 +77,7 @@ public class Node {
 	}	
 
 	// activation map "pixels"
-    public class Relation{
+	public class Relation{
 
 		// Relation attributes
 		private final	int		INDEX_Y;					// Index Y of this node into the Activation map
@@ -94,7 +94,7 @@ public class Node {
 		 * @param Y Index Y of this node into the Activation map
 		 * @param X Index X of this node into the Activation map
 		 */
-        public Relation(final int Y, final int X){
+		public Relation(final int Y, final int X){
 			this.INDEX_Y = Y;
 			this.INDEX_X = X;
 		}
@@ -154,7 +154,7 @@ public class Node {
 			return this.INDEX_X;
 		}
 
-    }
+	}
 
 	/**
 	 * initializes the kernel

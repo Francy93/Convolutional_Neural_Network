@@ -1,73 +1,73 @@
 
- public class Dense extends Layer{
+public class Dense extends Layer{
 
 	/**
 	 * Constructor method
 	 * @param NODES_AMOUNT
 	 * @param ACTIVATION
 	 */
-    public Dense(final int NODES_AMOUNT, final Activation ACTIVATION){
-        super(NODES_AMOUNT, ACTIVATION, 0, 0);
-    }
+	public Dense(final int NODES_AMOUNT, final Activation ACTIVATION){
+		super(NODES_AMOUNT, ACTIVATION, 0, 0);
+	}
 
 
 
-    
+	
 	/**
 	 * Hidden lyer initialiser
 	 * @param OPT   optimizer 
 	 * @param INPUTS 
 	 */
-    public void layerInit(final lib.Optimizer OPT, final Node ... INPUTS){
-        super.inputs	= INPUTS;
+	public void layerInit(final lib.Optimizer OPT, final Node ... INPUTS){
+		super.inputs	= INPUTS;
 		super.optimizer = OPT;
 
-        this.sizesInit();				// initialising this layer sizes
-        super.nodesInit();				// initialising this layer nodes
-        super.weightsInit();			// initialising all this layer weights
-        super.flatOutInit();			// flattening the output
-        super.kernelRelationsInit();	// initialising this layer kernel relations
+		this.sizesInit();				// initialising this layer sizes
+		super.nodesInit();				// initialising this layer nodes
+		super.weightsInit();			// initialising all this layer weights
+		super.flatOutInit();			// flattening the output
+		super.kernelRelationsInit();	// initialising this layer kernel relations
 		super.sequencesInit();			// initialising this layer sequences
-    }
+	}
 
 	/**
 	 * First Densenet layer initialiser
 	 * @param OPT   optimizer 
 	 * @param SAMPLE 
 	 */
-    public void firstLayerInit(final lib.Optimizer OPT, final Sample SAMPLE){
-        final Node[] NODE	= {new Node(SAMPLE.getFeature1D(), OPT)};
-        super.isFirstLayer	= true;
+	public void firstLayerInit(final lib.Optimizer OPT, final Sample SAMPLE){
+		final Node[] NODE	= {new Node(SAMPLE.getFeature1D(), OPT)};
+		super.isFirstLayer	= true;
 
-        this.layerInit(OPT, NODE);
-    }
+		this.layerInit(OPT, NODE);
+	}
 	/**
 	 * First Densenet layer initialiser
 	 * @param OPT   optimizer 
 	 * @param SAMPLE 
 	 */
-    public void firstLayerInit(final lib.Optimizer OPT, final int SHAPE_Y, final int SHAPE_X, final int CHANNEL){
-        final Node[] NODE	= {new Node(1, SHAPE_Y*SHAPE_X, CHANNEL, OPT)};
-        super.isFirstLayer	= true;
+	public void firstLayerInit(final lib.Optimizer OPT, final int SHAPE_Y, final int SHAPE_X, final int CHANNEL){
+		final Node[] NODE	= {new Node(1, SHAPE_Y*SHAPE_X, CHANNEL, OPT)};
+		super.isFirstLayer	= true;
 
-        this.layerInit(OPT, NODE);
-    }
+		this.layerInit(OPT, NODE);
+	}
 
 
-    protected void sizesInit(){
-        // i need to know the size of this layer input / matrix
-        final Node.Relation[][] PREV_LYER_OUTPUT = super.inputs[0].getOutput();
-        super.inputSizeY	= PREV_LYER_OUTPUT.length;
-        super.inputSizeX	= PREV_LYER_OUTPUT[0].length;
+	protected void sizesInit(){
+		// i need to know the size of this layer input / matrix
+		final Node.Relation[][] PREV_LYER_OUTPUT = super.inputs[0].getOutput();
+		super.inputSizeY	= PREV_LYER_OUTPUT.length;
+		super.inputSizeX	= PREV_LYER_OUTPUT[0].length;
 
-        // storing the kernel size
-        super.KERNEL_Y		= super.inputSizeY;
-        super.KERNEL_X		= super.inputSizeX;
+		// storing the kernel size
+		super.KERNEL_Y		= super.inputSizeY;
+		super.KERNEL_X		= super.inputSizeX;
 
-        // i need to calculate how big will be this layer output / matrix
-        super.outputSizeY	= 1;
-        super.outputSizeX	= 1;
-    }
+		// i need to calculate how big will be this layer output / matrix
+		super.outputSizeY	= 1;
+		super.outputSizeX	= 1;
+	}
 
 
 	/**

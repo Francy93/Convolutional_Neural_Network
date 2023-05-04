@@ -6,14 +6,14 @@ import java.util.ArrayList;				// used to convert the array to a list
 public abstract class Layer {
 
 	protected			boolean 	isFirstLayer = false;	//  marking this layer as first layer or a hidden one
-    private 	final	Node[]		NODES;					//	this layer nodes container
-    protected       	Node[]		inputs;					//	this layer inputs container
+	private 	final	Node[]		NODES;					//	this layer nodes container
+	protected       	Node[]		inputs;					//	this layer inputs container
 	protected       	int			outputSizeY;			//	this layer activation map Y size
 	protected       	int			outputSizeX;			//	this layer activation map X size
 	protected       	int			inputSizeY;				//	this layer input y size
 	protected       	int			inputSizeX;				//	this layer input X size
-    private 	final 	int			NODES_AMOUNT;			//	this layer nodes total
-    private 	final 	Activation	ACTIVATION;				//	container of activation function and related differentiation
+	private 	final 	int			NODES_AMOUNT;			//	this layer nodes total
+	private 	final 	Activation	ACTIVATION;				//	container of activation function and related differentiation
 	protected			int     	KERNEL_Y;				//	Size Y of this layer kernel
 	protected			int     	KERNEL_X;				//	Size X of this layer kernel
 	private	Node.Relation[]			flat_output;			//	array of nodes outputs
@@ -113,18 +113,18 @@ public abstract class Layer {
 	 * @param KY KERNEL_Y
 	 * @param KX KERNEL_X
 	 */
-    protected Layer(final int N, final Activation A, final int KY, final int KX){
+	protected Layer(final int N, final Activation A, final int KY, final int KX){
 		this.NODES_AMOUNT	= N;
-        this.ACTIVATION		= A;
+		this.ACTIVATION		= A;
 		this.KERNEL_Y		= KY < 1? 1: KY;
-        this.KERNEL_X		= KX < 1? 1: KX;
+		this.KERNEL_X		= KX < 1? 1: KX;
 		this.NODES			= new Node[NODES_AMOUNT];
-    }
+	}
 
-    
+	
 
 
-    // static constructors
+	// static constructors
 
 	/**
 	 * Conv2D constructor
@@ -244,10 +244,10 @@ public abstract class Layer {
 
 	// initialising this layer nodes
 	protected void nodesInit(){
-        for(int index=0; index<this.NODES_AMOUNT; index++){
-            this.NODES[index] = new Node(this.inputs.length, this.KERNEL_Y, this.KERNEL_X, this.outputSizeY, this.outputSizeX, this.optimizer);
-        }
-    }
+		for(int index=0; index<this.NODES_AMOUNT; index++){
+			this.NODES[index] = new Node(this.inputs.length, this.KERNEL_Y, this.KERNEL_X, this.outputSizeY, this.outputSizeX, this.optimizer);
+		}
+	}
 
 	// initialising all the weights of this layer
 	protected void weightsInit(){
@@ -287,47 +287,47 @@ public abstract class Layer {
 	}
 
 	// initilising the array of relations between weights and inputs
-    protected void kernelRelationsInit(){
-        // getting the size of an entire feature map output
-        final int PATCH_SIZE	= this.outputSizeY * this.outputSizeX;
-        this.kernelRelations 	= new Node.Relation[this.inputs.length][this.KERNEL_Y][this.KERNEL_X][PATCH_SIZE];
+	protected void kernelRelationsInit(){
+		// getting the size of an entire feature map output
+		final int PATCH_SIZE	= this.outputSizeY * this.outputSizeX;
+		this.kernelRelations 	= new Node.Relation[this.inputs.length][this.KERNEL_Y][this.KERNEL_X][PATCH_SIZE];
 
-        // calculating the possible need for padding
-        final int IMAGE_Y		= this.inputSizeY - this.KERNEL_Y;	// if negative, padding is needed
-        final int IMAGE_X		= this.inputSizeX - this.KERNEL_X;	// if negative, padding is needed
-        final int LEFT_IMAGE_Y	= IMAGE_Y>= 0? 0: IMAGE_Y;			// if Y is greater than 0, no padding is needed
-        final int LEFT_IMAGE_X	= IMAGE_X>= 0? 0: IMAGE_X;			// if X is greater than 0, no padding is needed
-        final int RIGHT_IMAGE_Y = IMAGE_Y>= 0? IMAGE_Y + 1: 1;		// if Y is greater than 0, no padding is needed
-        final int RIGHT_IMAGE_X = IMAGE_X>= 0? IMAGE_X + 1: 1;		// if X is greater than 0, no padding is needed
+		// calculating the possible need for padding
+		final int IMAGE_Y		= this.inputSizeY - this.KERNEL_Y;	// if negative, padding is needed
+		final int IMAGE_X		= this.inputSizeX - this.KERNEL_X;	// if negative, padding is needed
+		final int LEFT_IMAGE_Y	= IMAGE_Y>= 0? 0: IMAGE_Y;			// if Y is greater than 0, no padding is needed
+		final int LEFT_IMAGE_X	= IMAGE_X>= 0? 0: IMAGE_X;			// if X is greater than 0, no padding is needed
+		final int RIGHT_IMAGE_Y = IMAGE_Y>= 0? IMAGE_Y + 1: 1;		// if Y is greater than 0, no padding is needed
+		final int RIGHT_IMAGE_X = IMAGE_X>= 0? IMAGE_X + 1: 1;		// if X is greater than 0, no padding is needed
 
 
-        // cycling over the channels
-        for(int channel=0; channel < this.inputs.length; channel++){
-            final Node.Relation[][] INPUT_NODE = this.inputs[channel].getOutput();
-            int relation = 0;
+		// cycling over the channels
+		for(int channel=0; channel < this.inputs.length; channel++){
+			final Node.Relation[][] INPUT_NODE = this.inputs[channel].getOutput();
+			int relation = 0;
 
-            // cycling over the input image pixels
-            for(int image_y = LEFT_IMAGE_Y; image_y < RIGHT_IMAGE_Y; image_y++){
-                for(int image_x = LEFT_IMAGE_X; image_x < RIGHT_IMAGE_X; image_x++){
+			// cycling over the input image pixels
+			for(int image_y = LEFT_IMAGE_Y; image_y < RIGHT_IMAGE_Y; image_y++){
+				for(int image_x = LEFT_IMAGE_X; image_x < RIGHT_IMAGE_X; image_x++){
 
-                    // cycling over the kernal weights
-                    for(int kernel_y=0; kernel_y < this.KERNEL_Y; kernel_y++){
-                        for(int kernel_x=0; kernel_x < this.KERNEL_X; kernel_x++){
+					// cycling over the kernal weights
+					for(int kernel_y=0; kernel_y < this.KERNEL_Y; kernel_y++){
+						for(int kernel_x=0; kernel_x < this.KERNEL_X; kernel_x++){
 
-                            try{	// storing the relations between weigths and inputs
-                                this.kernelRelations[channel][kernel_y][kernel_x][relation] = INPUT_NODE[image_y+kernel_y][image_x+kernel_x];
-                            }catch(ArrayIndexOutOfBoundsException e){}
-                        }
+							try{	// storing the relations between weigths and inputs
+								this.kernelRelations[channel][kernel_y][kernel_x][relation] = INPUT_NODE[image_y+kernel_y][image_x+kernel_x];
+							}catch(ArrayIndexOutOfBoundsException e){}
+						}
 
-                    }
-                    relation++; // incrementing the relation iterator
-                }
-            }
-        }
-    }
+					}
+					relation++; // incrementing the relation iterator
+				}
+			}
+		}
+	}
 
 	// initialising the array of relations between weights and inputs
-	public void forwardSequence(){
+	private void forwardSequence(){
 		final int OUTPUT_SIZE =	this.outputSizeY*this.outputSizeX;
 		// cycling over all this layer nodes
 		for(int nodeIndex=0; nodeIndex < this.NODES_AMOUNT; nodeIndex++){
@@ -368,7 +368,7 @@ public abstract class Layer {
 	}
 	
 	// initialising the array of derivatives and relations between weights and inputs
-	public void backwardSequence(){
+	private void backwardSequence(){
 		// storing the sequence of derivatives
 		this.derivativeSequence = Arrays.stream(this.NODES).map(node -> {
 				final ArrayList<Derivative> DERIVATIVE = new ArrayList<>();
@@ -389,7 +389,7 @@ public abstract class Layer {
 
 			// cycling over all the "pixels" of the output matrix
 			for(int map_y=0; map_y < this.outputSizeY; map_y++){
-			  	for(int map_x=0; map_x < this.outputSizeX; map_x++){
+				for(int map_x=0; map_x < this.outputSizeX; map_x++){
 	
 					// cycling over the all the kernel weights
 					for(int channel=0; channel < this.inputs.length; channel++){
@@ -414,7 +414,7 @@ public abstract class Layer {
 				INPUTS.toArray(new Node.Relation[INPUTS.size()]),	// inputs
 				PARAM.toArray(new Node.Parameter[PARAM.size()]),	// weight
 				this												// layer
-		  	);
+			);
 		}
 	}
 
@@ -452,7 +452,7 @@ public abstract class Layer {
 
 
 
-    // --------------------- feed forward -------------------------
+	// --------------------- feed forward -------------------------
 
 	public void feedForward(){
 		// cycling over all this layer nodes
@@ -522,7 +522,7 @@ public abstract class Layer {
 	 * @param OPT		Optimizer of this layer
 	 * @param SMAPLE	Sample to be loaded
 	 */
-    public abstract void firstLayerInit(final lib.Optimizer OPT, final Sample SMAPLE);
+	public abstract void firstLayerInit(final lib.Optimizer OPT, final Sample SMAPLE);
 
 	/**
 	 * Initialising the first layer

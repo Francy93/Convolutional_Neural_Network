@@ -10,9 +10,9 @@ import java.util.Arrays;				// used to convert the array to a list
 import lib.Util;						// multiple utility functions
 
 public class DataSet {
-    private final double[]	CLASSES;		// number of possible classifications
+	private final double[]	CLASSES;		// number of possible classifications
 	private final int[]		CLASS_AMOUNT;	// number of samples per class
-    private Sample[]		samples;		// samples collection
+	private Sample[]		samples;		// samples collection
 	private double			max;			// max value of the dataset
 	private double			min;			// min value of the dataset
 
@@ -22,16 +22,16 @@ public class DataSet {
 	 * @param D Data Delimiter
 	 * @throws FileNotFoundException
 	 */
-    public DataSet(final String F_N, final String D) throws FileNotFoundException{
+	public DataSet(final String F_N, final String D) throws FileNotFoundException{
 		// file reader to initialsize the sample collection
-        try {  this.samples	= this.fileReader(this.findFile(F_N), D);  }
+		try {  this.samples	= this.fileReader(this.findFile(F_N), D);  }
 		catch(IOException e) { throw new FileNotFoundException(); }
 
 		this.CLASSES		= this.labelClasses();	// getting an array of labels
 		this.CLASS_AMOUNT	= this.classAmount();	// getting the amount of samples per class
 		this.classesToSamples();					// equipping every sample with a one-hot array
 		this.minmaxUpdate();						// updating the max and min values of the dataset
-    }
+	}
 	/**
 	 * Dataset constructor from an array of samples
 	 * @param S array of samples
@@ -55,7 +55,7 @@ public class DataSet {
 		this.max			= DS.max;					// getting the max value of the dataset
 	}
 
-    /**
+	/**
 	 * File reader
 	 * @return array of samples
 	 */
@@ -101,10 +101,10 @@ public class DataSet {
 	 */
 	private double[] labelClasses(){
 		return Arrays.stream(samples)					// converting the samples array to a stream
-            .mapToDouble(Sample::getLabel)				// getting the label of each sample
-            .distinct()									// removing duplicates
-            .sorted()									// sorting the labels
-            .toArray();									// converting the stream to an array
+			.mapToDouble(Sample::getLabel)				// getting the label of each sample
+			.distinct()									// removing duplicates
+			.sorted()									// sorting the labels
+			.toArray();									// converting the stream to an array
 	}
 
 	private int[] classAmount() {
@@ -120,8 +120,8 @@ public class DataSet {
 	public void classesToSamples(){
 		Arrays.stream(this.samples).parallel().forEach(SAMPLE -> {					// cycling through the samples
 			SAMPLE.setOneHot(IntStream.range(0, this.CLASSES.length)				// creating a stream of indexes
-                .mapToDouble(i -> SAMPLE.getLabel() == this.CLASSES[i] ? 1.0 : 0.0)	// creating a one-hot array
-                .toArray()															// converting the stream to an array
+				.mapToDouble(i -> SAMPLE.getLabel() == this.CLASSES[i] ? 1.0 : 0.0)	// creating a one-hot array
+				.toArray()															// converting the stream to an array
 			);
 		});
 	}

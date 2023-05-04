@@ -225,8 +225,8 @@ public class Model {
 				this.weightsUpdate();											// updating the weights
 				BAR.message(
 					epochMessage + 
-					" | Loss: "		+	this.loss.error		/ (double)END_BATCH	+ 
-					" | Accuracy: " +	this.loss.accuracy	/ (double)END_BATCH, "blue"
+					" | Loss: "		+	this.loss.error		/ (END_BATCH+1d)	+ 
+					" | Accuracy: " +	this.loss.accuracy	/ (END_BATCH+1d), "blue"
 				);
 			}
 			this.error			= this.loss.error		/ (double)DATA.size();	// setting this epoch error
@@ -263,8 +263,8 @@ public class Model {
 			}else	FP[L_INDEX]++;											// getting false positives
 
 			BAR.message(
-				" | Loss: "		+	this.loss.error		/ (double)index	+ 
-				" | Accuracy: " +	this.loss.accuracy	/ (double)index, "blue"
+				" | Loss: "		+	this.loss.error		/ (index+1d)	+ 
+				" | Accuracy: " +	this.loss.accuracy	/ (index+1d), "blue"
 			);
 		}
 

@@ -512,7 +512,7 @@ public class Activation {
 			return Initializer.Xavier.uniform( N_INPUTS, 1 );
 		}
 	}
-  
+
 	/**
 	 * Gauss error function
 	 * @param z subject to catastrophic cancellation when z in very close to 0
