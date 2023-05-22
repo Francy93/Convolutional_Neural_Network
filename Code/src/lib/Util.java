@@ -417,11 +417,12 @@ public class Util{
 
 		// getting console input
 		public String cinln(){
-			Console console = System.console();			// getting console
+			Console console	= System.console();	// getting console
 			if(console == null) throw new UnsupportedOperationException("Console not available");
-			final String INPUT = console.readLine();	// getting input
-			System.out.println();						// new line
-			return INPUT;								// returning input
+			
+			final String INPUT	= console.readLine();
+			System.out.println();				// new line
+			return INPUT != null? INPUT: "";	// returning input
 		}
 
 		/**
@@ -542,7 +543,7 @@ public class Util{
 		private			int		barState 		= 0			,	updates		= this.barLength;						//	calculating loading bar
 		private			double	nextUpdate 		= 0			,	coloursIndex= (double)this.barColours.length / (double)(this.MAX_PERCENT+0.1);
 		private			boolean	messageUpdate	= false		;														//	notes if message has updated
-		private			long	index			= -1		;														//	increasing index per cicle
+		private			long	index			= 0		;														//	increasing index per cicle
 		private			long	ciclesAmount				;														//	total amount of cicles
 
 
@@ -709,7 +710,7 @@ public class Util{
 		 * @return instruction to reset the command screen
 		 */
 		private String reset(){
-			this.index		= -1;
+			this.index		=  0;
 			this.counter	= -1;
 			this.nextUpdate =  0;
 			return this.CR + this.ERASE_BELOW;

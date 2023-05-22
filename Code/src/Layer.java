@@ -535,8 +535,7 @@ public abstract class Layer {
 	/**
 	 * Samples Loader
 	 * @param SMAPLE
-	 * @throws Exception
 	 */
-	public abstract void sampleLoader(final Sample SMAPLE) throws Exception;
+	public abstract void sampleLoader(final Sample SMAPLE);
 
 }

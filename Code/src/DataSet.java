@@ -63,10 +63,10 @@ public class DataSet {
 		// reading the file
 		try (final BufferedReader SCANN = new BufferedReader(new FileReader(FILE_NAME))) {
 			return SCANN.lines().parallel()									// reading the file line by line
-				.filter(line -> line.matches("^(\\d|["+DELIMITER+"])*$"))	// filtering out the lines that are not numbers
+				.filter(line -> line.matches("^\\d+(\\Q" + DELIMITER + "\\E\\d+)+$")) // regex filter
 				.map(line -> {												// converting the line to a sample
-					try { return new Sample(line, DELIMITER);				// creating a sample
-					}catch (Exception e) { return null; }					// if the line is not a sample, return null
+					try { return new Sample(line, DELIMITER); }				// creating a sample
+					catch (ExceptionInInitializerError e) { return null; }	// if the line is not a sample, return null
 				})
 				.filter(sample -> sample != null)							// filtering out the null samples
 				.collect(Collectors.toList())								// collecting the samples into a list
@@ -272,8 +272,8 @@ public class DataSet {
 	 * @param LABEL	label to be searched
 	 * @return		amount of labels
 	 */
-	public int getLabelsAmount(final double LABEL){
-		return this.CLASS_AMOUNT[this.getLabelIndex(LABEL)];
+	public int getClassAmount(final int CLASS_LABEL){
+		return this.CLASS_AMOUNT[CLASS_LABEL];
 	}
 
 	/**

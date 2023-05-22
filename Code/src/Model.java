@@ -1,3 +1,4 @@
+import lib.Util;
 
 public class Model {
 	
@@ -159,8 +160,7 @@ public class Model {
 	 */
 	private int feedForward(){
 		// loading the sample
-		try{ this.LAYERS[0].sampleLoader(this.sample); }								// loading the sample into the input layer
-		catch(Exception e){ System.err.println("Sample loaded into the wrong layer"); }	// error handling
+		this.LAYERS[0].sampleLoader(this.sample);								// loading the sample into the input layer
 
 		// cycling over the layers
 		for(final Layer LAYER: this.LAYERS)	LAYER.feedForward();
@@ -198,8 +198,12 @@ public class Model {
 	 * @param LEARNING_RATE learning rate
 	 */
 	public void train(final DataSet DATA, int batch, final int EPOCHS, final double LEARNING_RATE){
+		if (this.LAYERS[this.LAYERS.length-1].getFlatOutput().length != DATA.getClasses().length){	// checking if the output layer is correct
+			final String message = "The output layer must have the same amount of nodes as the classes amount";
+			throw new IllegalArgumentException(new Util.AnsiColours().colourText(message, "red"));
+		}
 		batch = Math.max(batch, 1);												// setting the batch size to 1 if it is less than 1
-		final lib.Util.Loading BAR = new lib.Util.Loading(DATA.size()-1);		// loading bar
+		final lib.Util.Loading BAR = new lib.Util.Loading(DATA.size());			// loading bar
 		this.optimizer.OPT.setParam(LEARNING_RATE, batch);						// setting the learning rate and the batch size
 		
 		//cicling over the dataset samples for "EPOCHS" times
@@ -243,7 +247,11 @@ public class Model {
 	 * @return accuracy
 	 */
     public void validate(final DataSet DATA){
-		final lib.Util.Loading BAR = new lib.Util.Loading(DATA.size()-1);	// loading bar
+		if (this.LAYERS[this.LAYERS.length-1].getFlatOutput().length != DATA.getClasses().length){	// checking if the output layer is correct
+			final String message = "The output layer must have the same amount of nodes as the classes amount";
+			throw new IllegalArgumentException(new Util.AnsiColours().colourText(message, "red"));
+		}
+		final lib.Util.Loading BAR = new lib.Util.Loading(DATA.size());		// loading bar
 		final int[] FP	= new int[DATA.getClasses().length];				// false positives
 		final int[] TP	= new int[DATA.getClasses().length];				// true positives
 
@@ -313,7 +321,7 @@ public class Model {
 		double recall = 0;
 
 		for(int label=0; label < TP.length; label++){					// cycling over the labels
-			final long FN = DATA.getLabelsAmount(label) - TP[label];	// getting the false negatives
+			final long FN = DATA.getClassAmount(label) - TP[label];		// getting the false negatives
 			final long TP_FN = TP[label] + FN;							// getting the true positives + false negatives
 			recall += (double)TP[label] / TP_FN;						// calculating the recall
 		}
