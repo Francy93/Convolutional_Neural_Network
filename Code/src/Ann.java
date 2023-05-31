@@ -1,10 +1,10 @@
 import java.io.FileNotFoundException;
-import lib.Util.AnsiColours;
 
 public class Ann{
 	private static			DataSet dataTrain;								// dataset used to perform the training		
 	private static			DataSet dataValid;								// detaset used to perform the validation
-	public	static 			Sample[] missclassified = new Sample[0];		// missclassified samples
+	public	static			Fitness fitness;								// used to determine the noise
+	private static			lib.Chart chart;								// chart used to plot the metrics
 
 	private static final	String	TRAINING_FILE	= "cw2DataSet1.csv";	// file name of the training dataset
 	private static final	String	VALIDATE_FILE	= "cw2DataSet2.csv";	// file name of the validation dataset
@@ -60,87 +60,55 @@ public class Ann{
 			Model.Loss.CROSS_ENTROPY	// loss function
 		);
 		System.out.println(" - Built "+(MODEL.getModelDepth()+1)+" layers, "+MODEL.getNeuronsAmount()+" neurons and "+MODEL.getParametersAmount()+" parameters\n\n");
+	
+		fitness	= noise > 0? new Ann.Noisify(MODEL, noise): new Ann.Smooth(MODEL);	// used to determine the noise
+		chart	= new lib.Chart(new String[]{"Test Accuracy", "Test Loss", "Validation Accuracy", "Validation Loss"},
+								new String[]{"Accuracy", "Loss", "Accuracy", "Loss"},
+								new String[]{"Epoch", "Epoch", "Epoch", "Epoch"},
+								new String[]{"BLUE", "RED", "GREEN", "ORANGE"});
 	}
 
 
 	// running training and testing
 	public static void trainAndTest(final int ITER){
-		final Fitness	FITNESS		= noise > 0? new Ann.Noisify(MODEL, noise): new Ann.Smooth(MODEL);	// used to determine the noise
-		final String[]	TITLES		= new String[]{"Accuracy", "Precision", "Recall", "F1Score"};		// titles of the metrics
-		double[]		metrics		= new double[]{MODEL.getAccuracy(), MODEL.getPrecision(), MODEL.getRecall(), MODEL.getF1Score()};
-		double			bestAccuracy= MODEL.getAccuracy();												// highest accuracy
-
-		for(int epoch = 1+(ITER-1)*EPOCHS; epoch <= EPOCHS*ITER; epoch++){		// looping through the epochs
-			FITNESS.printTitle(epoch);											// printing the epoch number
-			FITNESS.train(dataTrain, BATCH_SIZE, 1, LEARNING_RATE, true);		// performing the training
-			FITNESS.validate(dataValid, true);									// performing the validation
-
-			if(MODEL.getAccuracy() > bestAccuracy){								// determining if this epoch has the best accruacy
-				missclassified	= getMissclassified(dataValid);					// storing the missclassified samples if any improvement
-				metrics			= new double[]{MODEL.getAccuracy(), MODEL.getPrecision(), MODEL.getRecall(), MODEL.getF1Score()};
-				bestAccuracy	= MODEL.getAccuracy();							// storing the highest accuracy
-			}
-		}
-
-		noise = FITNESS instanceof Noisify? FITNESS.getNoise() == 0? 0.001: FITNESS.getNoise(): noise;	// grantee next loop noise is made
-		printScores(TITLES, metrics, bestAccuracy);														// printing the metrics
-	}
-
-
-	// storing the missclassified samples
-	private static Sample[] getMissclassified(final DataSet DATASET){
-		final Sample[] SAMPLES = new Sample[DATASET.size()];				// used to store the missclassified samples
 		
-		int missed = 0;
-		for(final Sample SAMPLE: DATASET.getDataSet()){						// cycling through the samples
-			if(!SAMPLE.isPredCorrect()) SAMPLES[missed++] = SAMPLE;			// storing the missclassified samples
+		for(int epoch = 1+(ITER-1)*EPOCHS; epoch <= EPOCHS*ITER; epoch++){	// looping through the epochs
+			fitness.printTitle(epoch);										// printing the epoch number
+			// training
+			fitness.train(dataTrain, BATCH_SIZE, 1, LEARNING_RATE, true);	// performing the training
+			chart.addData(0, fitness.getTrainAcc()*100d, epoch, true);		// adding the training accuracy to the chart
+			chart.addData(1, fitness.getTrainErr()*100d, epoch, true);		// adding the training loss to the chart
+			// testing
+			fitness.validate(dataValid, true);								// performing the validation
+			chart.addData(2, fitness.getValidAcc()*100d, epoch, true);		// adding the validation accuracy to the chart
+			chart.addData(3, fitness.getValidErr()*100d, epoch, true);		// adding the validation loss to the chart
 		}
-		
-		final Sample[] MISSCLASSIFIED = new Sample[missed];					// resizing the array
-		for(int i=0; i<missed; i++) MISSCLASSIFIED[i] = SAMPLES[i].clone();	// copying the missclassified samples
 
-		return MISSCLASSIFIED;												// storing the missclassified samples
-	}
-	
-	// printing the metrics
-	private static void printScores(final String[] TITLES, final double[] METRICS, final double BEST_ACCURACY){
-		final lib.Util.AnsiColours COLORS = new AnsiColours();										// used to colour the output
-		final float		ONE_THIRD 	= 1f/3f, 	TWO_THIRDS 	= 1f/1.5f;								// used to determine the output colour
-		final String	RED 		= "red",	YELLOW 		= "yellow", GREEN = "green";			// colours for the output
-		final int		DATA		= Math.min(TITLES.length, METRICS.length);						// number of metrics to print
-		
-		System.out.println(COLORS.colourText("\nHighest Accuracy: "+ BEST_ACCURACY*100d,"cyan"));	// printing the highest accuracy
-		for(int i = 0; i < DATA; i++){
-			final String COLOUR	= METRICS[i] <= ONE_THIRD || Double.isNaN(METRICS[i])? RED: METRICS[i] <= TWO_THIRDS? YELLOW: GREEN;
-			System.out.println(TITLES[i] +" :\t"+ COLORS.colourText(lib.Util.round(METRICS[i]*100d, 2) +"%", COLOUR));
-		}
-		System.out.println();
+		noise = fitness instanceof Noisify? fitness.getNoise() == 0? 0.001: fitness.getNoise(): noise;	// grantee next loop noise is made
+		fitness.printScores();												// printing the metrics
 	}
 
-	// printing the misclassified samples
-	public static void printMisclassified(){
-		for(final Sample SAMPLE: missclassified){
-			SAMPLE.print2D(dataValid.getMax(), 23, 1);
-			System.out.println("Sample label: " + SAMPLE.getLabel() + "\tPrediction label: " + SAMPLE.getPred() + "\n\n");
-		}
-	}
+
 	
 
 
 	// Running the training and validation
-	private static abstract class Fitness{
-		protected	final 	lib.Util.AnsiColours COLOR = new AnsiColours();								// used to colour the output
+	public static abstract class Fitness{
+		protected	final 	lib.Util.AnsiColours COLORS	= new lib.Util.AnsiColours();					// used to colour the output
+		private		final	String[] TITLES				= new String[]{"Accuracy", "Precision", "Recall", "F1Score"};	// titles of the metrics
+		protected 			Sample[] missclassified		= new Sample[0];								// missclassified samples
+		protected			double[] metrics	;														// metrics
+		protected			double	bestAccuracy;														// highest accuracy	
+		protected			double	maxFeatures	;														// highest value of the features
 		private 	final	float	ONE_THIRD 	= 1f/3f, 	TWO_THIRDS 	= 1f/1.5f;						// used to determine the output colour
 		private		final 	String	RED 		= "red",	YELLOW 		= "yellow", GREEN = "green";	// colours for the output
-		private		final 	String	U_RED		= this.COLOR.colourText("/\\", this.RED), U_GREEN = this.COLOR.colourText("/\\", this.GREEN);
-		private		final 	String	D_RED		= this.COLOR.colourText("\\/", this.RED), D_GREEN = this.COLOR.colourText("\\/", this.GREEN);
-		protected			double	noise		= 0;													// noise ammount
+		protected	final 	Model	MODEL		;														// used to store the model
 		protected 			String	message		= "";													// message to be printed
-		protected	final 	Model	MODEL;																// used to store the model
+		protected			double	noise		= 0	;													// noise ammount
 		protected			double	prevTrainErr, prevTrainAcc, trainErr, trainAcc;						// training metrics
 		protected			double	prevValidErr, prevValidAcc, validErr, validAcc;						// testing metrics
 
-		private Fitness(final Model MODEL){ 
+		private Fitness(final Model MODEL){
 			this.MODEL = MODEL;	
 			
 			this.prevTrainErr	= this.MODEL.getError();
@@ -152,28 +120,92 @@ public class Ann{
 			this.prevValidAcc	= this.MODEL.getAccuracy();
 			this.validErr		= this.MODEL.getError();
 			this.validAcc		= this.MODEL.getAccuracy();
-		}
 
+			this.bestAccuracy	= this.MODEL.getAccuracy();
+			this.metrics		= new double[]{this.MODEL.getAccuracy(), this.MODEL.getPrecision(), this.MODEL.getRecall(), this.MODEL.getF1Score()};
+		}
+		
+		/**
+		 * Training the model
+		 * @param DATASET
+		 * @param BATCH_SIZE
+		 * @param EPOCHS
+		 * @param LEARNING_RATE
+		 * @param PRINT
+		 */
 		public abstract void train(final DataSet DATASET, final int BATCH_SIZE, final int EPOCHS, final double LEARNING_RATE, final boolean PRINT);
 		public abstract void validate(final DataSet DATASET, final boolean PRINT);
 		
-		// printing the metrics
+		/**
+		 * Printing the metrics
+		 * @param ACCURACY
+		 * @param LOSS
+		 * @param PREV_ACC
+		 * @param PREV_LOSS
+		 */
 		private void	printMetrics(final double ACCURACY, final double LOSS, final double PREV_ACC, final double PREV_LOSS){
-			final String A_ARROW	= ACCURACY	< 	PREV_ACC	? this.D_RED: ACCURACY 	== PREV_ACC	? "--": this.U_GREEN;	// arrow accuracy
-			final String L_ARROW	= LOSS		> 	PREV_LOSS	? this.U_RED: LOSS		== PREV_LOSS? "--": this.D_GREEN;	// arrow loss
+			final String U_RED		= this.COLORS.colourText("/\\", this.RED), U_GREEN = this.COLORS.colourText("/\\", this.GREEN);
+			final String D_RED		= this.COLORS.colourText("\\/", this.RED), D_GREEN = this.COLORS.colourText("\\/", this.GREEN);
+
+			final String A_ARROW	= ACCURACY	< 	PREV_ACC	? D_RED: ACCURACY 	== PREV_ACC	? "--": U_GREEN;	// arrow accuracy
+			final String L_ARROW	= LOSS		> 	PREV_LOSS	? U_RED: LOSS		== PREV_LOSS? "--": D_GREEN;	// arrow loss
 			
 			final String A_COLOUR	= ACCURACY	<=	this.ONE_THIRD	|| Double.isNaN(ACCURACY)	? this.RED: ACCURACY<= this.TWO_THIRDS?	this.YELLOW: this.GREEN;
 			final String L_COLOUR	= LOSS 		>=	this.TWO_THIRDS	|| Double.isNaN(LOSS)		? this.RED: LOSS	>= this.ONE_THIRD?	this.YELLOW: this.GREEN;
-			System.out.println("  "+A_ARROW+" Accuracy:\t" + this.COLOR.colourText(lib.Util.round(ACCURACY*100d,3)	+ " %", A_COLOUR));
-			System.out.println("  "+L_ARROW+" Loss:    \t" + this.COLOR.colourText(lib.Util.round(LOSS*100d, 	3)	+ " %", L_COLOUR));
+			System.out.println("  "	+ A_ARROW +" Accuracy:\t" + this.COLORS.colourText(lib.Util.round(ACCURACY*100d,	3)	+ " %", A_COLOUR));
+			System.out.println("  "	+ L_ARROW +" Loss:    \t" + this.COLORS.colourText(lib.Util.round(LOSS*100d,		3)	+ " %", L_COLOUR));
+		}
+
+		/**
+		 * Storing the missclassified samples
+		 * @param DATASET
+		 * @return
+		 */
+		public Sample[] getMissclassified(final DataSet DATASET){
+			final Sample[] SAMPLES = new Sample[DATASET.size()];				// used to store the missclassified samples
+			
+			int missed = 0;
+			for(final Sample SAMPLE: DATASET.getDataSet()){						// cycling through the samples
+				if(!SAMPLE.isPredCorrect()) SAMPLES[missed++] = SAMPLE;			// storing the missclassified samples
+			}
+			
+			final Sample[] MISSCLASSIFIED = new Sample[missed];					// resizing the array
+			for(int i=0; i<missed; i++) MISSCLASSIFIED[i] = SAMPLES[i].clone();	// copying the missclassified samples
+
+			return MISSCLASSIFIED;												// storing the missclassified samples
+		}
+		
+		// printing the metrics
+		public void printScores(){
+			final int DATA	= Math.min(this.TITLES.length, this.metrics.length);								// number of metrics to print
+			
+			System.out.println(this.COLORS.colourText("\nHighest Accuracy: "+ this.bestAccuracy*100d,"cyan"));	// printing the highest accuracy
+			for(int i = 0; i < DATA; i++){
+				final String COLOR	= this.metrics[i] <= this.ONE_THIRD || Double.isNaN(this.metrics[i])? this.RED: this.metrics[i] <= this.TWO_THIRDS? this.YELLOW: GREEN;
+				System.out.println(this.TITLES[i] +" :\t"+ COLORS.colourText(lib.Util.round(this.metrics[i]*100d, 2) +"%", COLOR));
+			}
+			System.out.println();
+		}
+
+		// printing the misclassified samples
+		public void printMisclassified(){
+			for(final Sample SAMPLE: this.missclassified){
+				SAMPLE.print2D(this.maxFeatures, 23, 1);
+				System.out.println("Sample label: " + SAMPLE.getLabel() + "\tPrediction label: " + SAMPLE.getPred() + "\n\n");
+			}
 		}
 		
 		public void		printTitle(final int EPOCH){
-			System.out.println(COLOR.colourText("\n\nEPOCH " +EPOCH+ this.message + "\n", "magenta"));	// printing the epoch number
+			System.out.println(COLORS.colourText("\n\nEPOCH " +EPOCH+ this.message + "\n", "magenta"));	// printing the epoch number
 		}
 		public void		printTraining()		{ this.printMetrics(this.trainAcc, this.trainErr, this.prevTrainAcc, this.prevTrainErr); }
 		public void		printValidation()	{ this.printMetrics(this.validAcc, this.validErr, this.prevValidAcc, this.prevValidErr); }
 		public double	getNoise()			{ return this.noise; }
+		public double 	getTrainErr()		{ return this.trainErr; }
+		public double 	getTrainAcc()		{ return this.trainAcc; }
+		public double 	getValidErr()		{ return this.validErr; }
+		public double 	getValidAcc()		{ return this.validAcc; }
+		public Sample[]	getMissclassified()	{ return this.missclassified; }
 	}
 
 	private static class Smooth extends Ann.Fitness{
@@ -181,7 +213,7 @@ public class Ann{
 
 		@Override
 		public void train(final DataSet DATASET, final int BATCH_SIZE, final int EPOCHS, final double LEARNING_RATE, final boolean PRINT){
-			if(PRINT)	System.out.println(super.COLOR.colourText(" Training ...","blue"));	// training message
+			if(PRINT)	System.out.println(super.COLORS.colourText(" Training ...","blue"));	// training message
 
 			super.MODEL.train(DATASET, BATCH_SIZE, EPOCHS, LEARNING_RATE);	// performing the training
 			super.prevTrainErr	= super.trainErr;							// holding the previous error rate
@@ -193,13 +225,20 @@ public class Ann{
 		}
 		@Override
 		public void	validate(final DataSet DATASET, final boolean PRINT){
-			if(PRINT)	System.out.println(super.COLOR.colourText(" Validating ...","yellow"));// validation message
+			if(PRINT)	System.out.println(super.COLORS.colourText(" Validating ...","yellow"));// validation message
 
 			super.MODEL.validate(DATASET);									// performing the validation
 			super.prevValidErr	= super.validErr;							// holding the previous error rate
 			super.prevValidAcc	= super.validAcc;							// holding the previous accuracy
 			super.validErr		= super.MODEL.getError();					// storing the current error rate
 			super.validAcc		= super.MODEL.getAccuracy();				// storing the current accuracy
+
+			if(MODEL.getAccuracy() > super.bestAccuracy){					// determining if this epoch has the best accruacy
+				super.missclassified	= super.getMissclassified(DATASET);	// storing the missclassified samples if any improvement
+				super.metrics			= new double[]{MODEL.getAccuracy(), MODEL.getPrecision(), MODEL.getRecall(), MODEL.getF1Score()};
+				super.bestAccuracy		= super.MODEL.getAccuracy();		// storing the highest accuracy
+				super.maxFeatures		= DATASET.getMax();					// storing the highest accuracy
+			}
 
 			if(PRINT)	super.printValidation();							// printing the metrics
 		}

@@ -5,6 +5,8 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="src/lib/XChart/xchart-3.8.3.jar"/>
+	<classpathentry kind="lib" path="src/lib/XChart/xchart-demo-3.8.3.jar"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

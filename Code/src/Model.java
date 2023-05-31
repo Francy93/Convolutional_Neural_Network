@@ -157,6 +157,7 @@ public class Model {
 	
 	/**
 	 * Feed forward through every layer
+	 * @return predicted class
 	 */
 	private int feedForward(){
 		// loading the sample
@@ -199,8 +200,8 @@ public class Model {
 	 */
 	public void train(final DataSet DATA, int batch, final int EPOCHS, final double LEARNING_RATE){
 		if (this.LAYERS[this.LAYERS.length-1].getFlatOutput().length != DATA.getClasses().length){	// checking if the output layer is correct
-			final String message = "The output layer must have the same amount of nodes as the classes amount";
-			throw new IllegalArgumentException(new Util.AnsiColours().colourText(message, "red"));
+			final String MESSAGE = "The output layer must have the same amount of nodes as the classes amount";
+			throw new IllegalArgumentException(new Util.AnsiColours().colourText(MESSAGE, "red"));
 		}
 		batch = Math.max(batch, 1);												// setting the batch size to 1 if it is less than 1
 		final lib.Util.Loading BAR = new lib.Util.Loading(DATA.size());			// loading bar
@@ -248,27 +249,26 @@ public class Model {
 	 */
     public void validate(final DataSet DATA){
 		if (this.LAYERS[this.LAYERS.length-1].getFlatOutput().length != DATA.getClasses().length){	// checking if the output layer is correct
-			final String message = "The output layer must have the same amount of nodes as the classes amount";
-			throw new IllegalArgumentException(new Util.AnsiColours().colourText(message, "red"));
+			final String MESSAGE = "The output layer must have the same amount of nodes as the classes amount";
+			throw new IllegalArgumentException(new Util.AnsiColours().colourText(MESSAGE, "red"));
 		}
-		final lib.Util.Loading BAR = new lib.Util.Loading(DATA.size());		// loading bar
-		final int[] FP	= new int[DATA.getClasses().length];				// false positives
-		final int[] TP	= new int[DATA.getClasses().length];				// true positives
+		final lib.Util.Loading BAR = new lib.Util.Loading(DATA.size());				// loading bar
+		final int[] FP	= new int[DATA.getClasses().length];						// false positives
+		final int[] TP	= new int[DATA.getClasses().length];						// true positives
 
-		DATA.shuffle();														// shuffeling the samples
+		DATA.shuffle();																// shuffeling the samples
 
 		// cycling over the samples
 		for(int index=0; index < DATA.size(); index++){
-			final Sample SAMPLE = DATA.getDataSet()[index];					// getting the sample
-			this.sample = SAMPLE;											// loading the sample
-			BAR.printNewBar();												// printing the loading bar
+			final Sample SAMPLE = DATA.getDataSet()[index];							// getting the sample
+			this.sample = SAMPLE;													// loading the sample
+			BAR.printNewBar();														// printing the loading bar
 
-			final int PREDICTED = this.feedForward();						// performing forward propagation for all the layers
-			this.sample.setPred(DATA.getClasses()[PREDICTED]);				// getting the prediction
-			final int L_INDEX = DATA.getLabelIndex(this.sample.getPred());	// getting the label index
-			if (this.sample.getLabel() == this.sample.getPred()){			// checking if the prediction is correct
-				TP[L_INDEX]++;												// getting true positives
-			}else	FP[L_INDEX]++;											// getting false positives
+			final int PREDICTED = this.feedForward();								// performing forward propagation for all the layers
+			this.sample.setPred(DATA.getClasses()[PREDICTED]);						// getting the prediction
+			final int L_INDEX = DATA.getLabelIndex(this.sample.getPred());			// getting the label index
+			if (this.sample.getLabel() == this.sample.getPred())	TP[L_INDEX]++;	// getting true positives
+			else													FP[L_INDEX]++;	// getting false positives
 
 			BAR.message(
 				" | Loss: "		+	this.loss.error		/ (index+1d)	+ 
@@ -296,7 +296,7 @@ public class Model {
 	 * @return F1Score
 	 */
 	private double getF1Score(final double PRECISION, final double RECALL){
-		return 2 * (PRECISION * RECALL) / (PRECISION + RECALL);	// F1Score
+		return 2d * (PRECISION * RECALL) / (PRECISION + RECALL);	// F1Score
 	}
 
 	/**
