@@ -62,10 +62,11 @@ public class Ann{
 		System.out.println(" - Built "+(MODEL.getModelDepth()+1)+" layers, "+MODEL.getNeuronsAmount()+" neurons and "+MODEL.getParametersAmount()+" parameters\n\n");
 	
 		fitness	= noise > 0? new Ann.Noisify(MODEL, noise): new Ann.Smooth(MODEL);	// used to determine the noise
-		chart	= new lib.Chart(new String[]{"Test Accuracy", "Test Loss", "Validation Accuracy", "Validation Loss"},
-								new String[]{"Accuracy", "Loss", "Accuracy", "Loss"},
-								new String[]{"Epoch", "Epoch", "Epoch", "Epoch"},
-								new String[]{"BLUE", "RED", "GREEN", "ORANGE"});
+		try{	chart	= new lib.Chart(new String[]{"Test Accuracy", "Test Loss", "Validation Accuracy", "Validation Loss"},
+										new String[]{"Accuracy", "Loss", "Accuracy", "Loss"},
+										new String[]{"Epoch", "Epoch", "Epoch", "Epoch"},
+										new String[]{"BLUE", "RED", "GREEN", "ORANGE"});
+		}catch(Exception e){ System.out.println("GUI error! Chart not supported.\n"); }
 	}
 
 
@@ -76,12 +77,16 @@ public class Ann{
 			fitness.printTitle(epoch);										// printing the epoch number
 			// training
 			fitness.train(dataTrain, BATCH_SIZE, 1, LEARNING_RATE, true);	// performing the training
-			chart.addData(0, fitness.getTrainAcc()*100d, epoch, true);		// adding the training accuracy to the chart
-			chart.addData(1, fitness.getTrainErr()*100d, epoch, true);		// adding the training loss to the chart
+			if (chart != null){
+				chart.addData(0, fitness.getTrainAcc()*100d, epoch, true);	// adding the training accuracy to the chart
+				chart.addData(1, fitness.getTrainErr()*100d, epoch, true);	// adding the training loss to the chart
+			}
 			// testing
 			fitness.validate(dataValid, true);								// performing the validation
-			chart.addData(2, fitness.getValidAcc()*100d, epoch, true);		// adding the validation accuracy to the chart
-			chart.addData(3, fitness.getValidErr()*100d, epoch, true);		// adding the validation loss to the chart
+			if (chart != null){
+				chart.addData(2, fitness.getValidAcc()*100d, epoch, true);	// adding the validation accuracy to the chart
+				chart.addData(3, fitness.getValidErr()*100d, epoch, true);	// adding the validation loss to the chart
+			}
 		}
 
 		noise = fitness instanceof Noisify? fitness.getNoise() == 0? 0.001: fitness.getNoise(): noise;	// grantee next loop noise is made

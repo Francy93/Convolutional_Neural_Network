@@ -24,8 +24,8 @@ public class Chart {
 	private ArrayList<ArrayList<Double>>	xData	= new ArrayList<>();				// X data
 	private ArrayList<XYChart>				charts	= new ArrayList<>();				// Charts
 	// Create a panel to hold the charts and the frame to hold the panel
-	private JPanel 							panel	= new JPanel(new GridLayout(2, 2));	// Panel with grid layout
-	private JFrame 							frame	= new JFrame("Progresses");			// Frame with title
+	private JPanel 							panel	;									// Panel with grid layout
+	private JFrame 							frame	;									// Frame with title
 
 	/**
 	 * Constructor
@@ -35,6 +35,13 @@ public class Chart {
 	 * @param COLORS	the colors
 	 */
 	public Chart(final String[] TITLES, final String[] Y_TITLES, final String[] X_TITLES, final String[] COLORS) {
+		try{
+			this.panel	= new JPanel(new GridLayout(2, 2));	// Panel with grid layout
+			this.frame	= new JFrame("Progresses");			// Frame with title
+		}catch(Exception e){
+			throw new RuntimeException("Error creating the chart");
+		}
+
 		for (int i = 0; i < TITLES.length; i++) {
 			this.addChart(TITLES[i], Y_TITLES[i], X_TITLES[i], COLORS[i]);
 		}
