@@ -66,7 +66,7 @@ public class Ann{
 										new String[]{"Accuracy", "Loss", "Accuracy", "Loss"},
 										new String[]{"Epoch", "Epoch", "Epoch", "Epoch"},
 										new String[]{"BLUE", "RED", "GREEN", "ORANGE"});
-		}catch(Exception e){ System.out.println("GUI error! Chart not supported.\n"); }
+		}catch(Exception e){ System.out.println("GUI error: Chart not supported!\n"); }
 	}
 
 

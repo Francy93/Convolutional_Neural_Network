@@ -38,9 +38,7 @@ public class Chart {
 		try{
 			this.panel	= new JPanel(new GridLayout(2, 2));	// Panel with grid layout
 			this.frame	= new JFrame("Progresses");			// Frame with title
-		}catch(Exception e){
-			throw new RuntimeException("Error creating the chart");
-		}
+		}catch(Exception e){ throw new RuntimeException("Error creating the chart"); }
 
 		for (int i = 0; i < TITLES.length; i++) {
 			this.addChart(TITLES[i], Y_TITLES[i], X_TITLES[i], COLORS[i]);

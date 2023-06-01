@@ -80,7 +80,6 @@ public class Main {
 					opt = 2;
 					break;
 				case 2: System.out.println("Samples missclassified: " + Ann.fitness.getMissclassified().length + "\r\n");
-					iter--;
 					opt = 1;
 			}
 		}
