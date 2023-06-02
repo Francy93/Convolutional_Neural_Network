@@ -59,14 +59,15 @@ public class Ann{
 			Model.Optimizer.ADAM,		// optimizer
 			Model.Loss.CROSS_ENTROPY	// loss function
 		);
-		System.out.println(" - Built "+(MODEL.getModelDepth()+1)+" layers, "+MODEL.getNeuronsAmount()+" neurons and "+MODEL.getParametersAmount()+" parameters\n\n");
+		System.out.println(" - Built "+(MODEL.getModelDepth()+1)+" layers, "+MODEL.getNeuronsAmount()+" neurons and "+MODEL.getParametersAmount()+" parameters");
 	
 		fitness	= noise > 0? new Ann.Noisify(MODEL, noise): new Ann.Smooth(MODEL);	// used to determine the noise
 		try{	chart	= new lib.Chart(new String[]{"Test Accuracy", "Test Loss", "Validation Accuracy", "Validation Loss"},
 										new String[]{"Accuracy", "Loss", "Accuracy", "Loss"},
 										new String[]{"Epoch", "Epoch", "Epoch", "Epoch"},
 										new String[]{"BLUE", "RED", "GREEN", "ORANGE"});
-		}catch(Exception e){ System.out.println("GUI error: Chart not supported!\n"); }
+			System.out.println(" - GUI Chart status: Supported!\n\n");
+		}catch(Exception e){ System.out.println(" - GUI Chart status: Unsupported!\n\n"); }
 	}
 
 
