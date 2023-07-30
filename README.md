@@ -1,6 +1,6 @@
 <p align="center">
-  <img height="60px" width="60px" src="https://w7.pngwing.com/pngs/875/101/png-transparent-deep-learning-artificial-neural-network-machine-learning-convolutional-neural-network-neuron-tynagh-network-systems-loughrea-computer-network-angle-symmetry.png" />
-  <font color="blue" align="center"><h1>Deep Learning 🧠</h1></font>
+  <img height="200px" width="200px" src="https://raw.githubusercontent.com/Francy93/Convolutional_Neural_Network/master/Report/img/logo.png" />
+  <font color="blue"><h1 align="center">Deep Learning</h1></font>
 </p>
 AI: Second project of the Computer Science third-year is about Convolutional Neural Networks (CNN)
 
