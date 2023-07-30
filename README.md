@@ -8,7 +8,6 @@
   <p align="center">AI: Second project of the Computer Science third-year is about Convolutional Neural Networks (CNN)</p>
 </p><br>
 
-
 <font color="blue"><h2>Convolutional Neural Network 🧠</h2></font>
 This project is about Convolutional Neural Networks (CNN) and is the second project of the Computer Science third-year course.
 
