@@ -1,8 +1,8 @@
 <p align="center">
   <img height="200px" width="200px" src="https://raw.githubusercontent.com/Francy93/Convolutional_Neural_Network/master/Report/img/logo.png"/>
   <summary align="center" style="list-style-type: none;">
-    <font color="blue" style="display: inline-block;">
-      <h1 align="center" style="display: inline-block;">Deep Learning</h1>
+    <font color="blue" style="list-style-type: none;">
+      <h1 align="center" style="list-style-type: none;">Deep Learning</h1>
     </font><br>
   </summary>
   <p align="center" style="display: inline-block;">AI: Second project of the Computer Science third-year is about Convolutional Neural Networks (CNN)</p>
