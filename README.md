@@ -1,4 +1,6 @@
-# <p style="text-align: center;">Convolutional_Neural_Network</p>
+<p align="center">
+  <font color="blue"><h2>Convolutional Neural Network 🧠</h2></font>
+</p>
 AI: Second project of the Computer Science third-year is about Convolutional Neural Networks (CNN)
 
 <font color="blue"><h2>Convolutional Neural Network 🧠</h2></font>
