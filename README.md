@@ -3,7 +3,7 @@
   <font color="blue">
     <h1 align="center">Deep Learning</h1>
   </font><br>
-  <h3 align="center">AI: Second project of the Computer Science third-year is about Convolutional Neural Networks (CNN)</h3>
+  <h4 align="center">AI: Second project of the Computer Science third-year is about Convolutional Neural Networks (CNN)</h4>
 </p>
 
 
