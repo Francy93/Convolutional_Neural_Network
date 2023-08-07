@@ -6,8 +6,8 @@ public class Ann{
 	public	static			Fitness fitness;								// used to determine the noise
 	private static			lib.Chart chart;								// chart used to plot the metrics
 
-	private static final	String	TRAINING_FILE	= "cw2DataSet1.csv";	// file name of the training dataset
-	private static final	String	VALIDATE_FILE	= "cw2DataSet2.csv";	// file name of the validation dataset
+	private static final	String	TRAINING_FILE	= "dataSet1.csv";		// file name of the training dataset
+	private static final	String	VALIDATE_FILE	= "dataSet2.csv";		// file name of the validation dataset
 	private static 			double	noise			= 60;					// dynamic noise (as a regularizator)
 	private static final	int		BATCH_SIZE		= 8;					// number of samples processed before updating the weights
 	public	static final	int		EPOCHS			= 100;					// number of dataset cycles
@@ -19,12 +19,12 @@ public class Ann{
 	// Model definition
 	private static final Model MODEL = Model.Sequential(
 		// starting the convolutional layers
-		Layer.Conv2D(8	,	1, 1,	Layer.Activation.MISH),		// convolutional layer of 8   filters with a kernal of 1X1
-		Layer.Conv2D(16	,	1, 1,	Layer.Activation.MISH),		// convolutional layer of 16  filters with a kernal of 1X1
-		Layer.Conv2D(32	,	2, 2,	Layer.Activation.MISH),		// convolutional layer of 128 filters with a kernal of 2X2
-		Layer.Conv2D(64	,	2, 2,	Layer.Activation.MISH),		// convolutional layer of 254 filters with a kernal of 2X2
-		Layer.Conv2D(128,	3, 3,	Layer.Activation.MISH),		// convolutional layer of 254 filters with a kernal of 3X3
-		Layer.Conv2D(256,	3, 3,	Layer.Activation.MISH),		// convolutional layer of 254 filters with a kernal of 3X3
+		Layer.Conv2D(8	,	1, 1,	Layer.Activation.MISH),		// convolutional layer of 8   filters with a kernel of 1X1
+		Layer.Conv2D(16	,	1, 1,	Layer.Activation.MISH),		// convolutional layer of 16  filters with a kernel of 1X1
+		Layer.Conv2D(32	,	2, 2,	Layer.Activation.MISH),		// convolutional layer of 32  filters with a kernel of 2X2
+		Layer.Conv2D(64	,	2, 2,	Layer.Activation.MISH),		// convolutional layer of 64  filters with a kernel of 2X2
+		Layer.Conv2D(128,	3, 3,	Layer.Activation.MISH),		// convolutional layer of 128 filters with a kernel of 3X3
+		Layer.Conv2D(256,	3, 3,	Layer.Activation.MISH),		// convolutional layer of 254 filters with a kernel of 3X3
 		// starting the fully connected layers
 		//Layer.Dense(128	,			Layer.Activation.MISH),		// dense layer of 128 nodes
 		Layer.Dense(10	,			Layer.Activation.SOFTMAX)	// output layer of 10 classifications
@@ -62,10 +62,10 @@ public class Ann{
 		System.out.println(" - Built "+(MODEL.getModelDepth()+1)+" layers, "+MODEL.getNeuronsAmount()+" neurons and "+MODEL.getParametersAmount()+" parameters");
 	
 		fitness	= noise > 0? new Ann.Noisify(MODEL, noise): new Ann.Smooth(MODEL);	// used to determine the noise
-		try{	chart	= new lib.Chart(new String[]{"Test Accuracy", "Test Loss", "Validation Accuracy", "Validation Loss"},
-										new String[]{"Accuracy", "Loss", "Accuracy", "Loss"},
-										new String[]{"Epoch", "Epoch", "Epoch", "Epoch"},
-										new String[]{"BLUE", "RED", "GREEN", "ORANGE"});
+		try{chart	= new lib.Chart(new String[]{"Test Accuracy", "Test Loss", "Validation Accuracy", "Validation Loss"},
+									new String[]{"Accuracy", "Loss", "Accuracy", "Loss"},
+									new String[]{"Epoch", "Epoch", "Epoch", "Epoch"},
+									new String[]{"BLUE", "RED", "GREEN", "ORANGE"});
 			System.out.println(" - GUI Chart status: Supported!\n\n");
 		}catch(Exception e){ System.out.println(" - GUI Chart status: Unsupported!\n\n"); }
 	}
@@ -90,7 +90,8 @@ public class Ann{
 			}
 		}
 
-		noise = fitness instanceof Noisify? fitness.getNoise() == 0? 0.001: fitness.getNoise(): noise;	// grantee next loop noise is made
+		// grantee next loop noise is made
+		noise = fitness instanceof Noisify? fitness.getNoise() == 0? 0.001: fitness.getNoise(): noise;
 		fitness.printScores();												// printing the metrics
 	}
 

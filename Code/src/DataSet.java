@@ -220,7 +220,7 @@ public class DataSet {
 						}).toArray(),									// converting the stream to an array
 						sample.getLabel()								// setting the label
 					);
-					SAMPLE.setOneHot(sample.getOneHot().clone());// setting the one-hot array
+					SAMPLE.setOneHot(sample.getOneHot().clone());		// setting the one-hot array
 					return SAMPLE;										// returning the sample
 				})
 			).toList()													// converting the stream to a list
