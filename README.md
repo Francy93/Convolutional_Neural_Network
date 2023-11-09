@@ -35,4 +35,4 @@ Here is the report:
 ![alt text](Report/img/Page4.jpg "Main page")
 ![alt text](Report/img/Page5.jpg "Main page")
 ![alt text](Report/img/Page6.jpg "Main page")
-![alt text](Report\img\99.25-bestAccuracy.png "Main page")
+![alt text](Report/img/99.25-bestAccuracy.png "Main page")
