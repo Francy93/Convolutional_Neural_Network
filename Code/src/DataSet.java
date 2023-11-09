@@ -12,25 +12,28 @@ import lib.Util;						// multiple utility functions
 public class DataSet {
 	private final double[]	CLASSES;		// number of possible classifications
 	private final int[]		CLASS_AMOUNT;	// number of samples per class
+	public	final Augment	AUGMENT;		// augmentation collections
 	private Sample[]		samples;		// samples collection
 	private double			max;			// max value of the dataset
 	private double			min;			// min value of the dataset
 
 	/**
 	 * Dataset constructor from a file
-	 * @param F_N File name
+	 * @param FN File name
 	 * @param D Data Delimiter
+	 * @param LL Label Location
 	 * @throws FileNotFoundException
 	 */
-	public DataSet(final String F_N, final String D) throws FileNotFoundException{
+	public DataSet(final String FN, final String D, final boolean LL) throws FileNotFoundException{
 		// file reader to initialsize the sample collection
-		try {  this.samples	= this.fileReader(this.findFile(F_N), D);  }
+		try {  this.samples	= this.fileReader(this.findFile(FN), D, LL);  }
 		catch(IOException e) { throw new FileNotFoundException(); }
 
 		this.CLASSES		= this.labelClasses();	// getting an array of labels
 		this.CLASS_AMOUNT	= this.classAmount();	// getting the amount of samples per class
 		this.classesToSamples();					// equipping every sample with a one-hot array
 		this.minmaxUpdate();						// updating the max and min values of the dataset
+		this.AUGMENT		= new Augment(this);	// creating the augment object
 	}
 	/**
 	 * Dataset constructor from an array of samples
@@ -42,6 +45,7 @@ public class DataSet {
 		this.CLASS_AMOUNT	= this.classAmount();	// getting the amount of samples per class
 		this.classesToSamples();					// equipping every sample with a one-hot array
 		this.minmaxUpdate();						// updating the max and min values of the dataset
+		this.AUGMENT		= new Augment(this);	// creating the augment object
 	}
 	/**
 	 * Dataset constructor from another dataset
@@ -53,19 +57,20 @@ public class DataSet {
 		this.CLASS_AMOUNT	= DS.CLASS_AMOUNT.clone();	// getting the amount of samples per class
 		this.min			= DS.min;					// getting the min value of the dataset
 		this.max			= DS.max;					// getting the max value of the dataset
+		this.AUGMENT		= new Augment(this);		// creating the augment object
 	}
 
 	/**
 	 * File reader
 	 * @return array of samples
 	 */
-	private Sample[] fileReader(final String FILE_NAME, final String DELIMITER) throws FileNotFoundException {
+	private Sample[] fileReader(final String FILE_NAME, final String DELIMITER, final boolean LABEL_LOCATION) throws FileNotFoundException {
 		// reading the file
 		try (final BufferedReader SCANN = new BufferedReader(new FileReader(FILE_NAME))) {
 			return SCANN.lines().parallel()									// reading the file line by line
 				.filter(line -> line.matches("^\\d+(\\Q" + DELIMITER + "\\E\\d+)+$")) // regex filter
 				.map(line -> {												// converting the line to a sample
-					try { return new Sample(line, DELIMITER); }				// creating a sample
+					try { return new Sample(line, DELIMITER, LABEL_LOCATION); }				// creating a sample
 					catch (ExceptionInInitializerError e) { return null; }	// if the line is not a sample, return null
 				})
 				.filter(sample -> sample != null)							// filtering out the null samples
@@ -199,40 +204,7 @@ public class DataSet {
 		this.minmaxUpdate();
 	}
 
-	/**
-	 * adversarial sampling augmentation
-	 * @param AMOUNT amount of adversarial samples to be created
-	 * @param EPSILON the amount of noise to be added to the sample (from 0 to 1)
-	 */
-	public Sample[] adversarialSampling(){ return this.adversarialSampling(1); }
-	public Sample[] adversarialSampling(final int AMOUNT){ return this.adversarialSampling(AMOUNT, 1d/3d); }
-	public Sample[] adversarialSampling(final int AMOUNT, final double EPSILON){
 	
-		final ArrayList<Sample> ADVERSARIAL = new ArrayList<>(Arrays.stream(this.samples).parallel()
-			.flatMap(sample -> IntStream.range(0, AMOUNT)				// creating a stream of indexes
-				.mapToObj(i -> {										// creating a stream of samples
-					final Sample SAMPLE = new Sample(Arrays.stream(sample.getFeature1D())
-						.map(TOKEN -> {									// creating a stream of features
-							double range = EPSILON * this.max;			// calculating the range
-							range = Util.rangeRandom(-range, range);	// getting a random number in the range
-							if(Math.random() < EPSILON)return range*10d;// adding noise to the sample
-							else return Math.min(Math.max(TOKEN+range, this.min), this.max);
-						}).toArray(),									// converting the stream to an array
-						sample.getLabel()								// setting the label
-					);
-					SAMPLE.setOneHot(sample.getOneHot().clone());		// setting the one-hot array
-					return SAMPLE;										// returning the sample
-				})
-			).toList()													// converting the stream to a list
-		);
-		// creating an array list to store the adversarial samples
-		final ArrayList<Sample> JOINT = new ArrayList<>(Arrays.asList(this.samples));	
-		JOINT.addAll(ADVERSARIAL);										// adding the adversarial samples to the array list
-		this.setDataSet(JOINT.toArray(Sample[]::new));					// converting the array list to an array
-		return ADVERSARIAL.toArray(Sample[]::new);						// returning the adversarial samples
-	}
-
-
 
 
 	// ..................getters methods .................
@@ -283,6 +255,13 @@ public class DataSet {
 	 */
 	public Sample getSample(final int INDEX){
 		return this.samples[INDEX];
+	}
+
+	/**
+	 * Get samples from the dataset
+	 */
+	public Sample[] getSamples(){
+		return this.samples.clone();
 	}
 	
 	public DataSet	clone()			{ return new DataSet(this);		}	// clone dataset

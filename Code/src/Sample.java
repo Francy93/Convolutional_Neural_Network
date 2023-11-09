@@ -13,18 +13,19 @@ public class Sample {
 	 * Sample constructor
 	 * @param S sample data
 	 * @param D	data delimiter
+	 * @param LL label location
 	 * @throws ExceptionInInitializerError
 	 */
-	public Sample(final String S, final String D) throws ExceptionInInitializerError{
+	public Sample(final String S, final String D, final boolean LL) throws ExceptionInInitializerError{
 		double[] SAMPLE_DATA;
 
 		// getting validated sample data
 		try { SAMPLE_DATA = this.validator(S, D); }
 		catch(Exception e){ throw new ExceptionInInitializerError(); }
 
-		this.TOKENS	= this.tokenFilter(SAMPLE_DATA);	// extract this sample pixels only
-		this.LABEL	= this.labelFilter(SAMPLE_DATA);	// extract this sample label only
-		this.MATRIX	= this.matrixInit();				// initialising this sample image matrix
+		this.TOKENS	= this.tokenFilter(SAMPLE_DATA, LL);	// extract this sample pixels only
+		this.LABEL	= this.labelFilter(SAMPLE_DATA, LL);	// extract this sample label only
+		this.MATRIX	= this.matrixInit();					// initialising this sample image matrix
 	}
 	public Sample(final double[] SAMPLE_DATA, final double L){
 		this.TOKENS	= SAMPLE_DATA.clone();		// extract this sample pixels only
@@ -36,7 +37,7 @@ public class Sample {
 		this.LABEL	= SAMPLE.getLabel();		// extract this sample label only
 		this.MATRIX	= SAMPLE.getFeature2D();	// initialising this sample image matrix
 		this.pred	= SAMPLE.getPred();			// initialising this sample image matrix
-		this.oneHot = SAMPLE.getOneHot();// initialising this sample image matrix
+		this.oneHot = SAMPLE.getOneHot();		// initialising this sample image matrix
 	}
 
 
@@ -65,19 +66,16 @@ public class Sample {
 	}
 
 	// getting this sample pixels only
-	private double[] tokenFilter(double[] array){
-		final int 		TK_LENGTH	= array.length-1;
-		final double[]	TKS			= new double[TK_LENGTH];
-
-		// getting just pixel data except the label data
-		for(int i=0; i < TK_LENGTH; i++) TKS[i] = array[i];
+	private double[] tokenFilter(final double[] ROW, final boolean LABEL_LOCATION){
+		final double[]	TKS	= new double[ROW.length-1];
+		System.arraycopy(ROW, (LABEL_LOCATION? 1 : 0), TKS, 0, TKS.length);	// getting just pixel data except the label data
 
 		return TKS;
 	}
 
 	// getting this sample label only
-	private double labelFilter(double[] array){
-		return array[array.length - 1];
+	private double labelFilter(final double[] ROW, final boolean LABEL_LOCATION){
+		return ROW[LABEL_LOCATION? 0: ROW.length - 1];
 	}
 
 	// initialising this sample image matrix

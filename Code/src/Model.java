@@ -64,19 +64,19 @@ public class Model {
 		public int function(final Layer LAYER, final Sample SAMPLE){
 			final Node.Relation[] FLAT_OUTPUT	= LAYER.getFlatOutput();		// getting the output of the layer	
 			final double[] ONE_HOT				= SAMPLE.getOneHot();			// getting the label of the sample
-			double sum		= 0, prevMax = 0;
-			int maxIndex	= 0;
+			double sum		= 0, prevMax = 0;									// sum and max value
+			int maxIndex	= 0;												// max index
 
 
             for(int index = 0; index < FLAT_OUTPUT.length; index++){
-				if(FLAT_OUTPUT[index].getOutput() > prevMax){
-					prevMax = FLAT_OUTPUT[index].getOutput();
-					maxIndex = index;
+				if(FLAT_OUTPUT[index].getOutput() > prevMax){					// getting the max index
+					prevMax = FLAT_OUTPUT[index].getOutput();					// updating the max value
+					maxIndex = index;											// updating the max index
 				}
 				sum += this.LOSS.function(FLAT_OUTPUT[index].getOutput(), ONE_HOT[index]);
 			}
-			this.accuracy	+= ONE_HOT[maxIndex];
-            this.error		+= sum / FLAT_OUTPUT.length;
+			this.accuracy	+= ONE_HOT[maxIndex];								// updating the accuracy
+            this.error		+= sum / (double)FLAT_OUTPUT.length;				// updating the loss
 			return maxIndex;
 		}
 	}
@@ -200,7 +200,7 @@ public class Model {
 	 */
 	public void train(final DataSet DATA, int batch, final int EPOCHS, final double LEARNING_RATE){
 		if (this.LAYERS[this.LAYERS.length-1].getFlatOutput().length != DATA.getClasses().length){	// checking if the output layer is correct
-			final String MESSAGE = "The output layer must have the same amount of nodes as the classes amount";
+			final String MESSAGE = "Output layer nodes must equal the number of classes";
 			throw new IllegalArgumentException(new Util.AnsiColours().colourText(MESSAGE, "red"));
 		}
 		batch = Math.max(batch, 1);												// setting the batch size to 1 if it is less than 1
@@ -230,8 +230,8 @@ public class Model {
 				this.weightsUpdate();											// updating the weights
 				BAR.message(
 					epochMessage + 
-					" | Loss: "		+	this.loss.error		/ (END_BATCH+1d)	+ 
-					" | Accuracy: " +	this.loss.accuracy	/ (END_BATCH+1d), "blue"
+					" | Loss: "		+	this.loss.error		/ (END_BATCH)	+ 
+					" | Accuracy: " +	this.loss.accuracy	/ (END_BATCH),	"blue"
 				);
 			}
 			this.error			= this.loss.error		/ (double)DATA.size();	// setting this epoch error

@@ -44,7 +44,7 @@ public class Util{
 	public static int arrayAvarage(final double[] ARRAY){
 		int index = 0;
 		double difference = 0;
-		double mean = ArrayMath.plus(ARRAY) / ARRAY.length;
+		double mean = ArrayMath.addition(ARRAY) / ARRAY.length;
 
 		for(int i=0; i<ARRAY.length; i++){
 			double sub = mean <= ARRAY[i]? ARRAY[i] - mean: mean - ARRAY[i];
@@ -176,16 +176,26 @@ public class Util{
 	 */
 	public static class ArrayMath {
 
-		public static					 double plus (final int[]		array)	{ return sum(array, (a,b) -> a+b			  ); }
-		public static					 double minus(final int[]		array)	{ return sum(array, (a,b) -> a-b			  ); }
-		public static					 double plus (final double[]	array)	{ return sum(array, (a,b) -> a+b			  ); }
-		public static					 double minus(final double[]	array)	{ return sum(array, (a,b) -> a-b			  ); }
-		public static					 double plus (final long[]		array)	{ return sum(array, (a,b) -> a+b			  ); }
-		public static					 double minus(final long[]		array)	{ return sum(array, (a,b) -> a-b			  ); }
-		public static <T extends Number> double plus (final T[]			array)	{ return sum(array, (a,b) -> a+b.doubleValue()); }
-		public static <T extends Number> double minus(final T[]			array)	{ return sum(array, (a,b) -> a-b.doubleValue()); }
-		public static <T extends Number> double plus (final ArrayList<T>array)	{ return sum(array, (a,b) -> a+b.doubleValue()); }
-		public static <T extends Number> double minus(final ArrayList<T>array)	{ return sum(array, (a,b) -> a-b.doubleValue()); }
+		public static <T extends Number> double addition(final T[]			array)	{ return sum(array, (a,b) -> a+b.doubleValue()); }
+		public static					 double addition(final int[]		array)	{ return sum(array, (a,b) -> a+b			  ); }
+		public static					 double addition(final long[]		array)	{ return sum(array, (a,b) -> a+b			  ); }
+		public static					 double addition(final double[]		array)	{ return sum(array, (a,b) -> a+b			  ); }
+		public static <T extends Number> double addition(final ArrayList<T>	array)	{ return sum(array, (a,b) -> a+b.doubleValue()); }
+		public static <T extends Number> double subtract(final T[]			array)	{ return sum(array, (a,b) -> a-b.doubleValue()); }
+		public static					 double subtract(final int[]		array)	{ return sum(array, (a,b) -> a-b			  ); }
+		public static					 double subtract(final long[]		array)	{ return sum(array, (a,b) -> a-b			  ); }
+		public static					 double subtract(final double[]		array)	{ return sum(array, (a,b) -> a-b			  ); }
+		public static <T extends Number> double subtract(final ArrayList<T>	array)	{ return sum(array, (a,b) -> a-b.doubleValue()); }
+		public static <T extends Number> double multiply(final T[]			array)	{ return sum(array, (a,b) -> a*b.doubleValue()); }
+		public static					 double multiply(final int[]		array)	{ return sum(array, (a,b) -> a*b			  ); }
+		public static					 double multiply(final long[]		array)	{ return sum(array, (a,b) -> a*b			  ); }
+		public static					 double multiply(final double[]		array)	{ return sum(array, (a,b) -> a*b			  ); }
+		public static <T extends Number> double multiply(final ArrayList<T>	array)	{ return sum(array, (a,b) -> a*b.doubleValue()); }
+		public static <T extends Number> double division(final T[]			array)	{ return sum(array, (a,b) -> a/b.doubleValue()); }
+		public static					 double division(final int[]		array)	{ return sum(array, (a,b) -> a/b.doubleValue()); }
+		public static					 double division(final long[]		array)	{ return sum(array, (a,b) -> a/b.doubleValue()); }
+		public static					 double division(final double[]		array)	{ return sum(array, (a,b) -> a/b.doubleValue()); }
+		public static <T extends Number> double division(final ArrayList<T>	array)	{ return sum(array, (a,b) -> a/b.doubleValue()); }
 		public static double sum(final int[] array, final Lambda2<Integer, Double> comput){
 			double result = array[0];
 			for(int i=1; i<array.length; i++)   result = comput.op(result, array[i]);

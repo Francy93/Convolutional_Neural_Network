@@ -79,11 +79,8 @@ public class Chart {
 	private Color getColor(final String COLOR) {
 		for(final var C : Color.class.getDeclaredFields()) {
 			if(C.getName().equalsIgnoreCase(COLOR)) {
-				try {
-					return (Color) C.get(null);
-				} catch (IllegalArgumentException | IllegalAccessException e) {
-					e.printStackTrace();
-				}
+				try { return (Color) C.get(null); }
+				catch(IllegalArgumentException | IllegalAccessException e) { e.printStackTrace(); }
 			}
 		}
 		return Color.BLUE;
@@ -141,6 +138,7 @@ public class Chart {
 	 * @param INDEX		Index of the chart
 	 * @param Y_DATA	Y data
 	 * @param X_DATA	X data
+	 * @param UPDATE	Update the chart
 	 */
 	public void addData(final int INDEX, final double Y_DATA, final double X_DATA, final boolean UPDATE){
 		this.yData.get(INDEX).add(Y_DATA);	// Add data y to the array
