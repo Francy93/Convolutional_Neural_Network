@@ -3,6 +3,7 @@ package lib;
 
 import java.io.Console;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * This class is a collection of various tools
@@ -64,9 +65,7 @@ public class Util{
 	 * @param Y
 	 * @return xor
 	 */
-	public static boolean xor(final boolean X, final boolean Y){
-		return ( ( X || Y ) && ! ( X && Y ) );
-	}
+	public static boolean xor(final boolean X, final boolean Y){ return X != Y; }
 
 
 	/**
@@ -142,24 +141,58 @@ public class Util{
 	}
 
 	// merge arrays
-	public static <T> T[] merge(final T[] A, final T[] B) {
-		final T[] LONGEST = A.length >= B.length? A: B;
-		final T[] SHORTEST = A.length >= B.length? B: A;
-
-		for(int i=0; i<SHORTEST.length; i++) LONGEST[i] = SHORTEST[i];
-		return LONGEST;
+	public static <T> T[] arrayMerge(final T[] A, final T[] B) {
+		if(A.length > B.length) System.arraycopy(B, 0, A, A.length - B.length, B.length);
+		else return B;
+		return A;
 	}
 
-	public static <T> int findLargest(final T[][]ARRAY){
-		int largest = 0;
-		for(final T[] ELEM: ARRAY){	if(largest > ELEM.length) largest = ELEM.length; }
+	// join arrays
+	public static <T> T[] arrayJoin(final T[] A, final T[] B) {
+		// Create a new array of the combined length
+		final T[] JOINED = Arrays.copyOf(A,  A.length + B.length);
+		// Copy elements of array B into the result array
+		System.arraycopy(B, 0, JOINED, A.length, B.length);
+		
+		return JOINED;
+	}
+
+	// get the largest element in an array
+	public static <T> T[] getLargest(final T[][]ARRAY){
+		T[] largest = ARRAY[0];
+		for(final T[] ELEM: ARRAY){	if(largest.length > ELEM.length) largest = ELEM; }
 		return largest;
 	}
-	public static int findLargest(final String[] ARRAY){
-		int largest = 0;
-		for(final String ELEM: ARRAY){	if(largest > ELEM.length()) largest = ELEM.length(); }
+	public static String getLargest(final String[] ARRAY){
+		String largest = "";
+		for(final String ELEM: ARRAY){	if(largest.length() > ELEM.length()) largest = ELEM; }
 		return largest;
 	}
+
+	// get the index of the largest element in an array
+	public static <T> int getLargestIndex(final T[][]ARRAY){
+		int largest = 0;
+		for(int i=0; i<ARRAY.length; i++){	if(largest > ARRAY[i].length) largest = i; }
+		return largest;
+	}
+	public static int getLargestIndex(final String[] ARRAY){
+		int largest = 0;
+		for(int i=0; i<ARRAY.length; i++){	if(largest > ARRAY[i].length()) largest = i; }
+		return largest;
+	}
+
+	// get the size of the largest element in an array
+	public static <T> long getLargestSize(final T[][]ARRAY){
+		long largest = 0;
+		for(final T[] ELEM: ARRAY){	largest = Math.max(largest, ELEM.length); }
+		return largest;
+	}
+	public static long getLargestSize(final String[] ARRAY){
+		long largest = 0;
+		for(final String ELEM: ARRAY){	largest = Math.max(largest, ELEM.length()); }
+		return largest;
+	}
+
 
 
 
@@ -392,9 +425,8 @@ public class Util{
 				colour = colour.toLowerCase();
 
 				for(final String[] C: this.COLOURS){	if(colour.equals(C[0]))		return C[1]; }
-			}
-
-			return "";
+				return colour;
+			}else return "";
 		}
 
 
@@ -405,7 +437,7 @@ public class Util{
 		 * @return colored string (ANSI)
 		 */
 		public String colourText(final String TEXT, final String COLOUR){
-			return colour(COLOUR) + TEXT + this.RESET;
+			return colour(COLOUR) + TEXT + (this.localState && AnsiColours.globalState? this.RESET: "");
 		}
 	}
 
@@ -416,13 +448,29 @@ public class Util{
 
 
 
-
 	public static class Navigator{
+
 		// ANSI colours
-		private final	AnsiColours	COLOURS	= new AnsiColours();
+		private final	AnsiColours	COLORS	= new Util.AnsiColours();
+		// customizable parameters
+		private	boolean		print			= true;
+		private	int			min_delim_length= 3;
+		private	int			min_row_length	= 10;
+		private	String		delimiter		= ".";
+		private	String		color			= "yellow";
+		private	String[]	output;
+		private	String[]	std_nav			= {"Go back", "Exit"};
+		private String[]	std_nav_index	= {"0", "00"};
+		private	String		std_nav_num		= "0";
 
 		// constructor
-		public Navigator(){}
+		public Navigator(){ }
+		public Navigator(final String DELIM, final String COLOR, final int MIN_DELIM, final int MIN_ROW){
+			this.delimiter			= DELIM;
+			this.color				= COLOR;
+			this.min_delim_length	= MIN_DELIM;
+			this.min_row_length		= MIN_ROW;
+		}
 
 
 		// getting console input
@@ -437,98 +485,128 @@ public class Util{
 
 		/**
 		 * Returns a string of enumerated options
-		 * @param opts
-		 * @param minSize
-		 * @param colors
-		 * @param print
-		 * @return String[]
+		 * @param MIN_SIZE	Minimum size of the row
+		 * @param COLOR		Color of the options indexes
+		 * @param OPTS		Options
+		 * @return String[]	Enumerated options
 		 */
-		public String[] navOptions(final long MIN_SIZE, final String COLORS, final boolean PRINT, final String ... OPTS){
-			// customizable parameters
-			final String DELIMITER = ".", STD_NAV_NUM = "0";
-			final String[] STD_NAV = {"Go back", "Exit"};
-			final long MIN_DELIM_LENGTH = 3;
-
-			// getting colors
-			final String COL_START = this.COLOURS.colour(COLORS);								//yellow corresponds to: "\033[1;35m"
-			final String COL_END = COL_START==""? COL_START: this.COLOURS.colour("reset");		//reset  corresponds to: "\033[0m"
+		public String[] genOptions(final int MIN_SIZE, final String COLOR, final String ... OPTS){
+			this.min_row_length			= MIN_SIZE;	// setting minimum size
+			this.setColor(COLOR);					// setting color
+			this.genOptions(OPTS);					// returning options
+			return this.output;						// returning options
+		}
+		public void genOptions(final String ... OPTS){
 			
+			final String COLOR_START	= this.COLORS.colour(this.color);
+			final String COLOR_END		= COLOR_START==""? "": this.COLORS.colour("reset");
+
 			// arrays of options strings and index strings
-			final String[] STD_NAV_INDEX = new String[STD_NAV.length];
-			for(int i=0; i<STD_NAV_INDEX.length; i++) STD_NAV_INDEX[i] = stringRepeat(STD_NAV_NUM, i+1);
-			final String[] OPTIONS = merge(OPTS, new String[OPTS.length+STD_NAV.length]);
+			final String[] STD_OPTS		= new String[this.std_nav.length];
+			final String[] OPTIONS		= new String[OPTS.length];
 
-			// getting the size of the longest index num and the size of the longest option string
-			final long oSize = OPTS.length;
-			long iSize = findLargest(STD_NAV_INDEX), i = 0, longest = findLargest(STD_NAV);
+			// getting the size of the longest string when option and index are combined
+			int longest_o_and_i	= 0;
+			for(int i=0; i<OPTS.length; i++)			longest_o_and_i = Math.max(longest_o_and_i, OPTS[i].length() + Long.toString(i+1).length());
+			for(int i=0; i<this.std_nav.length; i++)	longest_o_and_i = Math.max(longest_o_and_i, this.std_nav[i].length() + this.std_nav_index[i].length());
 
-			// getting the longest string size
-			for(String o: OPTS){
-				final long strSize = o.length();
-				longest = strSize > longest? strSize: longest;
-				if(++i == oSize) iSize = Long.toString(i).length() > iSize? Long.toString(i).length(): iSize;
-			}
+			// getting the minimum delimiter length
+			final int MIN_DELIM_LENGTH	= Math.max(longest_o_and_i + this.min_delim_length, this.min_row_length) - longest_o_and_i;
 
-
-			i = 0;
-			longest = longest+MIN_DELIM_LENGTH>=(double)MIN_SIZE-iSize? longest+MIN_DELIM_LENGTH: MIN_SIZE-iSize;
-			for(String o: OPTS){
-				final long indexSize = iSize - Long.toString(++i).length();
-				final long gap = longest - o.length();
-				final String INDEX = COL_START + Long.toString(i) + COL_END;
-
-				OPTIONS[(int)i-1] = o + stringRepeat(DELIMITER, gap+indexSize) + INDEX;
+			// making user's options
+			for(int i=0; i<OPTS.length; i++){
+				final int DELIM			= longest_o_and_i	- (OPTS[i].length() + Long.toString(i+1).length()) + MIN_DELIM_LENGTH;
+				final String INDEX		= COLOR_START		+ (i+1) + COLOR_END;
+				OPTIONS[i]				= OPTS[i]			+ Util.stringRepeat(this.delimiter, DELIM) + INDEX;
 			}
 
 			// making standard navigation options
-			for(int j=0; j<STD_NAV_INDEX.length; j++){
-				OPTIONS[OPTS.length+j]	= STD_NAV[j] + stringRepeat(DELIMITER,longest-STD_NAV[j].length()+iSize-STD_NAV_INDEX[j].length()) + COL_START+STD_NAV_INDEX[j]+COL_END;
+			for(int i=0; i<this.std_nav.length; i++){
+				final int DELIM			= longest_o_and_i	- (this.std_nav[i].length() + this.std_nav_index[i].length()) + MIN_DELIM_LENGTH;
+				final String INDEX		= COLOR_START		+ this.std_nav_index[i] + COLOR_END;
+				STD_OPTS[i]				= this.std_nav[i]	+ Util.stringRepeat(this.delimiter, DELIM) + INDEX;
 			}
-			
-			// printing
-			if(PRINT){ for(final String LINE: OPTIONS) System.out.println(LINE); }
-			return OPTIONS;
+
+			this.output	= Util.arrayJoin(OPTIONS, STD_OPTS);
 		}
 
 
 		/**
-		 * @since getting user input
-		 * @param max
-		 * @return int
+		 * Getting the choice via user input
+		 * @param options	amount of options
+		 * @return 			user choice
 		 */
 		public int getChoice(int options){
-			options = options<2?1: options;
+			options = Math.max(1, options);
 			
-			//checking the choice
-			String input ="";
-			
-			while(true){
+			for(String input = ""; true;){
 				System.out.print("Enter a choice here :> ");
-				input = cinln();
+				input = this.cinln();
+
+				//checking if the input is calling a std option
+				for(int i=0; i<this.std_nav_index.length; i++){ if(input.equals(this.std_nav_index[i])) return -i; }
 				
-				if(!input.equals("0") && !input.equals("00")){
-					for(int i=1; i<=options; i++){
-						if(input.equals(Integer.toString(i))) return i;
-					}
-					System.out.println(this.COLOURS.colourText("WRONG SELECTION! Try again.", "yellow"));
-				}else if(input.equals("0")) return 0;
-				else return -1;
+				// checking if the input calls a valid option
+				try { final int NUM = Integer.parseInt(input);
+					if(NUM > 0 && NUM <= options) return NUM;
+				} catch (NumberFormatException e) { }
+				
+				System.out.println(this.COLORS.colourText("WRONG SELECTION! Try again.", "yellow"));
 			}
 		}
 
 		/**
-			 * @since display options and return choice
-			 * @param options 
-			 * @param min
-			 * @return int 
-			 */
-		public int navChoice(final long MIN, final String ... OPTIONS){
+		 * Navigation choice. Display options and return choice
+		 * @param MIN		Minimum number of options
+		 * @param OPTIONS	Strings of options
+		 * @return			Returns the user choice
+		 */
+		public int navOptions(final int MIN, final String ... OPTIONS){
+			this.genOptions(MIN, this.color, OPTIONS);
 			
 			//displaying options
-			navOptions(MIN, "yellow", true, OPTIONS);
-			System.out.println();
+			if(this.print) this.printOptions();
 			//getting the choice
-			return getChoice(OPTIONS.length);
+			return this.getChoice(OPTIONS.length);
+		}
+		
+		/**
+		 * Print the options
+		 * @param OPTIONS	options to be printed
+		 */
+		public void printOptions(){ this.printOptions(this.output); }
+		public void printOptions(final String ... OPTIONS){ 
+			// printing
+			for(final String LINE: OPTIONS) System.out.println(LINE);
+			System.out.println();
+		}
+		
+		
+		// Setters.........
+
+		public void setMinDelimLength	(final int MIN_DELIM)	{ this.min_delim_length	= MIN_DELIM;}
+		public void setPrint			(final boolean PRINT)	{ this.print			= PRINT; 	}
+		public void setDelimiter		(final String DELIM)	{ this.delimiter		= DELIM; 	}
+		public void setColor			(final String COLOR)	{ this.color 			= COLOR; 	}
+
+		// Setting the std nav indexes
+		public void setStdIndexes(final String INDEX){
+			this.std_nav_num = INDEX;
+			final String[] INDEXES = new String[this.std_nav.length];
+			for(int i=0; i<this.std_nav.length; i++) INDEXES[i] = Util.stringRepeat(INDEX, i+1);
+			this.std_nav_index = INDEXES;
+		}
+
+		// Setting the standard navigation options
+		public void setStdNavOpts(final String... OPTIONS){
+			this.std_nav = OPTIONS;
+			if(OPTIONS.length != this.std_nav.length) this.setStdIndexes(this.std_nav_num);
+		}
+		
+		// Setting the standard navigation options and indexes
+		public void setStdNavOpts(final String INDEX, final String... OPTIONS){
+			this.setStdNavOpts(OPTIONS);
+			this.setStdIndexes(INDEX);
 		}
 	}
 
@@ -553,7 +631,7 @@ public class Util{
 		private			int		barState 		= 0			,	updates		= this.barLength;						//	calculating loading bar
 		private			double	nextUpdate 		= 0			,	coloursIndex= (double)this.barColours.length / (double)(this.MAX_PERCENT+0.1);
 		private			boolean	messageUpdate	= false		;														//	notes if message has updated
-		private			long	index			= 0		;														//	increasing index per cicle
+		private			long	index			= 0			;														//	increasing index per cicle
 		private			long	ciclesAmount				;														//	total amount of cicles
 
 

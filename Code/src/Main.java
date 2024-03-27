@@ -8,8 +8,8 @@ public class Main {
 	public static final short EXIT	= -1;  	// terminal navigator exit code
 	public static final short BACK	=  0;	// terminal navigator back code
 	public static final short AHEAD	=  1;	// terminal navigator ahead code
-	public static final	Util.AnsiColours	COLORS		= new Util.AnsiColours();
-	public static final	Util.Navigator		NAV			= new Util.Navigator();
+	public static final	Util.AnsiColours	COLORS	= new Util.AnsiColours();
+	public static final	Util.Navigator		NAV		= new Util.Navigator();
 
 
 	// introduction
@@ -26,9 +26,9 @@ public class Main {
 
 	// setting the console environment
 	public static int envSet(){
-		System.out.println(COLORS.colourText("Environment setting", "magenta"));
+		System.out.println(COLORS.colourText("ENVIRONMENT SETTING", "magenta"));
 
-		switch(NAV.navChoice(5, "Colors ON  (Terminal)","Colors OFF (IDE)")){
+		switch(NAV.navOptions(0, "Colors ON  (Terminal)","Colors OFF (IDE)")){
 			case EXIT: return EXIT;
 			case BACK: return BACK;
 			case	1: Util.AnsiColours.setGlobalState(true);
@@ -40,20 +40,23 @@ public class Main {
 
 
 	// main menu
-	public static int menu(){ return menu(2); }
-	public static int menu(final int MAX){
-		System.out.println(COLORS.colourText("MAIN MENU", "magenta"));
+	public static int menu(final int OPTS){
+		String[] options	= new String[]{"Perform a training"};
 
-		final String[] OPTIONS = new String[]{"Perform a training","Print "+Ann.fitness.getMissclassified().length+" misclassified"};
-		final String[] MAX_OPT = new String[Math.min(MAX, OPTIONS.length)];
-		
-		for(int i=0; i<MAX_OPT.length; i++) MAX_OPT[i] = OPTIONS[i];
-		return NAV.navChoice(5, MAX_OPT);
+		switch(OPTS){
+			case 1: options = Util.arrayJoin(options, new String[]{"Print "+Ann.fitness.getMissclassified().length+" misclassified"});
+		}
+		return printMenu(options);
+	}
+	// printing the main menu
+	public static int printMenu(final String[] OPTIONS){
+		System.out.println(COLORS.colourText("MAIN MENU", "magenta"));
+		return NAV.navOptions(25, OPTIONS);
 	}
 
 
 
-	
+
 
 	// The main
 	public static void main(String[] args){
@@ -69,7 +72,7 @@ public class Main {
 
 
 		// main loop
-		for(int nav = envSet(), iter = 1, opt = 1;	nav!=EXIT;	nav = nav!=BACK? nav: envSet()){
+		for(int nav = envSet(), iter = 1, opt = 0;	nav!=EXIT;	nav = nav!=BACK? nav: envSet()){
 			nav = nav==BACK? nav: menu(opt);
 
 			// Perform the training and validation
@@ -77,12 +80,12 @@ public class Main {
 				case 1: 
 					Ann.trainAndTest(iter);
 					System.out.println("Epochs completed: " + Ann.EPOCHS * iter++ + "\r\n");
-					opt = 2;
+					opt = nav;
 					break;
 				case 2: 
 					Ann.fitness.printMisclassified();
 					System.out.println("Samples missclassified: " + Ann.fitness.getMissclassified().length + "\r\n");
-					opt = 1;
+					opt = nav;
 			}
 		}
 

@@ -64,17 +64,17 @@ public class Node {
 
 
 		// ------------ setters ------------------
-		public void setWeight(final double WEIGHT){ this.weight = WEIGHT; }
-		public void addWeight(final double WEIGHT){ this.weight += WEIGHT; }
-		public void subWeight(final double WEIGHT){ this.weight -= WEIGHT; }
-		public void setGradient(final double GRADIENT){ this.gradient = GRADIENT; }
-		public void addGradient(final double GRADIENT){ this.gradient += GRADIENT; }
-		public void subGradient(final double GRADIENT){ this.gradient -= GRADIENT; }
+		public void setWeight	(final double WEIGHT)	{ this.weight	=	WEIGHT;		}
+		public void addWeight	(final double WEIGHT)	{ this.weight	+=	WEIGHT;		}
+		public void subWeight	(final double WEIGHT)	{ this.weight	-=	WEIGHT;		}
+		public void setGradient	(final double GRADIENT)	{ this.gradient	=	GRADIENT;	}
+		public void addGradient	(final double GRADIENT)	{ this.gradient	+=	GRADIENT;	}
+		public void subGradient	(final double GRADIENT)	{ this.gradient	-=	GRADIENT;	}
 
 		// ------------ getters ------------------
-		public double getWeight(){ return this.weight; }
-		public double getGradient(){ return this.gradient; }
-	}	
+		public double getWeight()	{ return this.weight;	}
+		public double getGradient()	{ return this.gradient;	}
+	}
 
 	// activation map "pixels"
 	public class Relation{
@@ -283,7 +283,7 @@ public class Node {
 
 		// cycling over the all the bias weights
 		for(int bias_y=0; bias_y < this.BIAS.length; bias_y++){
-			for(int bias_x=0; bias_x <  this.BIAS[0].length; bias_x++){
+			for(int bias_x=0; bias_x < this.BIAS[0].length; bias_x++){
 
 				// updating every single weight dividing it by the mini batch to find its average
 				this.BIAS[bias_y][bias_x].subWeight(this.OPTIMIZER.optimize(
